@@ -31,3 +31,9 @@ Tem aproximadamente 2,00 metros de altura, aspecto magro, velocidade média e an
 
 ### Objetivos
 O jogo tem como objetivo principal abrir um portão que será informado pelos megafones da arena (será dito que lá terá uma arma esperando o jogador). Para a abertura desse portão será necessário ligar um motor, esse motor precisa de gasolina (que será encontrada em dois galões dispostos aleatóriamente pelo mapa) e um fusível para ligar-lo. O jogo não terá um final onde o jogador "ganhe", caso ele consiga abrir o portão, terá uma metralhadora esperando ele (mostrando que na realidade a arma não estará lá para ele matar o robô, e sim para ele ser eliminado). 
+
+### Artefatos
+O jogo terá 3 artefatos principais para o jogador interagir:
+
+- Galão de gasolina: Necessário para ligar o motor, haverá 2 espalhados pelo mapa de modo aleatório com metade da capacidade, sendo necessário coletar-lo 2 vezes para conseguir ativar o motor pela primeira vez.
+- Fusível do motor: Após colocar a gasolina, o fusível do motor queimará, sendo necessário coletar um fusível que estará em alguma parte do mapa para completar o ciclo do motor.
