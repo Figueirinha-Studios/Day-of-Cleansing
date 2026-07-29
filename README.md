@@ -37,3 +37,13 @@ O jogo terá 3 artefatos principais para o jogador interagir:
 
 - Galão de gasolina: Necessário para ligar o motor, haverá 2 espalhados pelo mapa de modo aleatório com metade da capacidade, sendo necessário coletar-lo 2 vezes para conseguir ativar o motor pela primeira vez.
 - Fusível do motor: Após colocar a gasolina, o fusível do motor queimará, sendo necessário coletar um fusível que estará em alguma parte do mapa para completar o ciclo do motor.
+
+### Regras
+
+- O robô encostar em você resulta em morte instantânea.
+- O robô é imortal.
+- Para concluir o jogo, você deve ativar o gerador para abrir o portão.
+- Caso o robô perca você de vista, ele rondará sua última posição conhecida por um tempo.
+- O robô pode ver e ouvir suas ações.
+- Uma pessoa fora do jogo poderá interferir no sistema de som da arena pelo celular, chamando a atenção do robô para aquela área.
+- O robô anda de forma lenta (mancando) enquanto estiver em procura. Quando ele entra em modo de perseguição, ele começa a correr rápido atrás do jogador.
