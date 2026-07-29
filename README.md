@@ -47,3 +47,8 @@ O jogo terá 3 artefatos principais para o jogador interagir:
 - O robô pode ver e ouvir suas ações.
 - Uma pessoa fora do jogo poderá interferir no sistema de som da arena pelo celular, chamando a atenção do robô para aquela área.
 - O robô anda de forma lenta (mancando) enquanto estiver em procura. Quando ele entra em modo de perseguição, ele começa a correr rápido atrás do jogador.
+
+### Formas de receita
+
+- Venda de licenças para obter o acesso ao jogo.
+- Como dentro da arena haverá diversos paineis para exibição de anúncios *(dentro da temática do jogo)*, esses paineis estarão a disposição de empresas que queiram comprar esse espaço dentro do jogo para exibir seus anúncios lá.
