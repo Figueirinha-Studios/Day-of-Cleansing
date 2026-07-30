@@ -1,7 +1,7 @@
 # Day of Cleansing
 
 ## Premissa
-Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sustenta um espetáculo mortal televisionado para bilhões de pessoas. Mas dessa vez quem corre é você.
+Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sustenta um espetáculo mortal televisionado para bilhões de pessoas, mas dessa vez quem corre é você.
 
 ## Universo
 
@@ -26,17 +26,18 @@ Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sus
 Ele tem 56 anos, aparência desnutrida, usa roupa de prisioneiro laranja e possui cabelo raspado. Sua altura é aproximadamente 1,76 metros.
 
 #### Antagonista
-- Chappie: Robô humanoide criado por um comitê governamental para ser a estrela do evento, será usado pelas corporações para a exibição de anúncios. Tem aparência desgastada, mostrando que com o tempo, as peças são trocadas. Possui partes misturadas como: Manequins, Proteses e restos. Seus braços são lâminas afiadas, parecendo uma machete.
+- Chappie: Robô humanoide criado por um comitê governamental para ser a estrela do evento, será usado pelas corporações para a exibição de anúncios. Tem aparência desgastada, mostrando que com o tempo, as peças são trocadas. Possui partes misturadas como: Manequins, Próteses e restos. Seus braços são lâminas afiadas, parecendo uma machete.
 Tem aproximadamente 2,00 metros de altura, aspecto magro, velocidade média e anda mancando.
 
 ### Objetivos
-O jogo tem como objetivo principal abrir um portão que será informado pelos megafones da arena (será dito que lá terá uma arma esperando o jogador). Para a abertura desse portão será necessário ligar um motor, esse motor precisa de gasolina (que será encontrada em dois galões dispostos aleatóriamente pelo mapa) e um fusível para ligar-lo. O jogo não terá um final onde o jogador "ganhe", caso ele consiga abrir o portão, terá uma metralhadora esperando ele (mostrando que na realidade a arma não estará lá para ele matar o robô, e sim para ele ser eliminado). 
+O jogo tem como objetivo principal abrir um portão que será informado pelos megafones da arena (será dito que lá terá uma arma esperando o jogador). Para a abertura desse portão será necessário ligar um motor, esse motor precisa de gasolina (que será encontrada em dois galões dispostos aleatoriamente pelo mapa) e um fusível para ligar-lo. O jogo não terá um final onde o jogador "ganhe", caso ele consiga abrir o portão, terá uma metralhadora esperando ele (mostrando que na realidade a arma não estará lá para ele matar o robô, e sim para ele ser eliminado, pois ele nunca teve chance de escapar, a única coisa que importa é o espetáculo). 
 
 ### Artefatos
 O jogo terá 3 artefatos principais para o jogador interagir:
 
 - Galão de gasolina: Necessário para ligar o motor, haverá 2 espalhados pelo mapa de modo aleatório com metade da capacidade, sendo necessário coletar-lo 2 vezes para conseguir ativar o motor pela primeira vez.
 - Fusível do motor: Após colocar a gasolina, o fusível do motor queimará, sendo necessário coletar um fusível que estará em alguma parte do mapa para completar o ciclo do motor.
+- Gerador: Depois de colocar a gasolina e o fusível, o gerador será ativado e o portão aberto, expondo o final não esperado do jogo.
 
 ### Regras
 
