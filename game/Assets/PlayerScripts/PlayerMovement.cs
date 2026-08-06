@@ -76,8 +76,9 @@ public class PlayerMovement : MonoBehaviour
         // Corrida
         float currentSpeed = walkSpeed;
 
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.W))
+        {   
+            Debug.Log("correndo");
             currentSpeed = runSpeed;
         }
 

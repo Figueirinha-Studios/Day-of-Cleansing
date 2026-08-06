@@ -340,6 +340,7 @@ public class EnemyAI : MonoBehaviour
         if (hearing.HeardPlayer(noise.currentNoise))
         {
             lastKnownPosition = player.position;
+            Debug.Log("OUVIU");
 
             // Som perde apenas para visão
             if (currentState != EnemyState.Chase)

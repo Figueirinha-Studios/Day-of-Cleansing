@@ -64,7 +64,7 @@ public class EnemyVision : MonoBehaviour
     {
         if (CanSeePlayer())
         {
-            Debug.Log("PLAYER DETECTED");
+            Debug.Log("PLAYER IN VISION");
         }
     }
 }
