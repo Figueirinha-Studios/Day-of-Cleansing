@@ -10,7 +10,6 @@ public class SceneChange : MonoBehaviour
     public string nomeDaCena = "GameOver";
 
     private bool mudouCena = false;
-
     void Update()
     {
         if (mudouCena) return;

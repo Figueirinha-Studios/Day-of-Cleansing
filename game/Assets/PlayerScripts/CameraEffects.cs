@@ -32,7 +32,7 @@ public class CameraEffects : MonoBehaviour
 
     void RunSway()
     {
-        if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.W))
+        if (!Input.GetKey(KeyCode.LeftShift) || !Input.GetKey(KeyCode.W))
             return;
 
 
