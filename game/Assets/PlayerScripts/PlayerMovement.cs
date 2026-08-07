@@ -4,8 +4,9 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movimento")]
-    public float walkSpeed = 0.5f;
-    public float runSpeed = 30f;
+    public float walkSpeed = 2f;
+    public float runSpeed = 4f;
+    public float joggingSpeed = 3f;
 
     [Header("Smooth Movement")]
     public float acceleration = 15f;
@@ -80,6 +81,12 @@ public class PlayerMovement : MonoBehaviour
         {   
             Debug.Log("correndo");
             currentSpeed = runSpeed;
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift) && (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)))
+        {   
+            Debug.Log("trotando");
+            currentSpeed = joggingSpeed;
         }
 
 
