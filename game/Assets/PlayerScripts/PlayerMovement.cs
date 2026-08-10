@@ -21,20 +21,19 @@ public class PlayerMovement : MonoBehaviour
     [Header("Câmera")]
     public Transform cameraTransform;
 
-
     private CharacterController controller;
     private Vector3 velocity;
     private Vector3 currentMoveVelocity;
 
     private PlayerNoise noise;
-
+    private PlayerFootsteps footsteps;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         noise = GetComponent<PlayerNoise>();
+        footsteps = GetComponent<PlayerFootsteps>();
     }
-
 
     void Update()
     {
@@ -47,52 +46,56 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
     void MovePlayer()
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-
         // Direção baseada na câmera
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
-
 
         // Ignora inclinação da câmera
         forward.y = 0;
         right.y = 0;
 
-
         forward.Normalize();
         right.Normalize();
 
-
         Vector3 move = forward * vertical + right * horizontal;
+
         bool isMoving = move.magnitude > 0.1f;
         bool isRunning = Input.GetKey(KeyCode.LeftShift) && isMoving;
 
+        // Informa o barulho para o sistema do robô
         noise.SetMovementNoise(isMoving, isRunning);
 
-        // Corrida
+        // Informa o movimento para o sistema de passos
+        footsteps.UpdateFootsteps(isMoving, isRunning);
+
+        // Velocidade
         float currentSpeed = walkSpeed;
 
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.W))
-        {   
+        {
             Debug.Log("correndo");
             currentSpeed = runSpeed;
         }
 
-        if (Input.GetKey(KeyCode.LeftShift) && (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)))
-        {   
+        if (Input.GetKey(KeyCode.LeftShift) &&
+            (Input.GetKey(KeyCode.A) ||
+             Input.GetKey(KeyCode.S) ||
+             Input.GetKey(KeyCode.D)))
+        {
             Debug.Log("trotando");
             currentSpeed = joggingSpeed;
         }
 
-
         Vector3 targetVelocity = move * currentSpeed;
 
-        float smoothRate = move.magnitude > 0.1f ? acceleration : deceleration;
+        float smoothRate = move.magnitude > 0.1f
+            ? acceleration
+            : deceleration;
 
         currentMoveVelocity = Vector3.Lerp(
             currentMoveVelocity,
@@ -101,7 +104,6 @@ public class PlayerMovement : MonoBehaviour
         );
 
         controller.Move(currentMoveVelocity * Time.deltaTime);
-
 
         // Pulo
         if (controller.isGrounded)
@@ -115,13 +117,15 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (Input.GetButtonDown("Jump") && isMoving)
                 {
-                    velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    velocity.y = Mathf.Sqrt(
+                        jumpHeight * -2f * gravity
+                    );
+
                     noise.MakeJumpNoise();
                 }
             }
         }
     }
-
 
     void ApplyGravity()
     {

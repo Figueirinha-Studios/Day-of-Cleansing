@@ -7,7 +7,31 @@ public class PlayerNoise : MonoBehaviour
     public float runNoise = 15f;
     public float jumpNoise = 25f;
 
+    [Header("Surface Detection")]
+    public float surfaceCheckDistance = 2f;
+    public float dirtNoiseMultiplier = 0.5f;
+
     public float currentNoise;
+
+    private float GetSurfaceMultiplier()
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(
+            transform.position,
+            Vector3.down,
+            out hit,
+            surfaceCheckDistance))
+        {
+            if (hit.collider.CompareTag("Terra"))
+            {
+                return dirtNoiseMultiplier;
+            }
+        }
+
+        // Se não for Terra, considera concreto
+        return 1f;
+    }
 
     public void SetMovementNoise(bool moving, bool running)
     {
@@ -17,18 +41,22 @@ public class PlayerNoise : MonoBehaviour
             return;
         }
 
+        float surfaceMultiplier = GetSurfaceMultiplier();
+
         if (running)
         {
-            currentNoise = runNoise;
+            currentNoise = runNoise * surfaceMultiplier;
         }
         else
         {
-            currentNoise = walkNoise;
+            currentNoise = walkNoise * surfaceMultiplier;
         }
     }
 
     public void MakeJumpNoise()
     {
-        currentNoise = jumpNoise;
+        float surfaceMultiplier = GetSurfaceMultiplier();
+
+        currentNoise = jumpNoise * surfaceMultiplier;
     }
 }

@@ -61,11 +61,13 @@ public class EnemyAI : MonoBehaviour
     private float searchMusicTimer;
 
     private Animator animator;
+    private EnemyAudio enemyAudio;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         vision = GetComponent<EnemyVision>();
+        enemyAudio = GetComponent<EnemyAudio>();
         hearing = GetComponent<EnemyHearing>();
         animator = GetComponent<Animator>();
         agent.speed = patrolSpeed;
@@ -129,7 +131,15 @@ public class EnemyAI : MonoBehaviour
                 Investigate();
                 break;
         }
-        animator.SetFloat("Speed", agent.velocity.magnitude);
+        
+        float currentSpeed = agent.velocity.magnitude;
+
+        animator.SetFloat("Speed", currentSpeed);
+
+        bool isMoving = currentSpeed > 0.1f;
+        bool isChasing = currentState == EnemyState.Chase;
+
+        enemyAudio.UpdateFootsteps(isMoving, isChasing);
     }
 
     void StartSearch()
