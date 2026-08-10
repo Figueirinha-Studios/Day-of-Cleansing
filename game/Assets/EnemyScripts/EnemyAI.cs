@@ -60,11 +60,14 @@ public class EnemyAI : MonoBehaviour
     public float searchMusicDuration = 8f;
     private float searchMusicTimer;
 
+    private Animator animator;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         vision = GetComponent<EnemyVision>();
         hearing = GetComponent<EnemyHearing>();
+        animator = GetComponent<Animator>();
         agent.speed = patrolSpeed;
         patrolPoints = new Transform[patrolPointsParent.childCount];
 
@@ -126,6 +129,7 @@ public class EnemyAI : MonoBehaviour
                 Investigate();
                 break;
         }
+        animator.SetFloat("Speed", agent.velocity.magnitude);
     }
 
     void StartSearch()
