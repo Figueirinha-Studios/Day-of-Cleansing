@@ -14,10 +14,8 @@ Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sus
 - Blame!
 - Amnesia: The Dark Descent
 - Call of Duty: Black Ops 1
-- Call of Duty: Black Ops Cold War
 - Distrito 9
 - Elysium
-- Oppenheimer
 
 ### Personagens
 
