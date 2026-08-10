@@ -8,10 +8,11 @@
 
 ## Core Gameplay Mechanics Brief
 
-  - <Gameplay Mechanic #1>
-  - <Gameplay Mechanic #2>
-  - <Gameplay Mechanic #3>
-  - <Gameplay Mechanic #4>
+  - Sistema avançado e dinâmico de procura da IA
+  - Controle dinâmico do jogador
+  - Sistema de som universal
+  - Comunicação entre computador e o celular
+  - Sistema de coletar itens
 
 ## Targeted platforms
   - Computador
@@ -68,8 +69,9 @@ Pretend that your were pitching your game to a executive going to the elevator. 
 
 ## Project Description (Brief):
 
-[Two Paragraphs at least]
-[No more than three paragraphs]
+Jogo indie, primeira pessoa, de terror psicológico. Mostra a visão do Dr. Salles competindo no evento "o Expurgo".
+Após as portas do elevador se abrirem, o jogador precisa fugir e se esconder do Chappie.
+A missão do jogador é ligar o gerador, abastecendo-o com gasolina e colocando um fusível, para abrir o portão da saída.
 
 ## Project Description (Detailed)
 
@@ -77,25 +79,17 @@ Pretend that your were pitching your game to a executive going to the elevator. 
 [No more than six paragraphs]
 
 # What sets this project apart?
-  - <Reason #1>
-  - <Reason #2>
-  - <Reason #3>
-  - <Reason #4>
-  - <etc.>
+  - Otimização boa e planejada
+  - Originalidade na premissa
+  - Gráficos, programação e modelos avançados para o tempo que tivemos (3 meses)
+  - Desenvolvedores com experiencia passada
 
 ## Core Gameplay Mechanics (Detailed)
-  - [Core Gameplay Mechanic #1]
-    - [Details] /Describe in 2 Paragraphs or less/
-    - [How it works] /Describe in 2 Paragraphs or less/
-  - [Core Gameplay Mechanic #2]
-    - [Details] /Describe in 2 Paragraphs or less/
-    - [How it works] /Describe in 2 Paragraphs or less/
-  - [Core Gameplay Mechanic #3]
-    - [Details] /Describe in 2 Paragraphs or less/
-    - [How it works] /Describe in 2 Paragraphs or less/
-  - [Core Gameplay Mechanic #4]
-    - [Details] /Describe in 2 Paragraphs or less/
-    - [How it works] /Describe in 2 Paragraphs or less/
+  - Sistema avançado e dinâmico de procura da IA (Sistema de patrulha, investigação, caça e roteamento)
+  - Controle dinâmico do jogador (Velocidade variável entre a rotação da camera e do personagem; Aceleração com stamina; Pulo e agachamento; Camera animada)
+  - Sistema de som universal (Toda ação do jogador gera um nível de som, como correr, andar, pular ou interagir com itens pelo mapa, e dependendo da distância o Chappie pode ouvir e ir investigar)
+  - Comunicação entre computador (o jogo) e o celular (O usuário do celular pode mandar um sinal no jogo, que dispara uma sirene e atrai o Chappie para algum lugar do mapa)
+  - Sistema de coletar itens (Uso da gasolina e do fusível) + (pegar itens do chão e usar como distração)
 
 # Story and Gameplay
 
@@ -121,46 +115,47 @@ Pretend that your were pitching your game to a executive going to the elevator. 
 
 # Assets Needed
 
+## 2D
+- Bandeira do Neo-Brasil (Superestado)
+- Imagem do líder supremo do Neo-Brasil
+
 ## 3D
   - Characters List
-    - Character #1
-    - Character #2
-    - Character #3
-    - etc.
+    - Chappie (Robô)
+    
   - Environmental Art Lists
-    - Example #1
-    - Example #2 
-    - Example #3
-    - etc.
+    - Galão de Gasolina (2 espalhados pelo mapa)
+    - Fusível
+    - Prédios
+    - Ruas
+    - Iluminação
+    - Placas de LED/NEON
+    - Megafones
+    - Textura da cidade cyberpunk ao redor
+    - Posto de gasolina
+    - Canteiro de obras
+    - Praça (Onibus e carro)
+    - Gerador
+    - Portão
+    - Elevador
+    - Lixeira cheia
 
 ## Sound
-  - Sound List (Ambient)
-    - Outside
-      - Level 1
-      - Level 2 
-      - Level 3
-      - etc.
-    - Inside
-      - Level 1
-      - Level 2
-      - Level 3
-      - etc.
+  - Sound List (Ambiente)
+    - Músicas de fundo
+    - Efeitos sonoros (som de vento, som da cidade ao redor, sons do megafone, e som de metal)
   - Sound List (Player)
-    - Character Movement Sound List
-      - Example 1
-      - Example 2
-      - etc. 
-    - Character Hit / Collision Sound list
-      - Example 1
-      - Example 2
-      - etc.
-    - Character on Injured / Death sound list
-      - Example 1
-      - Example 2
-      - etc.
-
+    - Interação com itens (gasolina, fusíveis)
+    - Som de passos do player (na terra e concreto)
+    - Som de pulo e queda
+  - Sound List (Chappie)
+    - Som de passos (com metal arranhando)
+    - Som de metal de robô (como uma voz metalica)
+    - Grito de perseguição
+      
+      
 ## Code
-  - Character Scripts (Player Pawn/Player Controller)
+  - Character Scripts
     - Example
   - Ambient Scripts (Runs in the background)
     - Example
@@ -169,12 +164,16 @@ Pretend that your were pitching your game to a executive going to the elevator. 
 
 ## Animation
   - Environment Animations 
-    - Example
+    - Telões
+    - Drone (pontos brilhantes no céu)
+    - Elevador abrindo
+    - Gerador ativando
   - Character Animations 
-    - Player
-      - Example 
-    - NPC
-      - Example
+    - Chappie
+      - Andando
+      - Correndo
+      - Parado
+      - Atacando
 
 # Schedule
   - Primeiro mês:
