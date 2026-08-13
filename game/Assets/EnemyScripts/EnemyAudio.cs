@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class EnemyAudio : MonoBehaviour
 {
@@ -14,16 +13,15 @@ public class EnemyAudio : MonoBehaviour
     public float normalStepInterval = 0.5f;
     public float chaseStepInterval = 0.25f;
 
-    [Header("Intervalo entre os dois sons")]
-    public float secondSoundDelay = 0.1f;
-
     private float stepTimer;
+    private bool nextStepIsFirst = true;
 
     public void UpdateFootsteps(bool isMoving, bool isChasing)
     {
         if (!isMoving)
         {
             stepTimer = 0f;
+            nextStepIsFirst = true;
             return;
         }
 
@@ -42,21 +40,17 @@ public class EnemyAudio : MonoBehaviour
 
     private void PlayFootstep()
     {
-        StartCoroutine(PlayFootstepSequence());
-    }
-
-    private IEnumerator PlayFootstepSequence()
-    {
-        if (stepSound1 != null)
+        if (nextStepIsFirst)
         {
-            audioSource.PlayOneShot(stepSound1);
+            if (stepSound1 != null)
+                audioSource.PlayOneShot(stepSound1);
+        }
+        else
+        {
+            if (stepSound2 != null)
+                audioSource.PlayOneShot(stepSound2);
         }
 
-        yield return new WaitForSeconds(secondSoundDelay);
-
-        if (stepSound2 != null)
-        {
-            audioSource.PlayOneShot(stepSound2);
-        }
+        nextStepIsFirst = !nextStepIsFirst;
     }
 }

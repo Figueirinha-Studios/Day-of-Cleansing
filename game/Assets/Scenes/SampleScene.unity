@@ -971,6 +971,9 @@ MonoBehaviour:
   jumpSmooth: 8
   runSwayAmount: 4
   runSwaySpeed: 16
+  crouchCameraHeight: -0.5
+  crouchSmooth: 8
+  playerMovement: {fileID: 1460273163}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -2519,6 +2522,8 @@ MonoBehaviour:
   walkSpeed: 2
   runSpeed: 4
   joggingSpeed: 3
+  crouchSpeed: 1
+  crouchKey: 306
   acceleration: 15
   deceleration: 20
   jumpHeight: 1
@@ -2636,7 +2641,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.554
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -3761,18 +3766,18 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.517
   m_Pitch: 1
   Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 25
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -3858,11 +3863,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAudio
   audioSource: {fileID: 2106347688}
-  stepSound1: {fileID: 8300000, guid: c12ab2c9f3bfca05ba61d55ff7d46dbe, type: 3}
-  stepSound2: {fileID: 8300000, guid: b592c2a222a5e6d1aadf99003f5fd795, type: 3}
+  stepSound1: {fileID: 8300000, guid: 7a2cb632faae70a4c9c5b7347a71288e, type: 3}
+  stepSound2: {fileID: 8300000, guid: 8ec794e8d808f784fb13ae4ea48b4617, type: 3}
   normalStepInterval: 0.5
   chaseStepInterval: 0.25
-  secondSoundDelay: 0.1
 --- !u!1 &2116118121
 GameObject:
   m_ObjectHideFlags: 0

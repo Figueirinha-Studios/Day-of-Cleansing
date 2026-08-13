@@ -27,13 +27,21 @@ public class CameraEffects : MonoBehaviour
     public float runSwayAmount = 2f;
     public float runSwaySpeed = 8f;
 
+    [Header("Crouch")]
+    public float crouchCameraHeight = -0.5f;
+    public float crouchSmooth = 8f;
+
     private Quaternion targetRotation;
     private Vector3 targetPosition;
 
+    public PlayerMovement playerMovement;
+
     void RunSway()
     {
-        if (!Input.GetKey(KeyCode.LeftShift) || !Input.GetKey(KeyCode.W))
-            return;
+        if (!Input.GetKey(KeyCode.LeftShift) ||
+            !Input.GetKey(KeyCode.W) ||
+            playerMovement.isCrouching)
+        return;
 
 
         float time = Time.time * runSwaySpeed;
@@ -84,6 +92,8 @@ public class CameraEffects : MonoBehaviour
         MovementTilt();
         MouseSway();
         RunSway();
+        JumpSway();
+        Crouch();
 
 
         transform.localRotation = Quaternion.Lerp(
@@ -113,6 +123,13 @@ public class CameraEffects : MonoBehaviour
         );
     }
 
+    void Crouch()
+    {
+        if (playerMovement != null && playerMovement.isCrouching)
+        {
+            targetPosition.y = crouchCameraHeight;
+        }
+    }
 
     void MouseSway()
     {

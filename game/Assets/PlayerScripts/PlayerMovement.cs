@@ -7,6 +7,10 @@ public class PlayerMovement : MonoBehaviour
     public float walkSpeed = 2f;
     public float runSpeed = 4f;
     public float joggingSpeed = 3f;
+    public float crouchSpeed = 1f;
+
+    [Header("Agachamento")]
+    public KeyCode crouchKey = KeyCode.LeftControl;
 
     [Header("Smooth Movement")]
     public float acceleration = 15f;
@@ -27,6 +31,8 @@ public class PlayerMovement : MonoBehaviour
 
     private PlayerNoise noise;
     private PlayerFootsteps footsteps;
+
+    public bool isCrouching { get; private set; }
 
     void Start()
     {
@@ -55,7 +61,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
 
-        // Ignora inclinação da câmera
         forward.y = 0;
         right.y = 0;
 
@@ -65,35 +70,46 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = forward * vertical + right * horizontal;
 
         bool isMoving = move.magnitude > 0.1f;
-        bool isRunning = Input.GetKey(KeyCode.LeftShift) && isMoving;
 
-        // Informa o barulho para o sistema do robô
-        noise.SetMovementNoise(isMoving, isRunning);
+        // Agachamento
+        isCrouching = Input.GetKey(crouchKey);
 
-        // Informa o movimento para o sistema de passos
-        footsteps.UpdateFootsteps(isMoving, isRunning);
+        // Corrida só pode acontecer se NÃO estiver agachado
+        bool isRunning =
+            Input.GetKey(KeyCode.LeftShift) &&
+            isMoving &&
+            !isCrouching;
+
+        // Sistemas de som
+        noise.SetMovementNoise(isMoving, isRunning, isCrouching);
+        footsteps.UpdateFootsteps(isMoving, isRunning, isCrouching);
 
         // Velocidade
-        float currentSpeed = walkSpeed;
+        float currentSpeed;
 
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.W))
+        if (isCrouching)
         {
-            Debug.Log("correndo");
+            currentSpeed = crouchSpeed;
+        }
+        else if (isRunning && Input.GetKey(KeyCode.W))
+        {
             currentSpeed = runSpeed;
         }
-
-        if (Input.GetKey(KeyCode.LeftShift) &&
+        else if (isRunning &&
             (Input.GetKey(KeyCode.A) ||
              Input.GetKey(KeyCode.S) ||
              Input.GetKey(KeyCode.D)))
         {
-            Debug.Log("trotando");
             currentSpeed = joggingSpeed;
+        }
+        else
+        {
+            currentSpeed = walkSpeed;
         }
 
         Vector3 targetVelocity = move * currentSpeed;
 
-        float smoothRate = move.magnitude > 0.1f
+        float smoothRate = isMoving
             ? acceleration
             : deceleration;
 
@@ -115,7 +131,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (Time.time - lastGroundedTime <= groundCheckDelay)
             {
-                if (Input.GetButtonDown("Jump") && isMoving)
+                if (Input.GetButtonDown("Jump") && isMoving && !isCrouching)
                 {
                     velocity.y = Mathf.Sqrt(
                         jumpHeight * -2f * gravity

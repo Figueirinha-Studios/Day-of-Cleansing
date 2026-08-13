@@ -20,15 +20,27 @@ public class PlayerFootsteps : MonoBehaviour
 
     private float stepTimer;
 
-    public void UpdateFootsteps(bool moving, bool running)
+    public void UpdateFootsteps(
+        bool moving,
+        bool running,
+        bool crouching)
     {
+        // Agachado = sem som
+        if (crouching)
+        {
+            stepTimer = 0f;
+            return;
+        }
+
         if (!moving)
         {
             stepTimer = 0f;
             return;
         }
 
-        float interval = running ? runStepInterval : walkStepInterval;
+        float interval = running
+            ? runStepInterval
+            : walkStepInterval;
 
         stepTimer += Time.deltaTime;
 

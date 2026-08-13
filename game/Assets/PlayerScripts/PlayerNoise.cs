@@ -33,8 +33,14 @@ public class PlayerNoise : MonoBehaviour
         return 1f;
     }
 
-    public void SetMovementNoise(bool moving, bool running)
+    public void SetMovementNoise(bool moving, bool running, bool crouching)
     {
+        if (crouching)
+        {
+            currentNoise = 0;
+            return;
+        }
+
         if (!moving)
         {
             currentNoise = 0;
