@@ -1,5 +1,6 @@
 # Day of Cleansing
 
+- [**Playlist de vídeos das entregas**](https://youtube.com/playlist?list=PLOSKd0KKPSYA&si=HYP-UEa12WfbyP_2)
 - [**Documento oficial do jogo**](./gdd.md)
 
 ## Premissa
