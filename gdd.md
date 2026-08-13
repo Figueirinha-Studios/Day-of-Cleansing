@@ -1,4 +1,4 @@
-# Game Design Document
+# Game Design Document - Day of Cleansing
 
 ## Theme / Setting / Genre
 
@@ -65,18 +65,23 @@
     - Inspirou o inimigo central do jogo, além da premissa distópica do jogo.
 
 ## The elevator Pitch
-Pretend that your were pitching your game to a executive going to the elevator. You have less than 60 Seconds.
+Em um mundo onde tudo o que importa é a ordem e o consumo, um espetáculo mortal desfigura as bases da decência humana ao televisionar para o mundo todo ano uma batalha horrível entre um homem e uma máquina.
 
 ## Project Description (Brief):
 
-Jogo indie, primeira pessoa, de terror psicológico. Mostra a visão do Dr. Salles competindo no evento "o Expurgo".
-Após as portas do elevador se abrirem, o jogador precisa fugir e se esconder do Chappie.
-A missão do jogador é ligar o gerador, abastecendo-o com gasolina e colocando um fusível, para abrir o portão da saída.
+Day of Cleansing é um jogo indie de terror psicológico em primeira pessoa ambientado em um Neo-Brasil distópico. O jogador participa de O Expurgo, um espetáculo mortal televisionado para bilhões de pessoas, onde prisioneiros são colocados em uma arena para sobreviver à perseguição de um robô humanoide chamado Chappie.
+
+Controlando Dr. Salles, o jogador deve explorar a arena, fugir de Chappie e encontrar uma maneira de escapar antes que ele consiga eliminar o jogador.
 
 ## Project Description (Detailed)
 
-[Four Paragraphs or more If needs be]
-[No more than six paragraphs]
+Em um Neo-Brasil distópico, onde a população enfrenta a escassez de recursos enquanto o governo e as corporações mantêm o controle através da ordem e do consumo, milhões acompanham O Expurgo, um espetáculo mortal televisionado anualmente. Prisioneiros são enviados para uma arena e obrigados a sobreviver enquanto são perseguidos por Chappie, uma máquina criada para ser a estrela do evento.
+
+O jogador assume o Dr. Salles, um homem de 56 anos capturado após desertar do projeto Arena Chappie, sem saber que foi um de seus idealizadores. Após ser submetido a sessões de hipnose e alucinações induzidas por drogas, ele perdeu completamente suas memórias e acorda sabendo apenas que foi condenado à morte.
+
+Após as portas do elevador se abrirem, o Dr. entra na arena e precisa encontrar uma forma de escapar sem armas para enfrentar Chappie. O jogador deve explorar o ambiente e fugir do robô enquanto procura os recursos necessários para ativar um gerador: 2 galões de gasolina e um fusível.
+
+Com o gerador funcionando, o portão de saída pode finalmente ser aberto. Porém, quando o portao abre o que se revela não é uma saída, e sim o fim da linha, uma arma pronta para eliminar qualquer um espera aqueles que consiguiram "vencer" Chappie.
 
 # What sets this project apart?
   - Otimização boa e planejada
@@ -95,7 +100,8 @@ A missão do jogador é ligar o gerador, abastecendo-o com gasolina e colocando 
 
 ## Story (Brief)
 
-[The Summary or TL;DR version of below]
+Em um futuro cyberpunk, um espetáculo transmitido anualmente chamado *O Expurgo* foi criado em conjunto pelo Estado e pelas grandes corporações, ele serve tanto para o Estado eliminar seus inimigos quanto para as corporações continuarem seu domínio sobre a população.
+O idealizador do projeto é Dr. Salles, um brilhante cientista que projeta como o espetáculo funcionará. Quando Salles descobre as verdadeiras intenções que motivaram sua criação, ele tenta desertar mas é capturado em 2192 e se torna uma vítima de sua própria criação. 
 
 ## Story (Detailed)
 
@@ -105,7 +111,7 @@ A missão do jogador é ligar o gerador, abastecendo-o com gasolina e colocando 
 
 ## Gameplay (Brief)
 
-[The Summary version of below]
+O jogador explora uma arena no meio de uma cidade cyberpunk em primeira pessoa enquanto foge de Chappie. O objetivo principal é encontrar 2 galões de gasolina e um fusível para ativar o gerador e abrir o portão de saída.
 
 ## Gameplay (Detailed)
 
@@ -150,17 +156,26 @@ A missão do jogador é ligar o gerador, abastecendo-o com gasolina e colocando 
     - Som de pulo e queda
   - Sound List (Chappie)
     - Som de passos (com metal arranhando)
-    - Som de metal de robô (como uma voz metalica)
+    - Som de metal de robô (como uma voz metálica)
     - Grito de perseguição
       
       
 ## Code
-  - Character Scripts
-    - Example
-  - Ambient Scripts (Runs in the background)
-    - Example
-  - NPC Scripts
-    - Example
+  - Player Scripts
+    - `CameraController.cs` *Script de controle da câmera do jogador com mouse.*
+    - `CameraEffects.cs` *Script que gera o efeito de balanço na corrida em primeira pessoa.*
+    - `MusicManager.cs` *Script que controla as músicas tocadas no jogo.*
+    - `PlayerFootsteps.cs` *Script que controla o som emitido pelo jogador ao se movimentar.*
+    - `PlayerMovement.cs` *Script que controla o movimento do jogador pelo mapa usando teclado.*
+    - `PlayerNoise.cs` *Script que controla o barulho virtual emitido pelo jogador para detecção pelo robô.*
+  - Enemy Scripts (Chappie)
+    - `EnemyAI.cs` *Script que gerencia todo o controle da IA do robô (perseguição, patrulha, etc).*
+    - `EnemyAudio.cs` *Script que faz a emissão do som de passos do robô.*
+    - `EnemyHearing.cs` *Script que controla a audição do robô*
+    - `EnemyVision.cs` *Script que controla a visão do robô.*
+  - Scene Scripts
+    - `Restart.cs` *Script que faz o jogador retornar da tela de morte ao jogo.*
+    - `SceneChange.cs` *Script que faz o jogador sair do jogo e ir para a tela de morte quando o robô o alcança.*
 
 ## Animation
   - Environment Animations 

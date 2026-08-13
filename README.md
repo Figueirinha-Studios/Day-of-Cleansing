@@ -1,5 +1,7 @@
 # Day of Cleansing
 
+- [**Documento oficial do jogo**](./gdd.md)
+
 ## Premissa
 Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sustenta um espetáculo mortal televisionado para bilhões de pessoas, mas dessa vez quem corre é você.
 
@@ -49,5 +51,5 @@ O jogo terá 3 artefatos principais para o jogador interagir:
 
 ### Formas de receita
 
-- Venda de licenças para obter o acesso ao jogo.
+- Venda de licenças para obter o acesso ao jogo e suas DLCs.
 - Como dentro da arena haverá diversos paineis para exibição de anúncios *(dentro da temática do jogo)*, esses paineis estarão a disposição de empresas que queiram comprar esse espaço dentro do jogo para exibir seus anúncios lá.
