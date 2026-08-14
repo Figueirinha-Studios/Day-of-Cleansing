@@ -7,8 +7,6 @@ public class SceneChange : MonoBehaviour
     public Transform Player;
 
     public float distanciaMinima = 2f;
-    public string nomeDaCena = "GameOver";
-
     private bool mudouCena = false;
     void Update()
     {
@@ -19,7 +17,8 @@ public class SceneChange : MonoBehaviour
         if (distancia <= distanciaMinima)
         {
             mudouCena = true;
-            SceneManager.LoadScene(nomeDaCena);
+            SceneManager.LoadScene("GameOver");
+            
         }
     }
 }
