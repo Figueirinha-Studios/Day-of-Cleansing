@@ -1,7 +1,7 @@
 # Day of Cleansing
 
-- [**Playlist de vídeos das entregas**](https://youtube.com/playlist?list=PLOSKd0KKPSYA&si=HYP-UEa12WfbyP_2)
-- [**Documento oficial do jogo**](./gdd.md)
+- [**Playlist de vídeos das entregas**](https://www.youtube.com/playlist?list=PLenr4EhELqzI)
+- [**Documento oficial do jogo**](./docs/gdd.md)
 
 ## Premissa
 Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sustenta um espetáculo mortal televisionado para bilhões de pessoas, mas dessa vez quem corre é você.
