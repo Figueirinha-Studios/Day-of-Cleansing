@@ -2,14 +2,18 @@ using UnityEngine;
 
 public class PlayerFootsteps : MonoBehaviour
 {
-    [Header("Audio")]
+    [Header("Audio Source")]
     public AudioSource audioSource;
 
-    [Header("Concrete")]
+    [Header("Passos - Concreto")]
     public AudioClip[] concreteSteps;
 
-    [Header("Dirt")]
+    [Header("Passos - Terra")]
     public AudioClip[] dirtSteps;
+
+    [Header("Sons de Pulo e Queda")]
+    public AudioClip jumpSound;
+    public AudioClip landingSound;
 
     [Header("Step Timing")]
     public float walkStepInterval = 0.55f;
@@ -23,15 +27,24 @@ public class PlayerFootsteps : MonoBehaviour
     public void UpdateFootsteps(
         bool moving,
         bool running,
-        bool crouching)
+        bool crouching,
+        bool grounded)
     {
-        // Agachado = sem som
+        // Agachado = sem passos
         if (crouching)
         {
             stepTimer = 0f;
             return;
         }
 
+        // No ar = sem passos
+        if (!grounded)
+        {
+            stepTimer = 0f;
+            return;
+        }
+
+        // Parado = sem passos
         if (!moving)
         {
             stepTimer = 0f;
@@ -61,6 +74,7 @@ public class PlayerFootsteps : MonoBehaviour
             out hit,
             rayDistance))
         {
+            Debug.Log("PASSO: não encontrou chão");
             return;
         }
 
@@ -75,13 +89,32 @@ public class PlayerFootsteps : MonoBehaviour
             selectedClips = concreteSteps;
         }
 
-        if (selectedClips.Length == 0)
+        if (selectedClips == null || selectedClips.Length == 0)
+        {
+            Debug.Log("PASSO: nenhum áudio configurado para esta superfície");
             return;
+        }
 
         AudioClip clip = selectedClips[
             Random.Range(0, selectedClips.Length)
         ];
 
         audioSource.PlayOneShot(clip);
+    }
+
+    public void PlayJumpSound()
+    {
+        if (jumpSound != null)
+        {
+            audioSource.PlayOneShot(jumpSound);
+        }
+    }
+
+    public void PlayLandingSound()
+    {
+        if (landingSound != null)
+        {
+            audioSource.PlayOneShot(landingSound);
+        }
     }
 }

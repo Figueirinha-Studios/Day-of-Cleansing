@@ -19,8 +19,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("Pulo e Gravidade")]
     public float jumpHeight = 0.1f;
     public float gravity = 280f;
-    public float groundCheckDelay = 0.1f;
-    private float lastGroundedTime;
 
     [Header("Câmera")]
     public Transform cameraTransform;
@@ -34,25 +32,46 @@ public class PlayerMovement : MonoBehaviour
 
     public bool isCrouching { get; private set; }
 
+    // Controle do pouso
+    private bool wasGrounded;
+    private bool hasJumped;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         noise = GetComponent<PlayerNoise>();
         footsteps = GetComponent<PlayerFootsteps>();
+
+        wasGrounded = controller.isGrounded;
     }
 
     void Update()
     {
-        MovePlayer();
+        // Estado do chão ANTES do movimento deste frame
+        bool isGrounded = controller.isGrounded;
+
+        MovePlayer(isGrounded);
+        HandleJump(isGrounded);
         ApplyGravity();
 
-        if (controller.isGrounded)
+        // Verificamos o estado DEPOIS dos movimentos
+        bool nowGrounded = controller.isGrounded;
+
+        // Acabou de aterrissar
+        if (!wasGrounded && nowGrounded)
         {
-            lastGroundedTime = Time.time;
+            // Só toca queda se o jogador realmente pulou
+            if (hasJumped)
+            {
+                footsteps.PlayLandingSound();
+                hasJumped = false;
+            }
         }
+
+        wasGrounded = nowGrounded;
     }
 
-    void MovePlayer()
+    void MovePlayer(bool isGrounded)
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
@@ -74,17 +93,51 @@ public class PlayerMovement : MonoBehaviour
         // Agachamento
         isCrouching = Input.GetKey(crouchKey);
 
-        // Corrida só pode acontecer se NÃO estiver agachado
+        // Corrida
         bool isRunning =
             Input.GetKey(KeyCode.LeftShift) &&
             isMoving &&
             !isCrouching;
 
-        // Sistemas de som
-        noise.SetMovementNoise(isMoving, isRunning, isCrouching);
-        footsteps.UpdateFootsteps(isMoving, isRunning, isCrouching);
+        // =========================
+        // NOISE
+        // =========================
 
-        // Velocidade
+        if (isGrounded)
+        {
+            noise.SetMovementNoise(
+                isMoving,
+                isRunning,
+                isCrouching
+            );
+        }
+        else
+        {
+            // No ar = nenhum barulho de movimento
+            noise.SetMovementNoise(
+                false,
+                false,
+                isCrouching
+            );
+        }
+
+        // =========================
+        // PASSOS
+        // =========================
+
+        // O PlayerFootsteps já sabe lidar
+        // com crouching e movimento.
+        footsteps.UpdateFootsteps(
+            isMoving,
+            isRunning,
+            isCrouching,
+            isGrounded
+        );
+
+        // =========================
+        // VELOCIDADE
+        // =========================
+
         float currentSpeed;
 
         if (isCrouching)
@@ -120,31 +173,42 @@ public class PlayerMovement : MonoBehaviour
         );
 
         controller.Move(currentMoveVelocity * Time.deltaTime);
+    }
 
-        // Pulo
-        if (controller.isGrounded)
+    void HandleJump(bool isGrounded)
+    {
+        // Só pode pular no chão
+        if (!isGrounded)
+            return;
+
+        // Não pode pular agachado
+        if (isCrouching)
+            return;
+
+        if (Input.GetButtonDown("Jump"))
         {
-            if (velocity.y < 0)
-            {
-                velocity.y = -2f;
-            }
+            velocity.y = Mathf.Sqrt(
+                jumpHeight * -2f * gravity
+            );
 
-            if (Time.time - lastGroundedTime <= groundCheckDelay)
-            {
-                if (Input.GetButtonDown("Jump") && isMoving && !isCrouching)
-                {
-                    velocity.y = Mathf.Sqrt(
-                        jumpHeight * -2f * gravity
-                    );
+            // Barulho do pulo
+            noise.MakeJumpNoise();
 
-                    noise.MakeJumpNoise();
-                }
-            }
+            // Som do pulo
+            footsteps.PlayJumpSound();
+
+            // Marca que este voo começou com um pulo
+            hasJumped = true;
         }
     }
 
     void ApplyGravity()
     {
+        if (controller.isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
