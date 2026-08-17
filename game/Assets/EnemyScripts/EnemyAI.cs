@@ -52,8 +52,6 @@ public class EnemyAI : MonoBehaviour
 
     private Vector3 searchCenter;
 
-    private EnemyHearing hearing;
-
     [Header("Managers")]
     public MusicManager musicManager;
 
@@ -68,7 +66,6 @@ public class EnemyAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         vision = GetComponent<EnemyVision>();
         enemyAudio = GetComponent<EnemyAudio>();
-        hearing = GetComponent<EnemyHearing>();
         animator = GetComponent<Animator>();
         agent.speed = patrolSpeed;
         patrolPoints = new Transform[patrolPointsParent.childCount];
@@ -86,7 +83,6 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
-        CheckHearing();
 
         switch (currentState)
         {
@@ -341,26 +337,16 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    void CheckHearing()
+    public void ReceiveNoise(Vector3 noisePosition)
     {
-        PlayerNoise noise = player.GetComponent<PlayerNoise>();
-
-        if (noise == null)
+        // A visão tem prioridade sobre o som
+        if (currentState == EnemyState.Chase)
             return;
 
-        if (noise.currentNoise <= 0)
-            return;
+        lastKnownPosition = noisePosition;
 
-        if (hearing.HeardPlayer(noise.currentNoise))
-        {
-            lastKnownPosition = player.position;
-            Debug.Log("OUVIU");
+        Debug.Log("OUVIU UM SOM EM: " + noisePosition);
 
-            // Som perde apenas para visão
-            if (currentState != EnemyState.Chase)
-            {
-                currentState = EnemyState.Investigate;
-            }
-        }
+        currentState = EnemyState.Investigate;
     }
 }
