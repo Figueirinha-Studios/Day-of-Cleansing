@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class MQTTNoisePoint : MonoBehaviour
+public class RemoteNoisePoint : MonoBehaviour
 {
-    [Header("MQTT")]
+    [Header("Remote Event")]
     public string eventName;
 
     [Header("Virtual Noise")]
