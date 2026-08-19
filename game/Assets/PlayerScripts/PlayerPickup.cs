@@ -44,7 +44,6 @@ public class PlayerPickup : MonoBehaviour
 
     private void Update()
     {
-        // Só permite pegar objetos em primeira pessoa.
         if (!IsFirstPerson())
         {
             HidePickupPrompt();
@@ -57,10 +56,16 @@ public class PlayerPickup : MonoBehaviour
         }
         else
         {
-            // Enquanto segura um objeto,
-            // não mostra a indicação de pegar.
             HidePickupPrompt();
 
+            // E = soltar
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                DropObject();
+                return;
+            }
+
+            // Botão esquerdo = arremessar
             if (Input.GetMouseButtonDown(0))
             {
                 ThrowObject();
@@ -191,20 +196,25 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.ResetNoise();
         }
 
-        // Esconde a indicação depois de pegar.
+        // Reseta o sistema de quebra.
+        BreakableObject breakable =
+            currentObject.GetComponent<BreakableObject>();
+
+        if (breakable != null)
+        {
+            breakable.DisableBreakOnThrow();
+        }
+
         HidePickupPrompt();
 
         Rigidbody rb = currentObject.rb;
 
-        // Para completamente o objeto.
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Desativa a física.
         rb.isKinematic = true;
         rb.useGravity = false;
 
-        // Evita que o objeto bata no Player enquanto está sendo segurado.
         if (characterController != null)
         {
             Collider objectCollider =
@@ -220,10 +230,8 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-        // Coloca o objeto na "mão".
         currentObject.transform.SetParent(holdPoint);
 
-        // Posição e rotação relativas ao HoldPoint.
         currentObject.transform.localPosition =
             Vector3.zero;
 
@@ -239,19 +247,82 @@ public class PlayerPickup : MonoBehaviour
         Transform objectTransform =
             currentObject.transform;
 
-        // Posição suavizada.
         objectTransform.position = Vector3.Lerp(
             objectTransform.position,
             holdPoint.position,
             holdPositionSpeed * Time.deltaTime
         );
 
-        // Rotação suavizada.
         objectTransform.rotation = Quaternion.Slerp(
             objectTransform.rotation,
             holdPoint.rotation,
             holdRotationSpeed * Time.deltaTime
         );
+    }
+
+    private void DropObject()
+    {
+        if (currentObject == null)
+            return;
+
+        PickupObject objectToDrop =
+            currentObject;
+
+        Rigidbody rb =
+            objectToDrop.rb;
+
+        // -----------------------------
+        // SOM DE OBJETO SOLTO
+        // -----------------------------
+
+        NoiseSource noiseSource =
+            objectToDrop.GetComponent<NoiseSource>();
+
+        if (noiseSource != null)
+        {
+            noiseSource.EnableDropNoise();
+        }
+
+        // -----------------------------
+        // NÃO QUEBRAR AO SOLTAR
+        // -----------------------------
+
+        BreakableObject breakable =
+            objectToDrop.GetComponent<BreakableObject>();
+
+        if (breakable != null)
+        {
+            breakable.DisableBreakOnThrow();
+        }
+
+        // -----------------------------
+        // REMOVE DA MÃO
+        // -----------------------------
+
+        objectToDrop.transform.SetParent(null);
+
+        rb.isKinematic = false;
+        rb.useGravity = true;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        if (characterController != null)
+        {
+            Collider objectCollider =
+                objectToDrop.GetComponent<Collider>();
+
+            if (objectCollider != null)
+            {
+                Physics.IgnoreCollision(
+                    characterController,
+                    objectCollider,
+                    false
+                );
+            }
+        }
+
+        currentObject = null;
     }
 
     private void ThrowObject()
@@ -265,8 +336,10 @@ public class PlayerPickup : MonoBehaviour
         Rigidbody rb =
             objectToThrow.rb;
 
-        // Permite que o objeto produza ruído
-        // quando bater em alguma superfície.
+        // -----------------------------
+        // SOM DE IMPACTO
+        // -----------------------------
+
         NoiseSource noiseSource =
             objectToThrow.GetComponent<NoiseSource>();
 
@@ -275,14 +348,27 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.EnableNoise();
         }
 
-        // Remove da câmera.
+        // -----------------------------
+        // ATIVA QUEBRA
+        // -----------------------------
+
+        BreakableObject breakable =
+            objectToThrow.GetComponent<BreakableObject>();
+
+        if (breakable != null)
+        {
+            breakable.EnableBreakOnThrow();
+        }
+
+        // -----------------------------
+        // REMOVE DA MÃO
+        // -----------------------------
+
         objectToThrow.transform.SetParent(null);
 
-        // Reativa física.
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        // Reativa colisão com o Player.
         if (characterController != null)
         {
             Collider objectCollider =
@@ -298,7 +384,10 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-        // Direção do arremesso.
+        // -----------------------------
+        // DIREÇÃO DO ARREMESSO
+        // -----------------------------
+
         Vector3 throwDirection =
             playerCamera.transform.forward;
 

@@ -1754,8 +1754,8 @@ Transform:
   m_GameObject: {fileID: 323859548}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -33.6, y: 2.222, z: 49.9}
-  m_LocalScale: {x: 0.9747106, y: 36.05164, z: 53.37424}
+  m_LocalPosition: {x: -33.6, y: 2.222, z: 54.49}
+  m_LocalScale: {x: 0.9747106, y: 36.05164, z: 64.16651}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1457405470}
@@ -2694,6 +2694,7 @@ GameObject:
   - component: {fileID: 500869530}
   - component: {fileID: 500869529}
   - component: {fileID: 500869534}
+  - component: {fileID: 500869535}
   m_Layer: 3
   m_Name: TestPickup
   m_TagString: Untagged
@@ -2850,6 +2851,27 @@ MonoBehaviour:
   noiseRadius: 10
   impactSound: {fileID: 8300000, guid: 3c7668bf10d9bd74da383bc31102be30, type: 3}
   volume: 1
+  dropNoiseRadius: 2
+  dropSound: {fileID: 8300000, guid: 0dc1bc0569af7f240bbd01fc8528143e, type: 3}
+  dropVolume: 0.25
+--- !u!114 &500869535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 500869527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89411f383048bd45ba6a673fc233c38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreakableObject
+  breakMode: 0
+  breakOnThrow: 1
+  destroyDelay: 0
+  breakAnimator: {fileID: 0}
+  breakTrigger: Break
+  animationDestroyDelay: 5
 --- !u!1 &527311793
 GameObject:
   m_ObjectHideFlags: 0
@@ -10893,9 +10915,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335e7db9a4e2b8640a2ba69e5323de00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MQTTManager
-  brokerAddress: 192.168.1.135
-  brokerPort: 1883
-  topic: game/noise
 --- !u!1001 &2097050519
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11016,7 +11035,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 39.682
+      value: 79.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
       propertyPath: m_LocalRotation.w
