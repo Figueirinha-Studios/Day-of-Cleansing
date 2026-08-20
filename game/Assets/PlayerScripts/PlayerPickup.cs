@@ -187,7 +187,10 @@ public class PlayerPickup : MonoBehaviour
 
         currentObject = pickup;
 
-        // Reseta o sistema de ruído.
+        // -----------------------------
+        // RESET DO NOISE SOURCE
+        // -----------------------------
+
         NoiseSource noiseSource =
             currentObject.GetComponent<NoiseSource>();
 
@@ -196,7 +199,10 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.ResetNoise();
         }
 
-        // Reseta o sistema de quebra.
+        // -----------------------------
+        // DESATIVA QUEBRA
+        // -----------------------------
+
         BreakableObject breakable =
             currentObject.GetComponent<BreakableObject>();
 
@@ -209,11 +215,17 @@ public class PlayerPickup : MonoBehaviour
 
         Rigidbody rb = currentObject.rb;
 
+        // Para completamente o objeto.
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
+        // Desativa física.
         rb.isKinematic = true;
         rb.useGravity = false;
+
+        // -----------------------------
+        // IGNORA COLISÃO COM PLAYER
+        // -----------------------------
 
         if (characterController != null)
         {
@@ -230,13 +242,21 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
+        // -----------------------------
+        // COLOCA NA MÃO
+        // -----------------------------
+
         currentObject.transform.SetParent(holdPoint);
 
+        // Usa posição personalizada
         currentObject.transform.localPosition =
-            Vector3.zero;
+            currentObject.holdPosition;
 
+        // Usa rotação personalizada
         currentObject.transform.localRotation =
-            Quaternion.identity;
+            Quaternion.Euler(
+                currentObject.holdRotation
+            );
     }
 
     private void HoldObject()
@@ -247,15 +267,42 @@ public class PlayerPickup : MonoBehaviour
         Transform objectTransform =
             currentObject.transform;
 
+        // -----------------------------
+        // POSIÇÃO PERSONALIZADA
+        // -----------------------------
+
+        Vector3 targetPosition =
+            holdPoint.TransformPoint(
+                currentObject.holdPosition
+            );
+
+        // -----------------------------
+        // ROTAÇÃO PERSONALIZADA
+        // -----------------------------
+
+        Quaternion targetRotation =
+            holdPoint.rotation *
+            Quaternion.Euler(
+                currentObject.holdRotation
+            );
+
+        // -----------------------------
+        // MOVIMENTO SUAVE
+        // -----------------------------
+
         objectTransform.position = Vector3.Lerp(
             objectTransform.position,
-            holdPoint.position,
+            targetPosition,
             holdPositionSpeed * Time.deltaTime
         );
 
+        // -----------------------------
+        // ROTAÇÃO SUAVE
+        // -----------------------------
+
         objectTransform.rotation = Quaternion.Slerp(
             objectTransform.rotation,
-            holdPoint.rotation,
+            targetRotation,
             holdRotationSpeed * Time.deltaTime
         );
     }
@@ -284,7 +331,7 @@ public class PlayerPickup : MonoBehaviour
         }
 
         // -----------------------------
-        // NÃO QUEBRAR AO SOLTAR
+        // NÃO QUEBRA AO SOLTAR
         // -----------------------------
 
         BreakableObject breakable =
@@ -306,6 +353,10 @@ public class PlayerPickup : MonoBehaviour
 
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+
+        // -----------------------------
+        // REATIVA COLISÃO COM PLAYER
+        // -----------------------------
 
         if (characterController != null)
         {
@@ -337,7 +388,7 @@ public class PlayerPickup : MonoBehaviour
             objectToThrow.rb;
 
         // -----------------------------
-        // SOM DE IMPACTO
+        // ATIVA SOM
         // -----------------------------
 
         NoiseSource noiseSource =
@@ -368,6 +419,10 @@ public class PlayerPickup : MonoBehaviour
 
         rb.isKinematic = false;
         rb.useGravity = true;
+
+        // -----------------------------
+        // REATIVA COLISÃO COM PLAYER
+        // -----------------------------
 
         if (characterController != null)
         {
