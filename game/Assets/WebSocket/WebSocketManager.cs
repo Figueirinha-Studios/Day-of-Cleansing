@@ -4,7 +4,7 @@ using NativeWebSocket;
 public class WebSocketManager : MonoBehaviour
 {
     [Header("Servidor")]
-    public string serverUrl = "ws://192.168.1.135:8080";
+    public string serverUrl = "0.0.0.0";
 
     [Header("Objetos do jogo")]
     public Transform player;

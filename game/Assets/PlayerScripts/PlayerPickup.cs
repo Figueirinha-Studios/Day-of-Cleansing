@@ -50,10 +50,19 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
+        // ==========================================
+        // NENHUM OBJETO SENDO SEGURADO
+        // ==========================================
+
         if (currentObject == null)
         {
             CheckForPickup();
         }
+
+        // ==========================================
+        // OBJETO SENDO SEGURADO
+        // ==========================================
+
         else
         {
             HidePickupPrompt();
@@ -81,6 +90,10 @@ public class PlayerPickup : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // PRIMEIRA PESSOA
+    // =========================================================
+
     private bool IsFirstPerson()
     {
         CameraController cameraController =
@@ -91,6 +104,10 @@ public class PlayerPickup : MonoBehaviour
 
         return cameraController.IsFirstPerson();
     }
+
+    // =========================================================
+    // PROCURAR OBJETO
+    // =========================================================
 
     private void CheckForPickup()
     {
@@ -106,6 +123,7 @@ public class PlayerPickup : MonoBehaviour
         );
 
         PickupObject closestPickup = null;
+
         float closestDistance = Mathf.Infinity;
 
         foreach (RaycastHit hit in hits)
@@ -144,6 +162,10 @@ public class PlayerPickup : MonoBehaviour
         HidePickupPrompt();
     }
 
+    // =========================================================
+    // MOSTRAR [E]
+    // =========================================================
+
     private void ShowPickupPrompt()
     {
         if (showText && pickupText != null)
@@ -157,6 +179,10 @@ public class PlayerPickup : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // ESCONDER [E]
+    // =========================================================
+
     private void HidePickupPrompt()
     {
         if (pickupText != null)
@@ -169,6 +195,10 @@ public class PlayerPickup : MonoBehaviour
             pickupImage.gameObject.SetActive(false);
         }
     }
+
+    // =========================================================
+    // PEGAR OBJETO
+    // =========================================================
 
     private void Pickup(PickupObject pickup)
     {
@@ -187,9 +217,9 @@ public class PlayerPickup : MonoBehaviour
 
         currentObject = pickup;
 
-        // -----------------------------
-        // RESET DO NOISE SOURCE
-        // -----------------------------
+        // =====================================================
+        // NOISE
+        // =====================================================
 
         NoiseSource noiseSource =
             currentObject.GetComponent<NoiseSource>();
@@ -199,9 +229,9 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.ResetNoise();
         }
 
-        // -----------------------------
-        // DESATIVA QUEBRA
-        // -----------------------------
+        // =====================================================
+        // QUEBRA
+        // =====================================================
 
         BreakableObject breakable =
             currentObject.GetComponent<BreakableObject>();
@@ -215,17 +245,19 @@ public class PlayerPickup : MonoBehaviour
 
         Rigidbody rb = currentObject.rb;
 
-        // Para completamente o objeto.
+        // =====================================================
+        // PARA A FÍSICA
+        // =====================================================
+
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Desativa física.
         rb.isKinematic = true;
         rb.useGravity = false;
 
-        // -----------------------------
+        // =====================================================
         // IGNORA COLISÃO COM PLAYER
-        // -----------------------------
+        // =====================================================
 
         if (characterController != null)
         {
@@ -242,22 +274,24 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-        // -----------------------------
+        // =====================================================
         // COLOCA NA MÃO
-        // -----------------------------
+        // =====================================================
 
         currentObject.transform.SetParent(holdPoint);
 
-        // Usa posição personalizada
         currentObject.transform.localPosition =
             currentObject.holdPosition;
 
-        // Usa rotação personalizada
         currentObject.transform.localRotation =
             Quaternion.Euler(
                 currentObject.holdRotation
             );
     }
+
+    // =========================================================
+    // SEGURAR OBJETO
+    // =========================================================
 
     private void HoldObject()
     {
@@ -267,18 +301,18 @@ public class PlayerPickup : MonoBehaviour
         Transform objectTransform =
             currentObject.transform;
 
-        // -----------------------------
+        // =====================================================
         // POSIÇÃO PERSONALIZADA
-        // -----------------------------
+        // =====================================================
 
         Vector3 targetPosition =
             holdPoint.TransformPoint(
                 currentObject.holdPosition
             );
 
-        // -----------------------------
+        // =====================================================
         // ROTAÇÃO PERSONALIZADA
-        // -----------------------------
+        // =====================================================
 
         Quaternion targetRotation =
             holdPoint.rotation *
@@ -286,26 +320,34 @@ public class PlayerPickup : MonoBehaviour
                 currentObject.holdRotation
             );
 
-        // -----------------------------
+        // =====================================================
         // MOVIMENTO SUAVE
-        // -----------------------------
+        // =====================================================
 
-        objectTransform.position = Vector3.Lerp(
-            objectTransform.position,
-            targetPosition,
-            holdPositionSpeed * Time.deltaTime
-        );
+        objectTransform.position =
+            Vector3.Lerp(
+                objectTransform.position,
+                targetPosition,
+                holdPositionSpeed *
+                Time.deltaTime
+            );
 
-        // -----------------------------
+        // =====================================================
         // ROTAÇÃO SUAVE
-        // -----------------------------
+        // =====================================================
 
-        objectTransform.rotation = Quaternion.Slerp(
-            objectTransform.rotation,
-            targetRotation,
-            holdRotationSpeed * Time.deltaTime
-        );
+        objectTransform.rotation =
+            Quaternion.Slerp(
+                objectTransform.rotation,
+                targetRotation,
+                holdRotationSpeed *
+                Time.deltaTime
+            );
     }
+
+    // =========================================================
+    // SOLTAR COM E
+    // =========================================================
 
     private void DropObject()
     {
@@ -318,9 +360,9 @@ public class PlayerPickup : MonoBehaviour
         Rigidbody rb =
             objectToDrop.rb;
 
-        // -----------------------------
+        // =====================================================
         // SOM DE OBJETO SOLTO
-        // -----------------------------
+        // =====================================================
 
         NoiseSource noiseSource =
             objectToDrop.GetComponent<NoiseSource>();
@@ -330,9 +372,9 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.EnableDropNoise();
         }
 
-        // -----------------------------
+        // =====================================================
         // NÃO QUEBRA AO SOLTAR
-        // -----------------------------
+        // =====================================================
 
         BreakableObject breakable =
             objectToDrop.GetComponent<BreakableObject>();
@@ -342,9 +384,9 @@ public class PlayerPickup : MonoBehaviour
             breakable.DisableBreakOnThrow();
         }
 
-        // -----------------------------
+        // =====================================================
         // REMOVE DA MÃO
-        // -----------------------------
+        // =====================================================
 
         objectToDrop.transform.SetParent(null);
 
@@ -354,9 +396,9 @@ public class PlayerPickup : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // -----------------------------
-        // REATIVA COLISÃO COM PLAYER
-        // -----------------------------
+        // =====================================================
+        // REATIVA COLISÃO
+        // =====================================================
 
         if (characterController != null)
         {
@@ -376,6 +418,10 @@ public class PlayerPickup : MonoBehaviour
         currentObject = null;
     }
 
+    // =========================================================
+    // ARREMESSAR COM BOTÃO ESQUERDO
+    // =========================================================
+
     private void ThrowObject()
     {
         if (currentObject == null)
@@ -387,9 +433,9 @@ public class PlayerPickup : MonoBehaviour
         Rigidbody rb =
             objectToThrow.rb;
 
-        // -----------------------------
+        // =====================================================
         // ATIVA SOM
-        // -----------------------------
+        // =====================================================
 
         NoiseSource noiseSource =
             objectToThrow.GetComponent<NoiseSource>();
@@ -399,9 +445,9 @@ public class PlayerPickup : MonoBehaviour
             noiseSource.EnableNoise();
         }
 
-        // -----------------------------
+        // =====================================================
         // ATIVA QUEBRA
-        // -----------------------------
+        // =====================================================
 
         BreakableObject breakable =
             objectToThrow.GetComponent<BreakableObject>();
@@ -411,18 +457,18 @@ public class PlayerPickup : MonoBehaviour
             breakable.EnableBreakOnThrow();
         }
 
-        // -----------------------------
+        // =====================================================
         // REMOVE DA MÃO
-        // -----------------------------
+        // =====================================================
 
         objectToThrow.transform.SetParent(null);
 
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        // -----------------------------
+        // =====================================================
         // REATIVA COLISÃO COM PLAYER
-        // -----------------------------
+        // =====================================================
 
         if (characterController != null)
         {
@@ -439,9 +485,9 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-        // -----------------------------
+        // =====================================================
         // DIREÇÃO DO ARREMESSO
-        // -----------------------------
+        // =====================================================
 
         Vector3 throwDirection =
             playerCamera.transform.forward;

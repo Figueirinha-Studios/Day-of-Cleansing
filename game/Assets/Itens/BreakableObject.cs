@@ -5,7 +5,8 @@ public class BreakableObject : MonoBehaviour
     public enum BreakMode
     {
         Simple,
-        Animation
+        Animation,
+        Particles
     }
 
     [Header("Modo de quebra")]
@@ -14,46 +15,77 @@ public class BreakableObject : MonoBehaviour
     [Header("Configuração")]
     public bool breakOnThrow = true;
 
-    [Tooltip("Tempo antes de destruir o objeto no modo simples.")]
+    [Tooltip("Tempo antes de destruir no modo simples.")]
     public float destroyDelay = 0f;
 
+    // =========================================================
+    // ANIMAÇÃO
+    // =========================================================
+
     [Header("Animação")]
-    [Tooltip("Animator do objeto que será usado para a animação.")]
     public Animator breakAnimator;
 
-    [Tooltip("Nome do Trigger da animação de quebra.")]
+    [Tooltip("Nome do Trigger da animação.")]
     public string breakTrigger = "Break";
 
-    [Tooltip("Tempo para destruir o objeto depois da animação.")]
+    [Tooltip("Tempo para destruir depois da animação.")]
     public float animationDestroyDelay = 5f;
 
+    // =========================================================
+    // PARTÍCULAS
+    // =========================================================
+
+    [Header("Partículas")]
+    [Tooltip("Prefab do Particle System usado na quebra.")]
+    public GameObject breakParticlePrefab;
+
+    [Tooltip("Tempo até destruir o objeto depois de gerar as partículas.")]
+    public float particleDestroyDelay = 0f;
+
+    // =========================================================
+    // CONTROLE
+    // =========================================================
+
     private bool wasThrown = false;
+
     private bool hasBroken = false;
 
-    // Chamado quando o objeto é arremessado.
+    // =========================================================
+    // ATIVAR QUEBRA
+    // =========================================================
+
     public void EnableBreakOnThrow()
     {
         if (!breakOnThrow)
             return;
 
         wasThrown = true;
+
         hasBroken = false;
     }
 
-    // Chamado quando o objeto é solto com E.
+    // =========================================================
+    // DESATIVAR QUEBRA
+    // =========================================================
+
     public void DisableBreakOnThrow()
     {
         wasThrown = false;
+
         hasBroken = false;
     }
 
+    // =========================================================
+    // COLISÃO
+    // =========================================================
+
     private void OnCollisionEnter(Collision collision)
     {
-        // Só quebra se tiver sido arremessado.
+        // Só quebra se foi arremessado.
         if (!wasThrown)
             return;
 
-        // Evita executar a quebra várias vezes.
+        // Evita quebrar várias vezes.
         if (hasBroken)
             return;
 
@@ -62,22 +94,29 @@ public class BreakableObject : MonoBehaviour
         Break();
     }
 
+    // =========================================================
+    // QUEBRAR
+    // =========================================================
+
     private void Break()
     {
-        // =====================================
-        // MODO SIMPLES
-        // =====================================
+        // =====================================================
+        // SIMPLE
+        // =====================================================
 
         if (breakMode == BreakMode.Simple)
         {
-            Destroy(gameObject, destroyDelay);
+            Destroy(
+                gameObject,
+                destroyDelay
+            );
 
             return;
         }
 
-        // =====================================
-        // MODO ANIMAÇÃO
-        // =====================================
+        // =====================================================
+        // ANIMATION
+        // =====================================================
 
         if (breakMode == BreakMode.Animation)
         {
@@ -89,30 +128,92 @@ public class BreakableObject : MonoBehaviour
                     gameObject
                 );
 
-                Destroy(gameObject, destroyDelay);
+                Destroy(
+                    gameObject,
+                    destroyDelay
+                );
 
                 return;
             }
 
-            // Para a física.
-            Rigidbody rb = GetComponent<Rigidbody>();
+            Rigidbody rb =
+                GetComponent<Rigidbody>();
 
             if (rb != null)
             {
                 rb.linearVelocity = Vector3.zero;
+
                 rb.angularVelocity = Vector3.zero;
 
                 rb.isKinematic = true;
+
                 rb.useGravity = false;
             }
 
             // Toca a animação.
-            breakAnimator.SetTrigger(breakTrigger);
+            breakAnimator.SetTrigger(
+                breakTrigger
+            );
 
-            // Destrói depois do tempo configurado.
+            // Destrói depois da animação.
             Destroy(
                 gameObject,
                 animationDestroyDelay
+            );
+
+            return;
+        }
+
+        // =====================================================
+        // PARTICLES
+        // =====================================================
+
+        if (breakMode == BreakMode.Particles)
+        {
+            if (breakParticlePrefab != null)
+            {
+                GameObject particles =
+                    Instantiate(
+                        breakParticlePrefab,
+                        transform.position,
+                        Quaternion.identity
+                    );
+
+                ParticleSystem particleSystem =
+                    particles.GetComponent<ParticleSystem>();
+
+                if (particleSystem != null)
+                {
+                    float particleLifetime =
+                        particleSystem.main.duration +
+                        particleSystem.main.startLifetime.constantMax +
+                        0.5f;
+
+                    Destroy(
+                        particles,
+                        particleLifetime
+                    );
+                }
+                else
+                {
+                    Destroy(
+                        particles,
+                        3f
+                    );
+                }
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "BreakableObject: Nenhum Particle Prefab foi configurado.",
+                    gameObject
+                );
+            }
+
+            // Remove a garrafa.
+            Destroy(
+                gameObject,
+                particleDestroyDelay
             );
         }
     }
