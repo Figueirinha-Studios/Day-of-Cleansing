@@ -25,8 +25,8 @@ public class PlayerPickup : MonoBehaviour
     public float pickupAimRadius = 0.25f;
 
     [Header("Objeto na mão")]
-    public float holdPositionSpeed = 15f;
-    public float holdRotationSpeed = 15f;
+    public float holdPositionSpeed = 25f;
+    public float holdRotationSpeed = 20f;
 
     [Header("Arremesso")]
     public float throwForce = 8f;
@@ -82,7 +82,11 @@ public class PlayerPickup : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
+    // =========================================================
+    // FÍSICA - OBJETO NA MÃO
+    // =========================================================
+
+    private void FixedUpdate()
     {
         if (currentObject != null)
         {
@@ -275,18 +279,28 @@ public class PlayerPickup : MonoBehaviour
         }
 
         // =====================================================
-        // COLOCA NA MÃO
+        // NÃO COLOCA O OBJETO COMO FILHO DA CÂMERA
         // =====================================================
 
-        currentObject.transform.SetParent(holdPoint);
+        currentObject.transform.SetParent(null);
 
-        currentObject.transform.localPosition =
-            currentObject.holdPosition;
+        // =====================================================
+        // COLOCA IMEDIATAMENTE NO HOLD POINT
+        // =====================================================
 
-        currentObject.transform.localRotation =
+        Vector3 startPosition =
+            holdPoint.TransformPoint(
+                currentObject.holdPosition
+            );
+
+        Quaternion startRotation =
+            holdPoint.rotation *
             Quaternion.Euler(
                 currentObject.holdRotation
             );
+
+        rb.position = startPosition;
+        rb.rotation = startRotation;
     }
 
     // =========================================================
@@ -298,11 +312,13 @@ public class PlayerPickup : MonoBehaviour
         if (currentObject == null)
             return;
 
-        Transform objectTransform =
-            currentObject.transform;
+        Rigidbody rb = currentObject.rb;
+
+        if (rb == null)
+            return;
 
         // =====================================================
-        // POSIÇÃO PERSONALIZADA
+        // POSIÇÃO DESEJADA
         // =====================================================
 
         Vector3 targetPosition =
@@ -311,7 +327,7 @@ public class PlayerPickup : MonoBehaviour
             );
 
         // =====================================================
-        // ROTAÇÃO PERSONALIZADA
+        // ROTAÇÃO DESEJADA
         // =====================================================
 
         Quaternion targetRotation =
@@ -324,25 +340,28 @@ public class PlayerPickup : MonoBehaviour
         // MOVIMENTO SUAVE
         // =====================================================
 
-        objectTransform.position =
+        Vector3 newPosition =
             Vector3.Lerp(
-                objectTransform.position,
+                rb.position,
                 targetPosition,
                 holdPositionSpeed *
-                Time.deltaTime
+                Time.fixedDeltaTime
             );
 
-        // =====================================================
-        // ROTAÇÃO SUAVE
-        // =====================================================
-
-        objectTransform.rotation =
+        Quaternion newRotation =
             Quaternion.Slerp(
-                objectTransform.rotation,
+                rb.rotation,
                 targetRotation,
                 holdRotationSpeed *
-                Time.deltaTime
+                Time.fixedDeltaTime
             );
+
+        // =====================================================
+        // MOVE O RIGIDBODY
+        // =====================================================
+
+        rb.MovePosition(newPosition);
+        rb.MoveRotation(newRotation);
     }
 
     // =========================================================
@@ -385,10 +404,14 @@ public class PlayerPickup : MonoBehaviour
         }
 
         // =====================================================
-        // REMOVE DA MÃO
+        // GARANTE QUE NÃO É FILHO DE NADA
         // =====================================================
 
         objectToDrop.transform.SetParent(null);
+
+        // =====================================================
+        // REATIVA FÍSICA
+        // =====================================================
 
         rb.isKinematic = false;
         rb.useGravity = true;
@@ -397,7 +420,7 @@ public class PlayerPickup : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
 
         // =====================================================
-        // REATIVA COLISÃO
+        // REATIVA COLISÃO COM PLAYER
         // =====================================================
 
         if (characterController != null)
@@ -463,6 +486,10 @@ public class PlayerPickup : MonoBehaviour
 
         objectToThrow.transform.SetParent(null);
 
+        // =====================================================
+        // REATIVA FÍSICA
+        // =====================================================
+
         rb.isKinematic = false;
         rb.useGravity = true;
 
@@ -500,6 +527,10 @@ public class PlayerPickup : MonoBehaviour
         float finalForce =
             throwForce *
             objectToThrow.throwMultiplier;
+
+        // =====================================================
+        // ARREMESSO
+        // =====================================================
 
         rb.AddForce(
             throwDirection * finalForce,

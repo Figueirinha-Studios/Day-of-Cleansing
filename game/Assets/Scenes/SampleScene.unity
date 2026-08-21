@@ -554,7 +554,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1151388028547126963, guid: 94b3f6bc76bd5214b909e74371b4a748, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.28
+      value: -0.11
       objectReference: {fileID: 0}
     - target: {fileID: 1151388028547126963, guid: 94b3f6bc76bd5214b909e74371b4a748, type: 3}
       propertyPath: m_LocalPosition.y
@@ -636,10 +636,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoiseSource
   noiseRadius: 35
-  impactSound: {fileID: 0}
+  impactSound: {fileID: 8300000, guid: b374acae67d2e37428843df1e9f35fec, type: 3}
   volume: 1
   dropNoiseRadius: 10
-  dropSound: {fileID: 0}
+  dropSound: {fileID: 8300000, guid: d631d867815cec240995964ed9b37cd9, type: 3}
   dropVolume: 0.25
 --- !u!114 &52109546
 MonoBehaviour:
@@ -654,8 +654,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupObject
   throwMultiplier: 1
-  holdPosition: {x: 0, y: 0, z: 0}
-  holdRotation: {x: 0, y: 0, z: 0}
+  holdPosition: {x: 0, y: 0.1, z: -0.5}
+  holdRotation: {x: 90, y: 60, z: 0}
   rb: {fileID: 0}
 --- !u!54 &52109547
 Rigidbody:
@@ -667,7 +667,7 @@ Rigidbody:
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -681,9 +681,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!65 &52109548
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -703,8 +703,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.57423985, y: 0.32098022, z: 1.3114179}
+  m_Center: {x: -0.11036954, y: -0.808489, z: 0.35424107}
 --- !u!23 &52109549
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3579,7 +3579,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupObject
   throwMultiplier: 1
-  holdPosition: {x: 0.1, y: 0.3, z: -0.25}
+  holdPosition: {x: -0.1, y: 0.2, z: -0.45}
   holdRotation: {x: 180, y: 0, z: -10}
   rb: {fileID: 0}
 --- !u!54 &566246937
@@ -3606,9 +3606,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!64 &566246938
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -9050,8 +9050,8 @@ MonoBehaviour:
   showImage: 1
   pickupDistance: 2.5
   pickupAimRadius: 0.25
-  holdPositionSpeed: 15
-  holdRotationSpeed: 15
+  holdPositionSpeed: 25
+  holdRotationSpeed: 20
   throwForce: 8
   throwUpForce: 0.15
 --- !u!1 &1470279438
