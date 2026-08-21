@@ -29,6 +29,10 @@ public class MapController : MonoBehaviour
     [Header("PLAYER")]
     public PlayerMovement playerMovement;
     public CameraController cameraController;
+    public PlayerPickup playerPickup;
+
+    [Header("ELEVADOR")]
+    public Transform elevator;
 
     [Header("CONFIGURACOES")]
     public float transitionTime = 1f;
@@ -51,6 +55,8 @@ public class MapController : MonoBehaviour
 
     private Dictionary<AudioSource, float> originalVolumes =
         new Dictionary<AudioSource, float>();
+
+    private Transform originalPlayerParent;
 
 
     // =========================================================
@@ -131,21 +137,24 @@ public class MapController : MonoBehaviour
         if (mapCanvas != null)
             mapCanvas.SetActive(true);
 
-        // Tela preta IMEDIATAMENTE
+        // Tela preta imediatamente
         SetBlackScreen(true);
 
-        // Silencia o jogo IMEDIATAMENTE
+        // Silencia o jogo imediatamente
         SetGameAudioSilent();
+
+        // Prende o jogador ao elevador
+        AttachPlayerToElevator();
 
         // Bloqueia jogador
         SetPlayerControl(false);
 
-        // Som da transição IMEDIATAMENTE
+        // Som da transição
         PlayTransitionSound(openStartSound);
 
 
         // -----------------------------------------------------
-        // ESPERA 1 SEGUNDO
+        // ESPERA
         // -----------------------------------------------------
 
         yield return new WaitForSecondsRealtime(transitionTime);
@@ -197,18 +206,18 @@ public class MapController : MonoBehaviour
         // MOMENTO 1
         // -----------------------------------------------------
 
-        // Tela preta IMEDIATAMENTE
+        // Tela preta imediatamente
         SetBlackScreen(true);
 
-        // Silencia jogo IMEDIATAMENTE
+        // Silencia jogo imediatamente
         SetGameAudioSilent();
 
-        // Som de fechamento IMEDIATAMENTE
+        // Som de fechamento
         PlayTransitionSound(closeStartSound);
 
 
         // -----------------------------------------------------
-        // ESPERA 1 SEGUNDO
+        // ESPERA
         // -----------------------------------------------------
 
         yield return new WaitForSecondsRealtime(transitionTime);
@@ -244,12 +253,75 @@ public class MapController : MonoBehaviour
         // Áudio normal
         SetGameAudioNormal();
 
+        // Remove jogador do elevador
+        DetachPlayerFromElevator();
+
         // Libera jogador
         SetPlayerControl(true);
 
         mapOpen = false;
 
         transitionRunning = false;
+    }
+
+
+    // =========================================================
+    // PRENDER PLAYER AO ELEVADOR
+    // =========================================================
+
+    private void AttachPlayerToElevator()
+    {
+        if (elevator == null)
+        {
+            Debug.LogWarning(
+                "MapController: Nenhum elevador foi configurado no Inspector."
+            );
+
+            return;
+        }
+
+        if (playerMovement == null)
+        {
+            Debug.LogWarning(
+                "MapController: PlayerMovement não foi configurado."
+            );
+
+            return;
+        }
+
+        Transform playerTransform =
+            playerMovement.transform;
+
+        // Guarda o Parent original
+        originalPlayerParent =
+            playerTransform.parent;
+
+        // Torna o Player filho do elevador
+        // Mantém a posição atual no mundo
+        playerTransform.SetParent(
+            elevator,
+            true
+        );
+    }
+
+
+    // =========================================================
+    // SOLTAR PLAYER DO ELEVADOR
+    // =========================================================
+
+    private void DetachPlayerFromElevator()
+    {
+        if (playerMovement == null)
+            return;
+
+        Transform playerTransform =
+            playerMovement.transform;
+
+        // Volta para o Parent original
+        playerTransform.SetParent(
+            originalPlayerParent,
+            true
+        );
     }
 
 
@@ -261,7 +333,10 @@ public class MapController : MonoBehaviour
     {
         if (audioSource == null)
         {
-            Debug.LogWarning("MapController: AudioSource de transicao nao foi configurado.");
+            Debug.LogWarning(
+                "MapController: AudioSource de transicao nao foi configurado."
+            );
+
             return;
         }
 
@@ -276,8 +351,9 @@ public class MapController : MonoBehaviour
             return;
         }
 
-        // Toca o som independentemente do estado anterior
-        audioSource.PlayOneShot(audioSource.clip);
+        audioSource.PlayOneShot(
+            audioSource.clip
+        );
     }
 
 
@@ -289,7 +365,8 @@ public class MapController : MonoBehaviour
     {
         RegisterNewAudioSources();
 
-        foreach (KeyValuePair<AudioSource, float> pair in originalVolumes)
+        foreach (KeyValuePair<AudioSource, float> pair
+                 in originalVolumes)
         {
             AudioSource audio = pair.Key;
 
@@ -300,20 +377,22 @@ public class MapController : MonoBehaviour
             if (IsMapAudio(audio))
                 continue;
 
-            audio.volume = transitionVolume;
+            audio.volume =
+                transitionVolume;
         }
     }
 
 
     // =========================================================
-    // SOM ABAFADO / BAIXO
+    // SOM ABAFADO
     // =========================================================
 
     private void SetGameAudioMuffled()
     {
         RegisterNewAudioSources();
 
-        foreach (KeyValuePair<AudioSource, float> pair in originalVolumes)
+        foreach (KeyValuePair<AudioSource, float> pair
+                 in originalVolumes)
         {
             AudioSource audio = pair.Key;
 
@@ -324,9 +403,12 @@ public class MapController : MonoBehaviour
             if (IsMapAudio(audio))
                 continue;
 
-            float originalVolume = pair.Value;
+            float originalVolume =
+                pair.Value;
 
-            audio.volume = originalVolume * mapVolume;
+            audio.volume =
+                originalVolume *
+                mapVolume;
         }
     }
 
@@ -339,7 +421,8 @@ public class MapController : MonoBehaviour
     {
         RegisterNewAudioSources();
 
-        foreach (KeyValuePair<AudioSource, float> pair in originalVolumes)
+        foreach (KeyValuePair<AudioSource, float> pair
+                 in originalVolumes)
         {
             AudioSource audio = pair.Key;
 
@@ -350,7 +433,8 @@ public class MapController : MonoBehaviour
             if (IsMapAudio(audio))
                 continue;
 
-            audio.volume = pair.Value;
+            audio.volume =
+                pair.Value;
         }
     }
 
@@ -391,7 +475,7 @@ public class MapController : MonoBehaviour
                 RegisterAudioSource(audio);
 
                 // Se o mapa já estiver aberto,
-                // aplica o volume reduzido.
+                // aplica o volume reduzido
                 if (mapOpen && !IsMapAudio(audio))
                 {
                     audio.volume *= mapVolume;
@@ -405,7 +489,8 @@ public class MapController : MonoBehaviour
     // REGISTRAR AUDIO
     // =========================================================
 
-    private void RegisterAudioSource(AudioSource audio)
+    private void RegisterAudioSource(
+        AudioSource audio)
     {
         if (audio == null)
             return;
@@ -417,7 +502,7 @@ public class MapController : MonoBehaviour
         if (IsMapAudio(audio))
             return;
 
-        // Guarda o volume original
+        // Guarda volume original
         originalVolumes.Add(
             audio,
             audio.volume
@@ -429,32 +514,29 @@ public class MapController : MonoBehaviour
     // IDENTIFICAR AUDIO DO MAPA
     // =========================================================
 
-    private bool IsMapAudio(AudioSource audio)
+    private bool IsMapAudio(
+        AudioSource audio)
     {
         if (audio == null)
             return true;
 
-        // Som de abertura
         if (audio == openStartSound)
             return true;
 
-        // Som quando o mapa aparece
         if (audio == openEndSound)
             return true;
 
-        // Som de fechamento
         if (audio == closeStartSound)
             return true;
 
-        // Som quando volta ao jogo
         if (audio == closeEndSound)
             return true;
 
-        // Áudio do vídeo
         if (audio == mapVideoAudio)
             return true;
 
-        // Qualquer AudioSource dentro do MapSystem
+        // Qualquer AudioSource dentro
+        // do MapSystem
         if (audio.transform.IsChildOf(transform))
             return true;
 
@@ -466,32 +548,39 @@ public class MapController : MonoBehaviour
     // TELA PRETA
     // =========================================================
 
-    private void SetBlackScreen(bool visible)
+    private void SetBlackScreen(
+        bool visible)
     {
         if (blackScreen == null)
             return;
 
-        Color color = blackScreen.color;
+        Color color =
+            blackScreen.color;
 
         if (visible)
             color.a = 1f;
         else
             color.a = 0f;
 
-        blackScreen.color = color;
+        blackScreen.color =
+            color;
     }
 
 
     // =========================================================
-    // PLAYER
+    // CONTROLE DO PLAYER
     // =========================================================
 
-    private void SetPlayerControl(bool enabled)
+    private void SetPlayerControl(
+        bool enabled)
     {
         if (playerMovement != null)
             playerMovement.enabled = enabled;
 
         if (cameraController != null)
             cameraController.enabled = enabled;
+
+        if (playerPickup != null)
+            playerPickup.enabled = enabled;
     }
 }

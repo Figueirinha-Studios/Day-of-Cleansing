@@ -3897,7 +3897,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 566246932}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 0.7
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -10249,7 +10249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb4059b8d102c343bed30a341b0ed31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WebSocketManager
-  serverUrl: 
+  serverUrl: wss://casting-ice-papua-pharmacy.trycloudflare.com
   player: {fileID: 1460273160}
   robot: {fileID: 2106347680}
   updateInterval: 3
@@ -11013,7 +11013,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: dd4a75a93ae2dcc4da3f93c34cc8bde4, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -12632,6 +12632,8 @@ MonoBehaviour:
   closeEndSound: {fileID: 1068253502}
   playerMovement: {fileID: 1460273163}
   cameraController: {fileID: 1460273161}
+  playerPickup: {fileID: 0}
+  elevator: {fileID: 128252829}
   transitionTime: 0.5
   mapVolume: 0.2
   transitionVolume: 0
