@@ -3142,6 +3142,55 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ca02990215ea79541be470c86aa31059, type: 3}
   m_PrefabInstance: {fileID: 630263698}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &443332185
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 443332186}
+  - component: {fileID: 443332187}
+  m_Layer: 0
+  m_Name: RandomNoiseEvent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &443332186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 443332185}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1540153051}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &443332187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 443332185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5260532688c6f468586a7f1d8fa0f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomNoiseEvent
+  interval: 5
+  probability: 15
+  playerNoisePoint: {fileID: 1460273173}
+  noiseInterval: 1
+  noiseDuration: 15
 --- !u!1 &455966398
 GameObject:
   m_ObjectHideFlags: 0
@@ -4015,8 +4064,8 @@ Transform:
   m_GameObject: {fileID: 579382134}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.008741579, z: -0, w: 0.99996185}
-  m_LocalPosition: {x: 22.7, y: 1.9054, z: 11.23}
-  m_LocalScale: {x: 0.84737396, y: 17.407099, z: 7.691122}
+  m_LocalPosition: {x: 22.7, y: 1.9054, z: 12}
+  m_LocalScale: {x: 0.84737396, y: 17.407099, z: 9}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1457405470}
@@ -9381,6 +9430,7 @@ GameObject:
   - component: {fileID: 1460273170}
   - component: {fileID: 1460273171}
   - component: {fileID: 1460273172}
+  - component: {fileID: 1460273173}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -9654,6 +9704,20 @@ MonoBehaviour:
   holdRotationSpeed: 20
   throwForce: 8
   throwUpForce: 0.15
+--- !u!114 &1460273173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1460273159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ea55de5ae4e1c408081a5463c73f99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RemoteNoisePoint
+  eventName: player_chappie
+  noiseRadius: 200
 --- !u!1 &1470279438
 GameObject:
   m_ObjectHideFlags: 0
@@ -10284,6 +10348,7 @@ Transform:
   m_Children:
   - {fileID: 1460273160}
   - {fileID: 664501650}
+  - {fileID: 443332186}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1001 &1541799066
@@ -10454,13 +10519,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1610700952}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.43115827, z: -0, w: 0.9022764}
-  m_LocalPosition: {x: 19.59, y: 2.5484, z: 11.81}
-  m_LocalScale: {x: 8.928863, y: 18.154234, z: 0.68430007}
+  m_LocalRotation: {x: 0, y: -0.46174863, z: 0, w: 0.8870109}
+  m_LocalPosition: {x: 19.59, y: 1.9, z: 11.81}
+  m_LocalScale: {x: 10, y: 17.4, z: 0.68430007}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1457405470}
-  m_LocalEulerAnglesHint: {x: 0, y: -51.082, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -55, z: 0}
 --- !u!65 &1610700954
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12216,7 +12281,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.71326107, z: -0, w: 0.70089847}
   m_LocalPosition: {x: 19.9, y: 1.9054, z: 7.7}
-  m_LocalScale: {x: 0.84737396, y: 17.407099, z: 7.0364494}
+  m_LocalScale: {x: 0.84737396, y: 17.407099, z: 6.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1457405470}
