@@ -304,23 +304,15 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // IGNORA COLISÃO COM PLAYER
+        // DESATIVA COLISÃO ENQUANTO SEGURA
         // =====================================================
 
-        if (characterController != null)
-        {
-            Collider objectCollider =
-                currentObject
-                    .GetComponent<Collider>();
+        Collider[] objectColliders =
+            currentObject.GetComponentsInChildren<Collider>();
 
-            if (objectCollider != null)
-            {
-                Physics.IgnoreCollision(
-                    characterController,
-                    objectCollider,
-                    true
-                );
-            }
+        foreach (Collider col in objectColliders)
+        {
+            col.enabled = false;
         }
 
 
@@ -482,6 +474,19 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
+        // REATIVA COLISÃO
+        // =====================================================
+
+        Collider[] objectColliders =
+            objectToDrop.GetComponentsInChildren<Collider>();
+
+        foreach (Collider col in objectColliders)
+        {
+            col.enabled = true;
+        }
+
+
+        // =====================================================
         // REATIVA FÍSICA
         // =====================================================
 
@@ -496,27 +501,6 @@ public class PlayerPickup : MonoBehaviour
 
         rb.angularVelocity =
             Vector3.zero;
-
-
-        // =====================================================
-        // REATIVA COLISÃO
-        // =====================================================
-
-        if (characterController != null)
-        {
-            Collider objectCollider =
-                objectToDrop
-                    .GetComponent<Collider>();
-
-            if (objectCollider != null)
-            {
-                Physics.IgnoreCollision(
-                    characterController,
-                    objectCollider,
-                    false
-                );
-            }
-        }
 
 
         currentObject = null;
@@ -577,6 +561,19 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
+        // REATIVA COLISÃO
+        // =====================================================
+
+        Collider[] objectColliders =
+            objectToThrow.GetComponentsInChildren<Collider>();
+
+        foreach (Collider col in objectColliders)
+        {
+            col.enabled = true;
+        }
+
+
+        // =====================================================
         // REATIVA FÍSICA
         // =====================================================
 
@@ -585,27 +582,6 @@ public class PlayerPickup : MonoBehaviour
 
         rb.useGravity =
             true;
-
-
-        // =====================================================
-        // REATIVA COLISÃO
-        // =====================================================
-
-        if (characterController != null)
-        {
-            Collider objectCollider =
-                objectToThrow
-                    .GetComponent<Collider>();
-
-            if (objectCollider != null)
-            {
-                Physics.IgnoreCollision(
-                    characterController,
-                    objectCollider,
-                    false
-                );
-            }
-        }
 
 
         // =====================================================
