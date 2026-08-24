@@ -61,7 +61,6 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
-
         // ==========================================
         // NENHUM OBJETO SENDO SEGURADO
         // ==========================================
@@ -70,7 +69,6 @@ public class PlayerPickup : MonoBehaviour
         {
             CheckForPickup();
         }
-
 
         // ==========================================
         // OBJETO SENDO SEGURADO
@@ -173,7 +171,6 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-
         if (closestPickup != null)
         {
             ShowPickupPrompt();
@@ -232,8 +229,7 @@ public class PlayerPickup : MonoBehaviour
     // PEGAR OBJETO
     // =========================================================
 
-    private void Pickup(
-        PickupObject pickup)
+    private void Pickup(PickupObject pickup)
     {
         if (pickup == null)
             return;
@@ -248,8 +244,7 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
-        currentObject =
-            pickup;
+        currentObject = pickup;
 
 
         // =====================================================
@@ -524,7 +519,21 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // ATIVA SOM
+        // DIREÇÃO DO ARREMESSO
+        // =====================================================
+
+        Vector3 throwDirection =
+            playerCamera.transform.forward;
+
+        throwDirection +=
+            Vector3.up *
+            throwUpForce;
+
+        throwDirection.Normalize();
+
+
+        // =====================================================
+        // SOM
         // =====================================================
 
         NoiseSource noiseSource =
@@ -547,6 +556,11 @@ public class PlayerPickup : MonoBehaviour
 
         if (breakable != null)
         {
+            // Passa a direção do arremesso para a quebra.
+            breakable.SetThrowDirection(
+                throwDirection
+            );
+
             breakable.EnableBreakOnThrow();
         }
 
@@ -585,18 +599,8 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // DIREÇÃO
+        // FORÇA FINAL
         // =====================================================
-
-        Vector3 throwDirection =
-            playerCamera.transform.forward;
-
-        throwDirection +=
-            Vector3.up *
-            throwUpForce;
-
-        throwDirection.Normalize();
-
 
         float finalForce =
             throwForce *

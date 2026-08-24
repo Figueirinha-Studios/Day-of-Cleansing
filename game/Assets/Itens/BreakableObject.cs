@@ -43,12 +43,31 @@ public class BreakableObject : MonoBehaviour
     public float particleDestroyDelay = 0f;
 
     // =========================================================
+    // DIREÇÃO DO ARREMESSO
+    // =========================================================
+
+    [Header("Direção dos cacos")]
+    [Tooltip("Direção em que os cacos serão lançados.")]
+    public Vector3 throwDirection = Vector3.forward;
+
+    // =========================================================
     // CONTROLE
     // =========================================================
 
     private bool wasThrown = false;
-
     private bool hasBroken = false;
+
+    // =========================================================
+    // RECEBER DIREÇÃO
+    // =========================================================
+
+    public void SetThrowDirection(Vector3 direction)
+    {
+        if (direction.sqrMagnitude <= 0.001f)
+            return;
+
+        throwDirection = direction.normalized;
+    }
 
     // =========================================================
     // ATIVAR QUEBRA
@@ -60,7 +79,6 @@ public class BreakableObject : MonoBehaviour
             return;
 
         wasThrown = true;
-
         hasBroken = false;
     }
 
@@ -71,7 +89,6 @@ public class BreakableObject : MonoBehaviour
     public void DisableBreakOnThrow()
     {
         wasThrown = false;
-
         hasBroken = false;
     }
 
@@ -81,11 +98,9 @@ public class BreakableObject : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Só quebra se foi arremessado.
         if (!wasThrown)
             return;
 
-        // Evita quebrar várias vezes.
         if (hasBroken)
             return;
 
@@ -106,11 +121,7 @@ public class BreakableObject : MonoBehaviour
 
         if (breakMode == BreakMode.Simple)
         {
-            Destroy(
-                gameObject,
-                destroyDelay
-            );
-
+            Destroy(gameObject, destroyDelay);
             return;
         }
 
@@ -128,34 +139,23 @@ public class BreakableObject : MonoBehaviour
                     gameObject
                 );
 
-                Destroy(
-                    gameObject,
-                    destroyDelay
-                );
-
+                Destroy(gameObject, destroyDelay);
                 return;
             }
 
-            Rigidbody rb =
-                GetComponent<Rigidbody>();
+            Rigidbody rb = GetComponent<Rigidbody>();
 
             if (rb != null)
             {
                 rb.linearVelocity = Vector3.zero;
-
                 rb.angularVelocity = Vector3.zero;
 
                 rb.isKinematic = true;
-
                 rb.useGravity = false;
             }
 
-            // Toca a animação.
-            breakAnimator.SetTrigger(
-                breakTrigger
-            );
+            breakAnimator.SetTrigger(breakTrigger);
 
-            // Destrói depois da animação.
             Destroy(
                 gameObject,
                 animationDestroyDelay
@@ -170,47 +170,100 @@ public class BreakableObject : MonoBehaviour
 
         if (breakMode == BreakMode.Particles)
         {
-            if (breakParticlePrefab != null)
+            if (breakParticlePrefab == null)
             {
-                GameObject particles =
-                    Instantiate(
-                        breakParticlePrefab,
-                        transform.position,
-                        Quaternion.identity
-                    );
+                Debug.LogError(
+                    "BreakableObject: O campo " +
+                    "'Break Particle Prefab' está vazio!",
+                    gameObject
+                );
 
-                ParticleSystem particleSystem =
-                    particles.GetComponent<ParticleSystem>();
+                Destroy(gameObject, particleDestroyDelay);
+                return;
+            }
 
-                if (particleSystem != null)
-                {
-                    float particleLifetime =
-                        particleSystem.main.duration +
-                        particleSystem.main.startLifetime.constantMax +
-                        0.5f;
+            // =================================================
+            // DIREÇÃO DO ARREMESSO
+            // =================================================
 
-                    Destroy(
-                        particles,
-                        particleLifetime
-                    );
-                }
-                else
-                {
-                    Destroy(
-                        particles,
-                        3f
-                    );
-                }
+            Vector3 direction = throwDirection;
+
+            if (direction.sqrMagnitude <= 0.001f)
+            {
+                direction = transform.forward;
+            }
+
+            direction.Normalize();
+
+            // =================================================
+            // ROTAÇÃO DO PARTICLE SYSTEM
+            // =================================================
+            //
+            // IMPORTANTE:
+            // O Cone do Particle System aponta pelo eixo Y.
+            // Portanto usamos FromToRotation com Vector3.up.
+            //
+
+            Quaternion particleRotation =
+                Quaternion.FromToRotation(
+                    Vector3.up,
+                    direction
+                );
+
+            // =================================================
+            // CRIA AS PARTÍCULAS
+            // =================================================
+
+            GameObject particles =
+                Instantiate(
+                    breakParticlePrefab,
+                    transform.position,
+                    particleRotation
+                );
+
+            // =================================================
+            // INICIA AS PARTÍCULAS
+            // =================================================
+
+            ParticleSystem particleSystem =
+                particles.GetComponent<ParticleSystem>();
+
+            if (particleSystem != null)
+            {
+                particleSystem.Play();
+
+                var main =
+                    particleSystem.main;
+
+                float particleLifetime =
+                    main.duration +
+                    main.startLifetime.constantMax +
+                    0.5f;
+
+                Destroy(
+                    particles,
+                    particleLifetime
+                );
             }
             else
             {
                 Debug.LogWarning(
-                    "BreakableObject: Nenhum Particle Prefab foi configurado.",
-                    gameObject
+                    "BreakableObject: O prefab configurado em " +
+                    "'Break Particle Prefab' não possui " +
+                    "um Particle System.",
+                    particles
+                );
+
+                Destroy(
+                    particles,
+                    3f
                 );
             }
 
-            // Remove a garrafa.
+            // =================================================
+            // DESTROI A GARRAFA
+            // =================================================
+
             Destroy(
                 gameObject,
                 particleDestroyDelay
