@@ -18,7 +18,8 @@ public class SceneChange : MonoBehaviour
         {
             mudouCena = true;
             SceneManager.LoadScene("GameOver");
-            
+            MQTTManager.Instance.Publish("game/controller", "RELEAon");
+            MQTTManager.Instance.Publish("game/controller", "RELEBon");
         }
     }
 }
