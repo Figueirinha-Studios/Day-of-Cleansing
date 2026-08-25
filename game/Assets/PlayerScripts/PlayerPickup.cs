@@ -88,7 +88,10 @@ public class PlayerPickup : MonoBehaviour
             // Botão esquerdo = arremessar
             if (Input.GetMouseButtonDown(0))
             {
-                ThrowObject();
+                if (currentObject.canThrow)
+                {
+                    ThrowObject();
+                }
             }
         }
     }
@@ -556,7 +559,6 @@ public class PlayerPickup : MonoBehaviour
 
         if (breakable != null)
         {
-            // Passa a direção do arremesso para a quebra.
             breakable.SetThrowDirection(
                 throwDirection
             );
@@ -618,5 +620,41 @@ public class PlayerPickup : MonoBehaviour
         );
 
         currentObject = null;
+    }
+
+
+    // =========================================================
+    // OBJETO ATUALMENTE SEGURADO
+    // =========================================================
+
+    public PickupObject GetHeldObject()
+    {
+        return currentObject;
+    }
+
+
+    // =========================================================
+    // CONSUMIR OBJETO SEGURADO
+    // =========================================================
+
+    public void ConsumeHeldObject()
+    {
+        if (currentObject == null)
+            return;
+
+        PickupObject objectToConsume =
+            currentObject;
+
+        // Primeiro limpa a referência.
+        currentObject = null;
+
+        // Garante que o objeto não continue
+        // sendo tratado como objeto segurado.
+        objectToConsume
+            .transform
+            .SetParent(null);
+
+        // Remove o objeto do jogo.
+        Destroy(objectToConsume.gameObject);
     }
 }
