@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class Generator : MonoBehaviour
@@ -36,7 +35,9 @@ public class Generator : MonoBehaviour
     // INTERAÇÃO
     // =========================================================
 
-    public bool TryInteract(PlayerPickup player)
+    public bool TryInteract(
+        PlayerPickup player
+    )
     {
         if (player == null)
             return false;
@@ -55,9 +56,7 @@ public class Generator : MonoBehaviour
         }
 
 
-        // =====================================================
-        // GERADOR JÁ LIGADO
-        // =====================================================
+        // Gerador já ligado.
 
         if (generatorOn)
         {
@@ -65,9 +64,7 @@ public class Generator : MonoBehaviour
         }
 
 
-        // =====================================================
-        // DESCOBRE O QUE O PLAYER ESTÁ SEGURANDO
-        // =====================================================
+        // Descobre o que o jogador está segurando.
 
         PickupObject heldObject =
             player.GetHeldObject();
@@ -85,7 +82,9 @@ public class Generator : MonoBehaviour
 
         if (heldObject.IsGasoline())
         {
-            InsertGasoline(player);
+            InsertGasoline(
+                player
+            );
 
             return true;
         }
@@ -97,7 +96,9 @@ public class Generator : MonoBehaviour
 
         if (heldObject.IsFuse())
         {
-            InsertFuse(player);
+            InsertFuse(
+                player
+            );
 
             return true;
         }
@@ -111,7 +112,9 @@ public class Generator : MonoBehaviour
     // COLOCAR GASOLINA
     // =========================================================
 
-    private void InsertGasoline(PlayerPickup player)
+    private void InsertGasoline(
+        PlayerPickup player
+    )
     {
         if (gasolineInserted >= gasolineRequired)
         {
@@ -119,34 +122,20 @@ public class Generator : MonoBehaviour
         }
 
 
-        // =====================================================
-        // AUMENTA CONTADOR
-        // =====================================================
-
         gasolineInserted++;
 
 
-        // =====================================================
-        // REMOVE GASOLINA DA MÃO
-        // =====================================================
+        // Remove gasolina da mão.
 
         player.ConsumeHeldObject();
 
 
-        // =====================================================
-        // MOSTRA VÍDEO
-        // =====================================================
+        // Mostra vídeo 1/2 ou 2/2.
 
         if (generatorUI != null)
         {
             generatorUI.ShowGasolineInserted(
                 gasolineInserted
-            );
-        }
-        else
-        {
-            Debug.LogWarning(
-                "Generator: GeneratorUI não está configurado!"
             );
         }
 
@@ -159,10 +148,6 @@ public class Generator : MonoBehaviour
         );
 
 
-        // =====================================================
-        // VERIFICA SE COMPLETOU
-        // =====================================================
-
         CheckGeneratorReady();
     }
 
@@ -171,7 +156,9 @@ public class Generator : MonoBehaviour
     // COLOCAR FUSÍVEL
     // =========================================================
 
-    private void InsertFuse(PlayerPickup player)
+    private void InsertFuse(
+        PlayerPickup player
+    )
     {
         if (fuseInserted)
         {
@@ -179,33 +166,19 @@ public class Generator : MonoBehaviour
         }
 
 
-        // =====================================================
-        // MARCA FUSÍVEL
-        // =====================================================
-
         fuseInserted = true;
 
 
-        // =====================================================
-        // REMOVE FUSÍVEL DA MÃO
-        // =====================================================
+        // Remove da mão.
 
         player.ConsumeHeldObject();
 
 
-        // =====================================================
-        // MOSTRA VÍDEO
-        // =====================================================
+        // Mostra vídeo 1/1.
 
         if (generatorUI != null)
         {
             generatorUI.ShowFuseInserted();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "Generator: GeneratorUI não está configurado!"
-            );
         }
 
 
@@ -213,10 +186,6 @@ public class Generator : MonoBehaviour
             "Fusível colocado."
         );
 
-
-        // =====================================================
-        // VERIFICA SE COMPLETOU
-        // =====================================================
 
         CheckGeneratorReady();
     }
@@ -238,80 +207,24 @@ public class Generator : MonoBehaviour
             fuseInserted;
 
 
-        if (!gasolineComplete)
-        {
-            return;
-        }
-
-
-        if (!fuseComplete)
-        {
-            return;
-        }
-
-
-        // =====================================================
-        // TUDO COMPLETO
-        // =====================================================
-
-        if (!generatorReady)
+        if (gasolineComplete &&
+            fuseComplete)
         {
             generatorReady =
                 true;
 
 
             Debug.Log(
-                "========================================"
-            );
-
-            Debug.Log(
                 "TODOS OS ITENS FORAM COLOCADOS!"
             );
 
-            Debug.Log(
-                "ESPERANDO O ÚLTIMO VÍDEO TERMINAR..."
-            );
 
-            Debug.Log(
-                "========================================"
-            );
+            // Liga automaticamente.
+            // O GeneratorUI vai esperar o vídeo
+            // do último item terminar.
 
-
-            // =================================================
-            // ESPERA O VÍDEO TERMINAR
-            // =================================================
-
-            StartCoroutine(
-                WaitForLastItemVideo()
-            );
+            TurnOnGenerator();
         }
-    }
-
-
-    // =========================================================
-    // ESPERAR ÚLTIMO VÍDEO
-    // =========================================================
-
-    private IEnumerator WaitForLastItemVideo()
-    {
-        // =====================================================
-        // ESPERA O VÍDEO DO ÚLTIMO ITEM TERMINAR
-        // =====================================================
-
-        if (generatorUI != null)
-        {
-            while (!generatorUI.IsItemVideoFinished())
-            {
-                yield return null;
-            }
-        }
-
-
-        // =====================================================
-        // AGORA PODE LIGAR O GERADOR
-        // =====================================================
-
-        TurnOnGenerator();
     }
 
 
@@ -322,20 +235,12 @@ public class Generator : MonoBehaviour
     private void TurnOnGenerator()
     {
         if (generatorOn)
-        {
             return;
-        }
 
 
         if (!generatorReady)
-        {
             return;
-        }
 
-
-        // =====================================================
-        // MARCA COMO LIGADO
-        // =====================================================
 
         generatorOn =
             true;
@@ -346,31 +251,13 @@ public class Generator : MonoBehaviour
 
 
         Debug.Log(
-            "========================================"
-        );
-
-        Debug.Log(
             "GERADOR LIGADO!"
         );
 
-        Debug.Log(
-            "========================================"
-        );
-
-
-        // =====================================================
-        // INICIA SEQUÊNCIA FINAL
-        // =====================================================
 
         if (generatorUI != null)
         {
             generatorUI.StartGeneratorOnSequence();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "Generator: GeneratorUI não está configurado!"
-            );
         }
     }
 
