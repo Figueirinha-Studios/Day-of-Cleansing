@@ -8,6 +8,7 @@ public class PlayerPickup : MonoBehaviour
     public Camera playerCamera;
     public Transform holdPoint;
 
+
     [Header("UI - Interação")]
     public TextMeshProUGUI pickupText;
     public Image pickupImage;
@@ -18,19 +19,27 @@ public class PlayerPickup : MonoBehaviour
     [Tooltip("Mostrar a imagem")]
     public bool showImage = false;
 
+
     [Header("Pickup")]
     public float pickupDistance = 3f;
 
     [Tooltip("Margem de tolerância para mirar no objeto.")]
     public float pickupAimRadius = 0.25f;
 
+
     [Header("Objeto na mão")]
     public float holdPositionSpeed = 25f;
     public float holdRotationSpeed = 20f;
 
+
     [Header("Arremesso")]
     public float throwForce = 8f;
     public float throwUpForce = 0.15f;
+
+
+    [Header("Gerador")]
+    public float generatorInteractionDistance = 3f;
+
 
     private PickupObject currentObject;
     private CharacterController characterController;
@@ -61,37 +70,72 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
-        // ==========================================
+
+        // =====================================================
         // NENHUM OBJETO SENDO SEGURADO
-        // ==========================================
+        // =====================================================
 
         if (currentObject == null)
         {
             CheckForPickup();
         }
 
-        // ==========================================
+
+        // =====================================================
         // OBJETO SENDO SEGURADO
-        // ==========================================
+        // =====================================================
 
         else
         {
-            HidePickupPrompt();
+            // Verifica se pode interagir com o gerador.
+            // Se estiver segurando gasolina ou fusível
+            // e olhando para o gerador, mostra [E].
 
-            // E = soltar
+            CheckForGeneratorInteraction();
+
+
+            // =================================================
+            // E
+            // =================================================
+
             if (Input.GetKeyDown(KeyCode.E))
             {
+                // Primeiro tenta colocar o objeto
+                // no gerador.
+
+                if (TryInteractWithGenerator())
+                {
+                    return;
+                }
+
+
+                // Se não for o gerador,
+                // solta o objeto normalmente.
+
+                HidePickupPrompt();
+
                 DropObject();
+
                 return;
             }
 
-            // Botão esquerdo = arremessar
+
+            // =================================================
+            // BOTÃO ESQUERDO
+            // =================================================
+
             if (Input.GetMouseButtonDown(0))
             {
-                if (currentObject.canThrow)
+                // Gasolina e fusível NÃO podem
+                // ser arremessados.
+
+                if (currentObject.IsGeneratorItem())
                 {
-                    ThrowObject();
+                    return;
                 }
+
+
+                ThrowObject();
             }
         }
     }
@@ -119,8 +163,10 @@ public class PlayerPickup : MonoBehaviour
         CameraController cameraController =
             GetComponent<CameraController>();
 
+
         if (cameraController == null)
             return true;
+
 
         return cameraController.IsFirstPerson();
     }
@@ -137,6 +183,7 @@ public class PlayerPickup : MonoBehaviour
             playerCamera.transform.forward
         );
 
+
         RaycastHit[] hits =
             Physics.SphereCastAll(
                 ray,
@@ -144,10 +191,12 @@ public class PlayerPickup : MonoBehaviour
                 pickupDistance
             );
 
+
         PickupObject closestPickup = null;
 
         float closestDistance =
             Mathf.Infinity;
+
 
         foreach (RaycastHit hit in hits)
         {
@@ -155,14 +204,17 @@ public class PlayerPickup : MonoBehaviour
                 hit.collider
                     .GetComponentInParent<PickupObject>();
 
+
             if (pickup == null)
                 continue;
+
 
             float distance =
                 Vector3.Distance(
                     playerCamera.transform.position,
                     hit.point
                 );
+
 
             if (distance < closestDistance)
             {
@@ -174,17 +226,21 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
+
         if (closestPickup != null)
         {
             ShowPickupPrompt();
+
 
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Pickup(closestPickup);
             }
 
+
             return;
         }
+
 
         HidePickupPrompt();
     }
@@ -201,6 +257,7 @@ public class PlayerPickup : MonoBehaviour
         {
             pickupText.gameObject.SetActive(true);
         }
+
 
         if (showImage &&
             pickupImage != null)
@@ -221,6 +278,7 @@ public class PlayerPickup : MonoBehaviour
             pickupText.gameObject.SetActive(false);
         }
 
+
         if (pickupImage != null)
         {
             pickupImage.gameObject.SetActive(false);
@@ -237,6 +295,7 @@ public class PlayerPickup : MonoBehaviour
         if (pickup == null)
             return;
 
+
         if (pickup.rb == null)
         {
             Debug.LogWarning(
@@ -247,6 +306,7 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
+
         currentObject = pickup;
 
 
@@ -255,8 +315,8 @@ public class PlayerPickup : MonoBehaviour
         // =====================================================
 
         NoiseSource noiseSource =
-            currentObject
-                .GetComponent<NoiseSource>();
+            currentObject.GetComponent<NoiseSource>();
+
 
         if (noiseSource != null)
         {
@@ -269,8 +329,8 @@ public class PlayerPickup : MonoBehaviour
         // =====================================================
 
         BreakableObject breakable =
-            currentObject
-                .GetComponent<BreakableObject>();
+            currentObject.GetComponent<BreakableObject>();
+
 
         if (breakable != null)
         {
@@ -279,6 +339,7 @@ public class PlayerPickup : MonoBehaviour
 
 
         HidePickupPrompt();
+
 
         Rigidbody rb =
             currentObject.rb;
@@ -302,11 +363,12 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // DESATIVA COLISÃO ENQUANTO SEGURA
+        // DESATIVA COLISÃO
         // =====================================================
 
         Collider[] objectColliders =
             currentObject.GetComponentsInChildren<Collider>();
+
 
         foreach (Collider col in objectColliders)
         {
@@ -332,11 +394,13 @@ public class PlayerPickup : MonoBehaviour
                 currentObject.holdPosition
             );
 
+
         Quaternion startRotation =
             holdPoint.rotation *
             Quaternion.Euler(
                 currentObject.holdRotation
             );
+
 
         rb.position =
             startPosition;
@@ -355,8 +419,10 @@ public class PlayerPickup : MonoBehaviour
         if (currentObject == null)
             return;
 
+
         Rigidbody rb =
             currentObject.rb;
+
 
         if (rb == null)
             return;
@@ -395,6 +461,7 @@ public class PlayerPickup : MonoBehaviour
                 Time.fixedDeltaTime
             );
 
+
         Quaternion newRotation =
             Quaternion.Slerp(
                 rb.rotation,
@@ -412,9 +479,172 @@ public class PlayerPickup : MonoBehaviour
             newPosition
         );
 
+
         rb.MoveRotation(
             newRotation
         );
+    }
+
+
+    // =========================================================
+    // VERIFICAR INTERAÇÃO COM GERADOR
+    // =========================================================
+
+    private void CheckForGeneratorInteraction()
+    {
+        if (currentObject == null)
+        {
+            HidePickupPrompt();
+            return;
+        }
+
+
+        // Só gasolina e fusível podem
+        // interagir com o gerador.
+
+        if (!currentObject.IsGeneratorItem())
+        {
+            HidePickupPrompt();
+            return;
+        }
+
+
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward
+        );
+
+
+        RaycastHit hit;
+
+
+        if (Physics.Raycast(
+            ray,
+            out hit,
+            generatorInteractionDistance
+        ))
+        {
+            Generator generator =
+                hit.collider
+                    .GetComponentInParent<Generator>();
+
+
+            if (generator != null)
+            {
+                // Se o gerador já estiver ligado,
+                // não mostra [E].
+
+                if (generator.IsGeneratorOn())
+                {
+                    HidePickupPrompt();
+                    return;
+                }
+
+
+                // Mostra [E].
+
+                ShowPickupPrompt();
+
+                return;
+            }
+        }
+
+
+        // Não está olhando para o gerador.
+
+        HidePickupPrompt();
+    }
+
+
+    // =========================================================
+    // TENTAR INTERAGIR COM GERADOR
+    // =========================================================
+
+    private bool TryInteractWithGenerator()
+    {
+        if (currentObject == null)
+            return false;
+
+
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward
+        );
+
+
+        RaycastHit hit;
+
+
+        if (!Physics.Raycast(
+            ray,
+            out hit,
+            generatorInteractionDistance
+        ))
+        {
+            return false;
+        }
+
+
+        Generator generator =
+            hit.collider
+                .GetComponentInParent<Generator>();
+
+
+        if (generator == null)
+        {
+            return false;
+        }
+
+
+        return generator.TryInteract(
+            this
+        );
+    }
+
+
+    // =========================================================
+    // O QUE O PLAYER ESTÁ SEGURANDO?
+    // =========================================================
+
+    public PickupObject GetHeldObject()
+    {
+        return currentObject;
+    }
+
+
+    // =========================================================
+    // CONSUMIR OBJETO
+    // =========================================================
+
+    public PickupObject ConsumeHeldObject()
+    {
+        if (currentObject == null)
+            return null;
+
+
+        PickupObject objectToConsume =
+            currentObject;
+
+
+        Collider[] objectColliders =
+            objectToConsume.GetComponentsInChildren<Collider>();
+
+
+        foreach (Collider col in objectColliders)
+        {
+            col.enabled = false;
+        }
+
+
+        currentObject = null;
+
+
+        Destroy(
+            objectToConsume.gameObject
+        );
+
+
+        return objectToConsume;
     }
 
 
@@ -427,8 +657,10 @@ public class PlayerPickup : MonoBehaviour
         if (currentObject == null)
             return;
 
+
         PickupObject objectToDrop =
             currentObject;
+
 
         Rigidbody rb =
             objectToDrop.rb;
@@ -439,8 +671,8 @@ public class PlayerPickup : MonoBehaviour
         // =====================================================
 
         NoiseSource noiseSource =
-            objectToDrop
-                .GetComponent<NoiseSource>();
+            objectToDrop.GetComponent<NoiseSource>();
+
 
         if (noiseSource != null)
         {
@@ -453,8 +685,8 @@ public class PlayerPickup : MonoBehaviour
         // =====================================================
 
         BreakableObject breakable =
-            objectToDrop
-                .GetComponent<BreakableObject>();
+            objectToDrop.GetComponent<BreakableObject>();
+
 
         if (breakable != null)
         {
@@ -477,6 +709,7 @@ public class PlayerPickup : MonoBehaviour
 
         Collider[] objectColliders =
             objectToDrop.GetComponentsInChildren<Collider>();
+
 
         foreach (Collider col in objectColliders)
         {
@@ -514,23 +747,27 @@ public class PlayerPickup : MonoBehaviour
         if (currentObject == null)
             return;
 
+
         PickupObject objectToThrow =
             currentObject;
+
 
         Rigidbody rb =
             objectToThrow.rb;
 
 
         // =====================================================
-        // DIREÇÃO DO ARREMESSO
+        // DIREÇÃO
         // =====================================================
 
         Vector3 throwDirection =
             playerCamera.transform.forward;
 
+
         throwDirection +=
             Vector3.up *
             throwUpForce;
+
 
         throwDirection.Normalize();
 
@@ -540,8 +777,8 @@ public class PlayerPickup : MonoBehaviour
         // =====================================================
 
         NoiseSource noiseSource =
-            objectToThrow
-                .GetComponent<NoiseSource>();
+            objectToThrow.GetComponent<NoiseSource>();
+
 
         if (noiseSource != null)
         {
@@ -550,12 +787,12 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // ATIVA QUEBRA
+        // QUEBRA
         // =====================================================
 
         BreakableObject breakable =
-            objectToThrow
-                .GetComponent<BreakableObject>();
+            objectToThrow.GetComponent<BreakableObject>();
+
 
         if (breakable != null)
         {
@@ -583,6 +820,7 @@ public class PlayerPickup : MonoBehaviour
         Collider[] objectColliders =
             objectToThrow.GetComponentsInChildren<Collider>();
 
+
         foreach (Collider col in objectColliders)
         {
             col.enabled = true;
@@ -601,7 +839,7 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // FORÇA FINAL
+        // FORÇA
         // =====================================================
 
         float finalForce =
@@ -619,42 +857,7 @@ public class PlayerPickup : MonoBehaviour
             ForceMode.Impulse
         );
 
+
         currentObject = null;
-    }
-
-
-    // =========================================================
-    // OBJETO ATUALMENTE SEGURADO
-    // =========================================================
-
-    public PickupObject GetHeldObject()
-    {
-        return currentObject;
-    }
-
-
-    // =========================================================
-    // CONSUMIR OBJETO SEGURADO
-    // =========================================================
-
-    public void ConsumeHeldObject()
-    {
-        if (currentObject == null)
-            return;
-
-        PickupObject objectToConsume =
-            currentObject;
-
-        // Primeiro limpa a referência.
-        currentObject = null;
-
-        // Garante que o objeto não continue
-        // sendo tratado como objeto segurado.
-        objectToConsume
-            .transform
-            .SetParent(null);
-
-        // Remove o objeto do jogo.
-        Destroy(objectToConsume.gameObject);
     }
 }

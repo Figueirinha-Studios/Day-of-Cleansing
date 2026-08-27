@@ -1,76 +1,81 @@
+using System.Collections;
 using UnityEngine;
 
 public class Generator : MonoBehaviour
 {
-    [Header("Player")]
-    public PlayerPickup playerPickup;
+    [Header("UI")]
+    public GeneratorUI generatorUI;
+
 
     [Header("Itens necessários")]
     public int gasolineRequired = 2;
     public bool fuseRequired = true;
 
-    [Header("Itens colocados")]
-    public int gasolineInserted = 0;
-    public bool fuseInserted = false;
 
-    [Header("Estado do gerador")]
-    public bool generatorReady = false;
-    public bool generatorOn = false;
+    [Header("Itens colocados")]
+    [SerializeField]
+    private int gasolineInserted = 0;
+
+    [SerializeField]
+    private bool fuseInserted = false;
+
+
+    [Header("Estado")]
+    [SerializeField]
+    private bool generatorReady = false;
+
+    [SerializeField]
+    private bool generatorOn = false;
+
 
     [Header("Interação")]
     public float interactionDistance = 3f;
 
 
     // =========================================================
-    // UPDATE
+    // INTERAÇÃO
     // =========================================================
 
-    private void Update()
+    public bool TryInteract(PlayerPickup player)
     {
-        if (playerPickup == null)
-            return;
+        if (player == null)
+            return false;
+
 
         float distance =
             Vector3.Distance(
                 transform.position,
-                playerPickup.transform.position
+                player.transform.position
             );
 
+
         if (distance > interactionDistance)
-            return;
-
-        if (Input.GetKeyDown(KeyCode.E))
         {
-            Interact();
+            return false;
         }
-    }
 
 
-    // =========================================================
-    // INTERAÇÃO
-    // =========================================================
+        // =====================================================
+        // GERADOR JÁ LIGADO
+        // =====================================================
 
-    private void Interact()
-    {
         if (generatorOn)
-            return;
-
-        if (generatorReady)
         {
-            Debug.Log("Gerador pronto para ligar.");
-            return;
+            return true;
         }
+
+
+        // =====================================================
+        // DESCOBRE O QUE O PLAYER ESTÁ SEGURANDO
+        // =====================================================
 
         PickupObject heldObject =
-            playerPickup.GetHeldObject();
+            player.GetHeldObject();
+
 
         if (heldObject == null)
         {
-            Debug.Log(
-                "Você precisa estar segurando gasolina ou um fusível."
-            );
-
-            return;
+            return false;
         }
 
 
@@ -78,10 +83,11 @@ public class Generator : MonoBehaviour
         // GASOLINA
         // =====================================================
 
-        if (heldObject.CompareTag("Gasolina"))
+        if (heldObject.IsGasoline())
         {
-            InsertGasoline();
-            return;
+            InsertGasoline(player);
+
+            return true;
         }
 
 
@@ -89,20 +95,15 @@ public class Generator : MonoBehaviour
         // FUSÍVEL
         // =====================================================
 
-        if (heldObject.CompareTag("Fusivel"))
+        if (heldObject.IsFuse())
         {
-            InsertFuse();
-            return;
+            InsertFuse(player);
+
+            return true;
         }
 
 
-        // =====================================================
-        // OBJETO ERRADO
-        // =====================================================
-
-        Debug.Log(
-            "Esse objeto não serve para o gerador."
-        );
+        return false;
     }
 
 
@@ -110,20 +111,45 @@ public class Generator : MonoBehaviour
     // COLOCAR GASOLINA
     // =========================================================
 
-    private void InsertGasoline()
+    private void InsertGasoline(PlayerPickup player)
     {
         if (gasolineInserted >= gasolineRequired)
         {
-            Debug.Log(
-                "O gerador já recebeu toda a gasolina necessária."
-            );
-
             return;
         }
 
+
+        // =====================================================
+        // AUMENTA CONTADOR
+        // =====================================================
+
         gasolineInserted++;
 
-        playerPickup.ConsumeHeldObject();
+
+        // =====================================================
+        // REMOVE GASOLINA DA MÃO
+        // =====================================================
+
+        player.ConsumeHeldObject();
+
+
+        // =====================================================
+        // MOSTRA VÍDEO
+        // =====================================================
+
+        if (generatorUI != null)
+        {
+            generatorUI.ShowGasolineInserted(
+                gasolineInserted
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Generator: GeneratorUI não está configurado!"
+            );
+        }
+
 
         Debug.Log(
             "Gasolina colocada: " +
@@ -131,6 +157,11 @@ public class Generator : MonoBehaviour
             "/" +
             gasolineRequired
         );
+
+
+        // =====================================================
+        // VERIFICA SE COMPLETOU
+        // =====================================================
 
         CheckGeneratorReady();
     }
@@ -140,43 +171,234 @@ public class Generator : MonoBehaviour
     // COLOCAR FUSÍVEL
     // =========================================================
 
-    private void InsertFuse()
+    private void InsertFuse(PlayerPickup player)
     {
         if (fuseInserted)
         {
-            Debug.Log(
-                "O fusível já foi colocado."
-            );
-
             return;
         }
 
+
+        // =====================================================
+        // MARCA FUSÍVEL
+        // =====================================================
+
         fuseInserted = true;
 
-        playerPickup.ConsumeHeldObject();
+
+        // =====================================================
+        // REMOVE FUSÍVEL DA MÃO
+        // =====================================================
+
+        player.ConsumeHeldObject();
+
+
+        // =====================================================
+        // MOSTRA VÍDEO
+        // =====================================================
+
+        if (generatorUI != null)
+        {
+            generatorUI.ShowFuseInserted();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Generator: GeneratorUI não está configurado!"
+            );
+        }
+
 
         Debug.Log(
             "Fusível colocado."
         );
+
+
+        // =====================================================
+        // VERIFICA SE COMPLETOU
+        // =====================================================
 
         CheckGeneratorReady();
     }
 
 
     // =========================================================
-    // VERIFICAR SE ESTÁ PRONTO
+    // VERIFICAR SE ESTÁ COMPLETO
     // =========================================================
 
     private void CheckGeneratorReady()
     {
-        if (gasolineInserted >= gasolineRequired &&
-            (!fuseRequired || fuseInserted))
+        bool gasolineComplete =
+            gasolineInserted >=
+            gasolineRequired;
+
+
+        bool fuseComplete =
+            !fuseRequired ||
+            fuseInserted;
+
+
+        if (!gasolineComplete)
         {
-            generatorReady = true;
+            return;
+        }
+
+
+        if (!fuseComplete)
+        {
+            return;
+        }
+
+
+        // =====================================================
+        // TUDO COMPLETO
+        // =====================================================
+
+        if (!generatorReady)
+        {
+            generatorReady =
+                true;
+
 
             Debug.Log(
-                "GERADOR PRONTO! Agora pode ser ligado."
+                "========================================"
+            );
+
+            Debug.Log(
+                "TODOS OS ITENS FORAM COLOCADOS!"
+            );
+
+            Debug.Log(
+                "ESPERANDO O ÚLTIMO VÍDEO TERMINAR..."
+            );
+
+            Debug.Log(
+                "========================================"
+            );
+
+
+            // =================================================
+            // ESPERA O VÍDEO TERMINAR
+            // =================================================
+
+            StartCoroutine(
+                WaitForLastItemVideo()
             );
         }
+    }
+
+
+    // =========================================================
+    // ESPERAR ÚLTIMO VÍDEO
+    // =========================================================
+
+    private IEnumerator WaitForLastItemVideo()
+    {
+        // =====================================================
+        // ESPERA O VÍDEO DO ÚLTIMO ITEM TERMINAR
+        // =====================================================
+
+        if (generatorUI != null)
+        {
+            while (!generatorUI.IsItemVideoFinished())
+            {
+                yield return null;
+            }
+        }
+
+
+        // =====================================================
+        // AGORA PODE LIGAR O GERADOR
+        // =====================================================
+
+        TurnOnGenerator();
+    }
+
+
+    // =========================================================
+    // LIGAR GERADOR
+    // =========================================================
+
+    private void TurnOnGenerator()
+    {
+        if (generatorOn)
+        {
+            return;
+        }
+
+
+        if (!generatorReady)
+        {
+            return;
+        }
+
+
+        // =====================================================
+        // MARCA COMO LIGADO
+        // =====================================================
+
+        generatorOn =
+            true;
+
+
+        generatorReady =
+            false;
+
+
+        Debug.Log(
+            "========================================"
+        );
+
+        Debug.Log(
+            "GERADOR LIGADO!"
+        );
+
+        Debug.Log(
+            "========================================"
+        );
+
+
+        // =====================================================
+        // INICIA SEQUÊNCIA FINAL
+        // =====================================================
+
+        if (generatorUI != null)
+        {
+            generatorUI.StartGeneratorOnSequence();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Generator: GeneratorUI não está configurado!"
+            );
+        }
+    }
+
+
+    // =========================================================
+    // ESTADOS PÚBLICOS
+    // =========================================================
+
+    public bool IsGeneratorReady()
+    {
+        return generatorReady;
+    }
+
+
+    public bool IsGeneratorOn()
+    {
+        return generatorOn;
+    }
+
+
+    public int GetGasolineInserted()
+    {
+        return gasolineInserted;
+    }
+
+
+    public bool IsFuseInserted()
+    {
+        return fuseInserted;
     }
 }
