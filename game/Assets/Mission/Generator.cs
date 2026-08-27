@@ -2,22 +2,37 @@ using UnityEngine;
 
 public class Generator : MonoBehaviour
 {
+    // =========================================================
+    // UI
+    // =========================================================
+
     [Header("UI")]
     public GeneratorUI generatorUI;
 
+
+    // =========================================================
+    // ITENS NECESSÁRIOS
+    // =========================================================
 
     [Header("Itens necessários")]
     public int gasolineRequired = 2;
     public bool fuseRequired = true;
 
 
-    [Header("Itens colocados")]
+    // =========================================================
+    // ITENS COLOCADOS
+    // =========================================================
+
     [SerializeField]
     private int gasolineInserted = 0;
 
     [SerializeField]
     private bool fuseInserted = false;
 
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
 
     [Header("Estado")]
     [SerializeField]
@@ -27,8 +42,115 @@ public class Generator : MonoBehaviour
     private bool generatorOn = false;
 
 
+    // =========================================================
+    // INTERAÇÃO
+    // =========================================================
+
     [Header("Interação")]
     public float interactionDistance = 3f;
+
+
+    // =========================================================
+    // OBJETIVO
+    // =========================================================
+
+    [Header("Objetivo")]
+    public bool objectiveShown = false;
+
+
+    // =========================================================
+    // PLAYER
+    // =========================================================
+
+    [Header("Player")]
+    public Transform player;
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    private void Update()
+    {
+        CheckPlayerDistance();
+    }
+
+
+    // =========================================================
+    // VERIFICAR APROXIMAÇÃO
+    // =========================================================
+
+    private void CheckPlayerDistance()
+    {
+        // Se o objetivo já foi mostrado,
+        // não precisa verificar novamente.
+
+        if (objectiveShown)
+            return;
+
+
+        // Se não configurou o Player,
+        // tenta encontrar automaticamente.
+
+        if (player == null)
+        {
+            GameObject playerObject =
+                GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+            {
+                player =
+                    playerObject.transform;
+            }
+        }
+
+
+        // Se ainda não encontrou o Player,
+        // sai.
+
+        if (player == null)
+            return;
+
+
+        // Calcula a distância.
+
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                player.position
+            );
+
+
+        // Verifica se chegou perto.
+
+        if (distance <= interactionDistance)
+        {
+            ShowObjective();
+        }
+    }
+
+
+    // =========================================================
+    // MOSTRAR OBJETIVO
+    // =========================================================
+
+    private void ShowObjective()
+    {
+        // Impede que apareça novamente.
+
+        objectiveShown = true;
+
+
+        if (generatorUI != null)
+        {
+            generatorUI.ShowGeneratorTutorial();
+        }
+
+
+        Debug.Log(
+            "Player se aproximou do gerador. Objetivo mostrado."
+        );
+    }
 
 
     // =========================================================
