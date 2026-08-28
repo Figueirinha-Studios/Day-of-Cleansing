@@ -114,6 +114,7 @@ public class ElevatorController : MonoBehaviour
         arrivalAudio.Play();
 
         Debug.Log("ELEVADOR CHEGOU!");
+        SerialManager.Instance.Enviar("Portas abertas. Boa Sorte.");
         doorController.OpenDoors();
     }
 }
