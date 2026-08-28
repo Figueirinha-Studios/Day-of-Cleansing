@@ -5,10 +5,6 @@ using UnityEngine.Video;
 
 public class GeneratorUI : MonoBehaviour
 {
-    // =========================================================
-    // VÍDEOS DOS ITENS
-    // =========================================================
-
     [Header("Vídeos dos Itens")]
     public VideoPlayer videoPlayer;
     public RawImage videoImage;
@@ -18,10 +14,6 @@ public class GeneratorUI : MonoBehaviour
     public VideoClip fuseVideo;
 
 
-    // =========================================================
-    // GERADOR LIGADO
-    // =========================================================
-
     [Header("Vídeo - Gerador Ligado")]
     public VideoPlayer generatorOnVideoPlayer;
     public RawImage generatorOnVideoImage;
@@ -29,81 +21,47 @@ public class GeneratorUI : MonoBehaviour
     public VideoClip generatorOnVideo;
 
 
-    // =========================================================
-    // OBJETIVO DO GERADOR
-    // =========================================================
-
-    [Header("Vídeo - Objetivo do Gerador")]
+    [Header("Vídeo - Objetivo")]
     public VideoPlayer objectiveVideoPlayer;
     public RawImage objectiveVideoImage;
 
     public VideoClip generatorTutorialVideo;
 
 
-    // =========================================================
-    // SONS DE COLOCAR
-    // =========================================================
-
     [Header("Sons de Colocar")]
     public AudioClip gasolineInsertSound;
     public AudioClip fuseInsertSound;
 
 
-    // =========================================================
-    // SOM DO GERADOR
-    // =========================================================
-
-    [Header("Som do Gerador Ligado")]
+    [Header("Som do Gerador")]
     public AudioClip generatorOnSound;
 
-
-    // =========================================================
-    // ÁUDIO NORMAL
-    // =========================================================
 
     [Header("Áudio")]
     public AudioSource audioSource;
 
 
-    // =========================================================
-    // ÁUDIO DO GERADOR
-    // =========================================================
-
     [Header("Áudio do Gerador")]
     public AudioSource generatorAudioSource;
 
 
-    // =========================================================
-    // TEMPO DOS VÍDEOS DOS ITENS
-    // =========================================================
-
     [Header("Tempo entre Som e Vídeo")]
     public float delayBeforeVideo = 1f;
 
-    public float videoDisplayTime = 3f;
+
+    [Header("Tempo depois do último vídeo")]
+    public float delayAfterLastItemVideo = 1f;
 
 
-    // =========================================================
-    // SEQUÊNCIA FINAL
-    // =========================================================
-
-    [Header("Sequência Final")]
+    [Header("Sequência GeneratorON")]
     public float delayBeforeGeneratorSound = 2f;
 
     public float delayBeforeGeneratorOnVideo = 3f;
 
-    public float generatorOnVideoDisplayTime = 4f;
-
-
-    // =========================================================
-    // CONTROLE
-    // =========================================================
 
     private Coroutine currentSequence;
 
     private bool generatorIsPlaying = false;
-
-    private bool itemVideoPlaying = false;
 
 
     // =========================================================
@@ -114,6 +72,7 @@ public class GeneratorUI : MonoBehaviour
     {
         HideAllVideos();
 
+
         if (generatorAudioSource != null)
         {
             generatorAudioSource.Stop();
@@ -122,37 +81,20 @@ public class GeneratorUI : MonoBehaviour
 
 
     // =========================================================
-    // OBJETIVO DO GERADOR
+    // OBJETIVO
     // =========================================================
 
     public void ShowGeneratorTutorial()
     {
         if (generatorTutorialVideo == null)
-        {
-            Debug.LogWarning(
-                "Vídeo do objetivo do gerador não configurado."
-            );
-
             return;
-        }
 
         if (objectiveVideoPlayer == null)
-        {
-            Debug.LogWarning(
-                "Objective Video Player não configurado."
-            );
-
             return;
-        }
 
         if (objectiveVideoImage == null)
-        {
-            Debug.LogWarning(
-                "Objective Video Image não configurado."
-            );
-
             return;
-        }
+
 
         StartCoroutine(
             GeneratorTutorialSequence()
@@ -160,39 +102,39 @@ public class GeneratorUI : MonoBehaviour
     }
 
 
-    // =========================================================
-    // SEQUÊNCIA DO OBJETIVO
-    // =========================================================
-
     private IEnumerator GeneratorTutorialSequence()
     {
         HideObjectiveVideo();
 
-        objectiveVideoPlayer.Stop();
 
         objectiveVideoPlayer.clip =
             generatorTutorialVideo;
 
+
         objectiveVideoPlayer.isLooping =
             false;
 
+
         objectiveVideoPlayer.Prepare();
+
 
         while (!objectiveVideoPlayer.isPrepared)
         {
             yield return null;
         }
 
-        objectiveVideoImage.gameObject.SetActive(
-            true
-        );
+
+        objectiveVideoImage.gameObject.SetActive(true);
+
 
         objectiveVideoPlayer.Play();
+
 
         while (objectiveVideoPlayer.isPlaying)
         {
             yield return null;
         }
+
 
         HideObjectiveVideo();
     }
@@ -203,36 +145,31 @@ public class GeneratorUI : MonoBehaviour
     // =========================================================
 
     public void ShowGasolineInserted(
-        int gasolineCount
+        int gasolineCount,
+        bool isLastItem
     )
     {
         VideoClip video = null;
 
+
         if (gasolineCount == 1)
         {
-            video =
-                gasolineOneVideo;
+            video = gasolineOneVideo;
         }
         else if (gasolineCount == 2)
         {
-            video =
-                gasolineTwoVideo;
+            video = gasolineTwoVideo;
         }
+
 
         if (video == null)
-        {
-            Debug.LogWarning(
-                "Vídeo da gasolina " +
-                gasolineCount +
-                "/2 não configurado."
-            );
-
             return;
-        }
+
 
         StartVideoSequence(
             video,
-            gasolineInsertSound
+            gasolineInsertSound,
+            isLastItem
         );
     }
 
@@ -241,76 +178,68 @@ public class GeneratorUI : MonoBehaviour
     // FUSÍVEL
     // =========================================================
 
-    public void ShowFuseInserted()
+    public void ShowFuseInserted(
+        bool isLastItem
+    )
     {
         if (fuseVideo == null)
-        {
-            Debug.LogWarning(
-                "Vídeo do fusível não configurado."
-            );
-
             return;
-        }
+
 
         StartVideoSequence(
             fuseVideo,
-            fuseInsertSound
+            fuseInsertSound,
+            isLastItem
         );
     }
 
 
     // =========================================================
-    // COMEÇAR VÍDEO DOS ITENS
+    // COMEÇAR VÍDEO
     // =========================================================
 
     private void StartVideoSequence(
         VideoClip video,
-        AudioClip insertSound
+        AudioClip insertSound,
+        bool isLastItem
     )
     {
         if (currentSequence != null)
         {
-            StopCoroutine(
-                currentSequence
-            );
+            StopCoroutine(currentSequence);
         }
+
 
         currentSequence =
             StartCoroutine(
                 PlayInsertSequence(
                     video,
-                    insertSound
+                    insertSound,
+                    isLastItem
                 )
             );
     }
 
 
     // =========================================================
-    // SEQUÊNCIA DOS ITENS
+    // VÍDEO DO ITEM
     // =========================================================
 
     private IEnumerator PlayInsertSequence(
         VideoClip video,
-        AudioClip insertSound
+        AudioClip insertSound,
+        bool isLastItem
     )
     {
-        itemVideoPlaying = true;
-
         HideItemVideo();
 
 
-        // =====================================================
-        // SOM DE COLOCAR
-        // =====================================================
+        // -----------------------------------------------------
+        // SOM
+        // -----------------------------------------------------
 
-        PlaySound(
-            insertSound
-        );
+        PlaySound(insertSound);
 
-
-        // =====================================================
-        // ESPERA O SOM TERMINAR
-        // =====================================================
 
         if (insertSound != null)
         {
@@ -320,42 +249,25 @@ public class GeneratorUI : MonoBehaviour
         }
 
 
-        // =====================================================
-        // ESPERA MAIS 1 SEGUNDO
-        // =====================================================
+        // -----------------------------------------------------
+        // DELAY
+        // -----------------------------------------------------
 
         yield return new WaitForSeconds(
             delayBeforeVideo
         );
 
 
-        if (videoPlayer == null)
+        if (videoPlayer == null ||
+            videoImage == null)
         {
-            Debug.LogWarning(
-                "Video Player não configurado."
-            );
-
-            itemVideoPlaying = false;
-
             yield break;
         }
 
 
-        if (videoImage == null)
-        {
-            Debug.LogWarning(
-                "Video Image não configurado."
-            );
-
-            itemVideoPlaying = false;
-
-            yield break;
-        }
-
-
-        // =====================================================
-        // CONFIGURA VÍDEO
-        // =====================================================
+        // -----------------------------------------------------
+        // CONFIGURA
+        // -----------------------------------------------------
 
         videoPlayer.Stop();
 
@@ -366,11 +278,8 @@ public class GeneratorUI : MonoBehaviour
             false;
 
 
-        // =====================================================
-        // PREPARA
-        // =====================================================
-
         videoPlayer.Prepare();
+
 
         while (!videoPlayer.isPrepared)
         {
@@ -378,45 +287,80 @@ public class GeneratorUI : MonoBehaviour
         }
 
 
-        // =====================================================
+        // -----------------------------------------------------
         // MOSTRA
-        // =====================================================
+        // -----------------------------------------------------
 
-        videoImage.gameObject.SetActive(
-            true
-        );
+        videoImage.gameObject.SetActive(true);
 
 
-        // =====================================================
+        // -----------------------------------------------------
         // TOCA
-        // =====================================================
+        // -----------------------------------------------------
 
         videoPlayer.Play();
 
 
-        // =====================================================
-        // FICA 3 SEGUNDOS
-        // =====================================================
+        // Espera realmente começar.
 
-        yield return new WaitForSeconds(
-            videoDisplayTime
-        );
+        while (!videoPlayer.isPlaying)
+        {
+            yield return null;
+        }
 
 
-        // =====================================================
+        // -----------------------------------------------------
+        // ESPERA TERMINAR
+        // -----------------------------------------------------
+
+        while (videoPlayer.isPlaying)
+        {
+            yield return null;
+        }
+
+
+        // -----------------------------------------------------
         // ESCONDE
-        // =====================================================
+        // -----------------------------------------------------
 
         HideItemVideo();
 
-        itemVideoPlaying = false;
 
         currentSequence = null;
+
+
+        // =====================================================
+        // ÚLTIMO ITEM
+        // =====================================================
+
+        if (isLastItem)
+        {
+            Debug.Log(
+                "Último vídeo terminou!"
+            );
+
+
+            // Espera 1 segundo.
+
+            yield return new WaitForSeconds(
+                delayAfterLastItemVideo
+            );
+
+
+            Generator generator =
+                FindFirstObjectByType<Generator>();
+
+
+            if (generator != null)
+            {
+                generator.LastItemVideoFinished();
+            }
+        }
     }
 
 
     // =========================================================
-    // GERADOR LIGADO
+    // GENERATOR ON
     // =========================================================
 
     public void StartGeneratorOnSequence()
@@ -425,30 +369,10 @@ public class GeneratorUI : MonoBehaviour
             return;
 
 
-        StartCoroutine(
-            WaitForItemVideoThenStartGenerator()
-        );
-    }
-
-
-    // =========================================================
-    // ESPERA VÍDEO DO ÚLTIMO ITEM
-    // =========================================================
-
-    private IEnumerator WaitForItemVideoThenStartGenerator()
-    {
-        // Espera o vídeo do último item terminar.
-
-        while (itemVideoPlaying)
+        if (currentSequence != null)
         {
-            yield return null;
+            StopCoroutine(currentSequence);
         }
-
-
-        // Agora sim começa a sequência do gerador.
-
-        if (generatorIsPlaying)
-            yield break;
 
 
         currentSequence =
@@ -458,52 +382,46 @@ public class GeneratorUI : MonoBehaviour
     }
 
 
-    // =========================================================
-    // SEQUÊNCIA DO GERADOR LIGADO
-    // =========================================================
-
     private IEnumerator GeneratorOnSequence()
     {
         generatorIsPlaying = true;
 
 
-        // =====================================================
-        // ESCONDE OS VÍDEOS
-        // =====================================================
-
         HideItemVideo();
+
         HideGeneratorOnVideo();
+
         HideObjectiveVideo();
 
 
-        // =====================================================
-        // ESPERA 2 SEGUNDOS
-        // =====================================================
+        // -----------------------------------------------------
+        // ESPERA
+        // -----------------------------------------------------
 
         yield return new WaitForSeconds(
             delayBeforeGeneratorSound
         );
 
 
-        // =====================================================
-        // COMEÇA SOM DO GERADOR
-        // =====================================================
+        // -----------------------------------------------------
+        // SOM
+        // -----------------------------------------------------
 
         PlayGeneratorSound();
 
 
-        // =====================================================
-        // ESPERA 3 SEGUNDOS
-        // =====================================================
+        // -----------------------------------------------------
+        // ESPERA
+        // -----------------------------------------------------
 
         yield return new WaitForSeconds(
             delayBeforeGeneratorOnVideo
         );
 
 
-        // =====================================================
-        // VÍDEO GERADOR LIGADO
-        // =====================================================
+        // -----------------------------------------------------
+        // VÍDEO
+        // -----------------------------------------------------
 
         if (generatorOnVideo != null &&
             generatorOnVideoPlayer != null &&
@@ -511,18 +429,17 @@ public class GeneratorUI : MonoBehaviour
         {
             generatorOnVideoPlayer.Stop();
 
+
             generatorOnVideoPlayer.clip =
                 generatorOnVideo;
+
 
             generatorOnVideoPlayer.isLooping =
                 false;
 
 
-            // =================================================
-            // PREPARA
-            // =================================================
-
             generatorOnVideoPlayer.Prepare();
+
 
             while (!generatorOnVideoPlayer.isPrepared)
             {
@@ -530,40 +447,49 @@ public class GeneratorUI : MonoBehaviour
             }
 
 
-            // =================================================
-            // MOSTRA
-            // =================================================
-
             generatorOnVideoImage.gameObject.SetActive(
                 true
             );
 
 
-            // =================================================
-            // TOCA
-            // =================================================
-
             generatorOnVideoPlayer.Play();
 
 
-            // =================================================
-            // FICA 4 SEGUNDOS
-            // =================================================
-
-            yield return new WaitForSeconds(
-                generatorOnVideoDisplayTime
-            );
+            while (!generatorOnVideoPlayer.isPlaying)
+            {
+                yield return null;
+            }
 
 
-            // =================================================
-            // ESCONDE
-            // =================================================
+            // Espera o vídeo terminar.
+
+            while (generatorOnVideoPlayer.isPlaying)
+            {
+                yield return null;
+            }
+
 
             HideGeneratorOnVideo();
         }
 
 
+        // =====================================================
+        // AGORA SIM: GENERATOR ON
+        // =====================================================
+
+        Generator generator =
+            FindFirstObjectByType<Generator>();
+
+
+        if (generator != null)
+        {
+            generator.CompleteGeneratorOn();
+        }
+
+
         currentSequence = null;
+
+        generatorIsPlaying = false;
     }
 
 
@@ -574,30 +500,20 @@ public class GeneratorUI : MonoBehaviour
     private void PlayGeneratorSound()
     {
         if (generatorAudioSource == null)
-        {
-            Debug.LogWarning(
-                "Generator Audio Source não configurado."
-            );
-
             return;
-        }
 
 
         if (generatorOnSound == null)
-        {
-            Debug.LogWarning(
-                "Generator On Sound não configurado."
-            );
-
             return;
-        }
 
 
         generatorAudioSource.clip =
             generatorOnSound;
 
+
         generatorAudioSource.loop =
             true;
+
 
         generatorAudioSource.Play();
     }
@@ -614,8 +530,10 @@ public class GeneratorUI : MonoBehaviour
         if (audioSource == null)
             return;
 
+
         if (clip == null)
             return;
+
 
         audioSource.PlayOneShot(
             clip
@@ -624,7 +542,7 @@ public class GeneratorUI : MonoBehaviour
 
 
     // =========================================================
-    // ESCONDER VÍDEO DOS ITENS
+    // ESCONDER ITEM
     // =========================================================
 
     private void HideItemVideo()
@@ -632,19 +550,20 @@ public class GeneratorUI : MonoBehaviour
         if (videoPlayer != null)
         {
             videoPlayer.Stop();
+
+            videoPlayer.clip = null;
         }
+
 
         if (videoImage != null)
         {
-            videoImage.gameObject.SetActive(
-                false
-            );
+            videoImage.gameObject.SetActive(false);
         }
     }
 
 
     // =========================================================
-    // ESCONDER VÍDEO DO GERADOR ON
+    // ESCONDER GENERATOR ON
     // =========================================================
 
     private void HideGeneratorOnVideo()
@@ -652,19 +571,20 @@ public class GeneratorUI : MonoBehaviour
         if (generatorOnVideoPlayer != null)
         {
             generatorOnVideoPlayer.Stop();
+
+            generatorOnVideoPlayer.clip = null;
         }
+
 
         if (generatorOnVideoImage != null)
         {
-            generatorOnVideoImage.gameObject.SetActive(
-                false
-            );
+            generatorOnVideoImage.gameObject.SetActive(false);
         }
     }
 
 
     // =========================================================
-    // ESCONDER VÍDEO DO OBJETIVO
+    // ESCONDER OBJETIVO
     // =========================================================
 
     private void HideObjectiveVideo()
@@ -672,13 +592,14 @@ public class GeneratorUI : MonoBehaviour
         if (objectiveVideoPlayer != null)
         {
             objectiveVideoPlayer.Stop();
+
+            objectiveVideoPlayer.clip = null;
         }
+
 
         if (objectiveVideoImage != null)
         {
-            objectiveVideoImage.gameObject.SetActive(
-                false
-            );
+            objectiveVideoImage.gameObject.SetActive(false);
         }
     }
 
@@ -690,7 +611,9 @@ public class GeneratorUI : MonoBehaviour
     private void HideAllVideos()
     {
         HideItemVideo();
+
         HideGeneratorOnVideo();
+
         HideObjectiveVideo();
     }
 
