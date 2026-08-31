@@ -33,8 +33,16 @@ public class GeneratorUI : MonoBehaviour
     public AudioClip fuseInsertSound;
 
 
-    [Header("Som do Gerador")]
-    public AudioClip generatorOnSound;
+    // =========================================================
+    // SONS DO GERADOR
+    // =========================================================
+
+    [Header("Som do Gerador - Ligando")]
+    public AudioClip generatorStartSound;
+
+
+    [Header("Som do Gerador - Loop")]
+    public AudioClip generatorLoopSound;
 
 
     [Header("Áudio")]
@@ -43,6 +51,15 @@ public class GeneratorUI : MonoBehaviour
 
     [Header("Áudio do Gerador")]
     public AudioSource generatorAudioSource;
+
+
+    [Header("Configuração do Som do Gerador")]
+    [Range(0f, 10f)]
+    public float generatorSoundVolume = 1f;
+
+    public float generatorMinDistance = 5f;
+
+    public float generatorMaxDistance = 50f;
 
 
     [Header("Tempo entre Som e Vídeo")]
@@ -76,6 +93,33 @@ public class GeneratorUI : MonoBehaviour
         if (generatorAudioSource != null)
         {
             generatorAudioSource.Stop();
+
+            generatorAudioSource.playOnAwake = false;
+
+            generatorAudioSource.loop = false;
+
+
+            // =================================================
+            // ÁUDIO 3D
+            // =================================================
+
+            generatorAudioSource.spatialBlend = 1f;
+
+
+            generatorAudioSource.minDistance =
+                generatorMinDistance;
+
+
+            generatorAudioSource.maxDistance =
+                generatorMaxDistance;
+
+
+            generatorAudioSource.rolloffMode =
+                AudioRolloffMode.Linear;
+
+
+            generatorAudioSource.volume =
+                generatorSoundVolume;
         }
     }
 
@@ -301,8 +345,6 @@ public class GeneratorUI : MonoBehaviour
         videoPlayer.Play();
 
 
-        // Espera realmente começar.
-
         while (!videoPlayer.isPlaying)
         {
             yield return null;
@@ -339,8 +381,6 @@ public class GeneratorUI : MonoBehaviour
                 "Último vídeo terminou!"
             );
 
-
-            // Espera 1 segundo.
 
             yield return new WaitForSeconds(
                 delayAfterLastItemVideo
@@ -404,14 +444,52 @@ public class GeneratorUI : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // SOM
+        // PREPARA ÁUDIO
         // -----------------------------------------------------
 
-        PlayGeneratorSound();
+        SetupGeneratorAudio();
 
 
         // -----------------------------------------------------
-        // ESPERA
+        // SOM DE LIGAÇÃO
+        // -----------------------------------------------------
+
+        if (generatorStartSound != null)
+        {
+            generatorAudioSource.loop = false;
+
+            generatorAudioSource.clip =
+                generatorStartSound;
+
+            generatorAudioSource.Play();
+
+
+            // Espera o som terminar.
+
+            yield return new WaitForSeconds(
+                generatorStartSound.length
+            );
+        }
+
+
+        // =====================================================
+        // SOM DE LOOP
+        // =====================================================
+
+        if (generatorLoopSound != null)
+        {
+            generatorAudioSource.clip =
+                generatorLoopSound;
+
+            generatorAudioSource.loop =
+                true;
+
+            generatorAudioSource.Play();
+        }
+
+
+        // -----------------------------------------------------
+        // ESPERA PARA O VÍDEO
         // -----------------------------------------------------
 
         yield return new WaitForSeconds(
@@ -494,28 +572,44 @@ public class GeneratorUI : MonoBehaviour
 
 
     // =========================================================
-    // SOM DO GERADOR
+    // CONFIGURAR ÁUDIO DO GERADOR
     // =========================================================
 
-    private void PlayGeneratorSound()
+    private void SetupGeneratorAudio()
     {
         if (generatorAudioSource == null)
             return;
 
 
-        if (generatorOnSound == null)
-            return;
+        generatorAudioSource.Stop();
 
 
-        generatorAudioSource.clip =
-            generatorOnSound;
+        generatorAudioSource.playOnAwake =
+            false;
 
 
-        generatorAudioSource.loop =
-            true;
+        generatorAudioSource.volume =
+            generatorSoundVolume;
 
 
-        generatorAudioSource.Play();
+        // =====================================================
+        // 3D
+        // =====================================================
+
+        generatorAudioSource.spatialBlend =
+            1f;
+
+
+        generatorAudioSource.minDistance =
+            generatorMinDistance;
+
+
+        generatorAudioSource.maxDistance =
+            generatorMaxDistance;
+
+
+        generatorAudioSource.rolloffMode =
+            AudioRolloffMode.Linear;
     }
 
 

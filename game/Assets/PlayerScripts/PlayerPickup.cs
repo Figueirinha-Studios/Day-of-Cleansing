@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PlayerPickup : MonoBehaviour
 {
@@ -39,6 +40,11 @@ public class PlayerPickup : MonoBehaviour
 
     [Header("Gerador")]
     public float generatorInteractionDistance = 3f;
+
+
+    [Header("Proteção ao soltar/arremessar")]
+    [Tooltip("Tempo em que o objeto ignora colisões com o jogador após ser solto/arremessado.")]
+    public float playerCollisionIgnoreTime = 0.15f;
 
 
     private PickupObject currentObject;
@@ -87,10 +93,6 @@ public class PlayerPickup : MonoBehaviour
 
         else
         {
-            // Verifica se pode interagir com o gerador.
-            // Se estiver segurando gasolina ou fusível
-            // e olhando para o gerador, mostra [E].
-
             CheckForGeneratorInteraction();
 
 
@@ -110,7 +112,7 @@ public class PlayerPickup : MonoBehaviour
 
 
                 // Se não for o gerador,
-                // solta o objeto normalmente.
+                // solta normalmente.
 
                 HidePickupPrompt();
 
@@ -126,14 +128,13 @@ public class PlayerPickup : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0))
             {
-                // Gasolina e fusível NÃO podem
+                // Gasolina e fusível não podem
                 // ser arremessados.
 
                 if (currentObject.IsGeneratorItem())
                 {
                     return;
                 }
-
 
                 ThrowObject();
             }
@@ -163,10 +164,8 @@ public class PlayerPickup : MonoBehaviour
         CameraController cameraController =
             GetComponent<CameraController>();
 
-
         if (cameraController == null)
             return true;
-
 
         return cameraController.IsFirstPerson();
     }
@@ -307,7 +306,8 @@ public class PlayerPickup : MonoBehaviour
         }
 
 
-        currentObject = pickup;
+        currentObject =
+            pickup;
 
 
         // =====================================================
@@ -363,7 +363,7 @@ public class PlayerPickup : MonoBehaviour
 
 
         // =====================================================
-        // DESATIVA COLISÃO
+        // DESATIVA COLISÃO ENQUANTO SEGURA
         // =====================================================
 
         Collider[] objectColliders =
@@ -428,19 +428,11 @@ public class PlayerPickup : MonoBehaviour
             return;
 
 
-        // =====================================================
-        // POSIÇÃO DESEJADA
-        // =====================================================
-
         Vector3 targetPosition =
             holdPoint.TransformPoint(
                 currentObject.holdPosition
             );
 
-
-        // =====================================================
-        // ROTAÇÃO DESEJADA
-        // =====================================================
 
         Quaternion targetRotation =
             holdPoint.rotation *
@@ -448,10 +440,6 @@ public class PlayerPickup : MonoBehaviour
                 currentObject.holdRotation
             );
 
-
-        // =====================================================
-        // MOVIMENTO SUAVE
-        // =====================================================
 
         Vector3 newPosition =
             Vector3.Lerp(
@@ -470,10 +458,6 @@ public class PlayerPickup : MonoBehaviour
                 Time.fixedDeltaTime
             );
 
-
-        // =====================================================
-        // MOVE RIGIDBODY
-        // =====================================================
 
         rb.MovePosition(
             newPosition
@@ -498,9 +482,6 @@ public class PlayerPickup : MonoBehaviour
             return;
         }
 
-
-        // Só gasolina e fusível podem
-        // interagir com o gerador.
 
         if (!currentObject.IsGeneratorItem())
         {
@@ -531,9 +512,6 @@ public class PlayerPickup : MonoBehaviour
 
             if (generator != null)
             {
-                // Se o gerador já estiver ligado,
-                // não mostra [E].
-
                 if (generator.IsGeneratorOn())
                 {
                     HidePickupPrompt();
@@ -541,16 +519,12 @@ public class PlayerPickup : MonoBehaviour
                 }
 
 
-                // Mostra [E].
-
                 ShowPickupPrompt();
 
                 return;
             }
         }
 
-
-        // Não está olhando para o gerador.
 
         HidePickupPrompt();
     }
@@ -649,6 +623,104 @@ public class PlayerPickup : MonoBehaviour
 
 
     // =========================================================
+    // IGNORAR COLISÃO COM O PLAYER TEMPORARIAMENTE
+    // =========================================================
+
+    private void IgnorePlayerCollisionTemporarily(
+        PickupObject pickupObject)
+    {
+        if (pickupObject == null)
+            return;
+
+
+        Collider[] objectColliders =
+            pickupObject.GetComponentsInChildren<Collider>();
+
+
+        Collider[] playerColliders =
+            GetComponentsInChildren<Collider>();
+
+
+        foreach (Collider objectCollider in objectColliders)
+        {
+            if (objectCollider == null)
+                continue;
+
+
+            foreach (Collider playerCollider in playerColliders)
+            {
+                if (playerCollider == null)
+                    continue;
+
+
+                if (objectCollider == playerCollider)
+                    continue;
+
+
+                Physics.IgnoreCollision(
+                    objectCollider,
+                    playerCollider,
+                    true
+                );
+            }
+        }
+
+
+        StartCoroutine(
+            RestorePlayerCollision(
+                pickupObject,
+                objectColliders,
+                playerColliders
+            )
+        );
+    }
+
+
+    // =========================================================
+    // RESTAURAR COLISÃO COM O PLAYER
+    // =========================================================
+
+    private IEnumerator RestorePlayerCollision(
+        PickupObject pickupObject,
+        Collider[] objectColliders,
+        Collider[] playerColliders)
+    {
+        yield return new WaitForSeconds(
+            playerCollisionIgnoreTime
+        );
+
+
+        if (pickupObject == null)
+            yield break;
+
+
+        foreach (Collider objectCollider in objectColliders)
+        {
+            if (objectCollider == null)
+                continue;
+
+
+            foreach (Collider playerCollider in playerColliders)
+            {
+                if (playerCollider == null)
+                    continue;
+
+
+                if (objectCollider == playerCollider)
+                    continue;
+
+
+                Physics.IgnoreCollision(
+                    objectCollider,
+                    playerCollider,
+                    false
+                );
+            }
+        }
+    }
+
+
+    // =========================================================
     // SOLTAR COM E
     // =========================================================
 
@@ -715,6 +787,15 @@ public class PlayerPickup : MonoBehaviour
         {
             col.enabled = true;
         }
+
+
+        // =====================================================
+        // IGNORA PLAYER TEMPORARIAMENTE
+        // =====================================================
+
+        IgnorePlayerCollisionTemporarily(
+            objectToDrop
+        );
 
 
         // =====================================================
@@ -825,6 +906,15 @@ public class PlayerPickup : MonoBehaviour
         {
             col.enabled = true;
         }
+
+
+        // =====================================================
+        // IGNORA PLAYER TEMPORARIAMENTE
+        // =====================================================
+
+        IgnorePlayerCollisionTemporarily(
+            objectToThrow
+        );
 
 
         // =====================================================

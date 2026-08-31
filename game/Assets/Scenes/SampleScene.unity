@@ -258,7 +258,7 @@ MonoBehaviour:
   volume: 1
   dropNoiseRadius: 2
   dropSound: {fileID: 8300000, guid: 18e33cc4ac308f2439d15dfb59b3f13b, type: 3}
-  dropVolume: 1
+  dropVolume: 2
 --- !u!114 &21660518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -509,7 +509,7 @@ MonoBehaviour:
   fuseInserted: 0
   generatorReady: 0
   generatorOn: 0
-  interactionDistance: 3
+  interactionDistance: 4
   player: {fileID: 1460273160}
   tutorialAlreadyShown: 0
 --- !u!114 &31245302
@@ -537,12 +537,16 @@ MonoBehaviour:
   generatorTutorialVideo: {fileID: 32900000, guid: baabcd1510f1e4642b9772f9cb4b34a9, type: 3}
   gasolineInsertSound: {fileID: 8300000, guid: b9b7e768c2e1b014b8b9f891ab5bc232, type: 3}
   fuseInsertSound: {fileID: 8300000, guid: 87cb2970444d86e43a216cf63903c793, type: 3}
-  generatorOnSound: {fileID: 8300000, guid: df217f2344600314aa85a7b0627689fc, type: 3}
+  generatorStartSound: {fileID: 8300000, guid: 0b8c9c024ab6b1b4bb091b9c3ec60a25, type: 3}
+  generatorLoopSound: {fileID: 8300000, guid: 0f269e659e2a94742a971bf5e6780c69, type: 3}
   audioSource: {fileID: 1230172520}
   generatorAudioSource: {fileID: 1105969161}
+  generatorSoundVolume: 1
+  generatorMinDistance: 5
+  generatorMaxDistance: 50
   delayBeforeVideo: 1
   delayAfterLastItemVideo: 1
-  delayBeforeGeneratorSound: 2
+  delayBeforeGeneratorSound: 1
   delayBeforeGeneratorOnVideo: 3
 --- !u!1 &33132914
 GameObject:
@@ -1054,10 +1058,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NoiseSource
   noiseRadius: 35
   impactSound: {fileID: 8300000, guid: b374acae67d2e37428843df1e9f35fec, type: 3}
-  volume: 1
+  volume: 0.8
   dropNoiseRadius: 10
   dropSound: {fileID: 8300000, guid: d631d867815cec240995964ed9b37cd9, type: 3}
-  dropVolume: 0.25
+  dropVolume: 2
 --- !u!114 &52109546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4617,7 +4621,7 @@ Transform:
   m_GameObject: {fileID: 532984186}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 45.15, y: 3.61, z: 57.32}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4638,7 +4642,7 @@ MonoBehaviour:
   generator: {fileID: 31245301}
   audioSource: {fileID: 601865282}
   sirenSound: {fileID: 8300000, guid: 6587f0533f7053e46978f15e5dec7e69, type: 3}
-  sirenVolume: 5
+  sirenVolume: 2.5
   sirenMinDistance: 5
   sirenMaxDistance: 200
   noiseRadius: 500
@@ -5281,7 +5285,7 @@ Transform:
   m_GameObject: {fileID: 601865280}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 45.56, y: 3.07, z: 57.42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7203,7 +7207,7 @@ MonoBehaviour:
   volume: 1
   dropNoiseRadius: 2
   dropSound: {fileID: 8300000, guid: 18e33cc4ac308f2439d15dfb59b3f13b, type: 3}
-  dropVolume: 1
+  dropVolume: 2
 --- !u!114 &904487467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11582,6 +11586,9 @@ MonoBehaviour:
   rightDoor: {fileID: 2057755398}
   openDistance: 2
   openSpeed: 0.15
+  doorAudioSource: {fileID: 601865282}
+  doorOpeningSound: {fileID: 8300000, guid: 2242a50f0860891469e1858779ce22ea, type: 3}
+  doorOpeningVolume: 1.5
 --- !u!1 &1430975757 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
@@ -12662,6 +12669,7 @@ MonoBehaviour:
   throwForce: 8
   throwUpForce: 0.15
   generatorInteractionDistance: 3
+  playerCollisionIgnoreTime: 0.15
 --- !u!114 &1460273173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14976,10 +14984,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NoiseSource
   noiseRadius: 35
   impactSound: {fileID: 8300000, guid: b374acae67d2e37428843df1e9f35fec, type: 3}
-  volume: 1
+  volume: 0.8
   dropNoiseRadius: 10
   dropSound: {fileID: 8300000, guid: d631d867815cec240995964ed9b37cd9, type: 3}
-  dropVolume: 0.25
+  dropVolume: 2
 --- !u!114 &1839220582
 MonoBehaviour:
   m_ObjectHideFlags: 0

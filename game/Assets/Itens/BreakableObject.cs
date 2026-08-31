@@ -9,14 +9,17 @@ public class BreakableObject : MonoBehaviour
         Particles
     }
 
+
     [Header("Modo de quebra")]
     public BreakMode breakMode = BreakMode.Simple;
+
 
     [Header("Configuração")]
     public bool breakOnThrow = true;
 
     [Tooltip("Tempo antes de destruir no modo simples.")]
     public float destroyDelay = 0f;
+
 
     // =========================================================
     // ANIMAÇÃO
@@ -31,6 +34,7 @@ public class BreakableObject : MonoBehaviour
     [Tooltip("Tempo para destruir depois da animação.")]
     public float animationDestroyDelay = 5f;
 
+
     // =========================================================
     // PARTÍCULAS
     // =========================================================
@@ -42,6 +46,7 @@ public class BreakableObject : MonoBehaviour
     [Tooltip("Tempo até destruir o objeto depois de gerar as partículas.")]
     public float particleDestroyDelay = 0f;
 
+
     // =========================================================
     // DIREÇÃO DO ARREMESSO
     // =========================================================
@@ -50,12 +55,14 @@ public class BreakableObject : MonoBehaviour
     [Tooltip("Direção em que os cacos serão lançados.")]
     public Vector3 throwDirection = Vector3.forward;
 
+
     // =========================================================
     // CONTROLE
     // =========================================================
 
     private bool wasThrown = false;
     private bool hasBroken = false;
+
 
     // =========================================================
     // RECEBER DIREÇÃO
@@ -66,8 +73,11 @@ public class BreakableObject : MonoBehaviour
         if (direction.sqrMagnitude <= 0.001f)
             return;
 
-        throwDirection = direction.normalized;
+
+        throwDirection =
+            direction.normalized;
     }
+
 
     // =========================================================
     // ATIVAR QUEBRA
@@ -78,9 +88,11 @@ public class BreakableObject : MonoBehaviour
         if (!breakOnThrow)
             return;
 
+
         wasThrown = true;
         hasBroken = false;
     }
+
 
     // =========================================================
     // DESATIVAR QUEBRA
@@ -92,6 +104,7 @@ public class BreakableObject : MonoBehaviour
         hasBroken = false;
     }
 
+
     // =========================================================
     // COLISÃO
     // =========================================================
@@ -101,13 +114,35 @@ public class BreakableObject : MonoBehaviour
         if (!wasThrown)
             return;
 
+
         if (hasBroken)
             return;
+
+
+        // =====================================================
+        // IGNORA O PLAYER
+        // =====================================================
+
+        PlayerPickup player =
+            collision.collider
+                .GetComponentInParent<PlayerPickup>();
+
+
+        if (player != null)
+        {
+            return;
+        }
+
+
+        // =====================================================
+        // QUEBRA
+        // =====================================================
 
         hasBroken = true;
 
         Break();
     }
+
 
     // =========================================================
     // QUEBRAR
@@ -121,9 +156,14 @@ public class BreakableObject : MonoBehaviour
 
         if (breakMode == BreakMode.Simple)
         {
-            Destroy(gameObject, destroyDelay);
+            Destroy(
+                gameObject,
+                destroyDelay
+            );
+
             return;
         }
+
 
         // =====================================================
         // ANIMATION
@@ -139,30 +179,51 @@ public class BreakableObject : MonoBehaviour
                     gameObject
                 );
 
-                Destroy(gameObject, destroyDelay);
+
+                Destroy(
+                    gameObject,
+                    destroyDelay
+                );
+
+
                 return;
             }
 
-            Rigidbody rb = GetComponent<Rigidbody>();
+
+            Rigidbody rb =
+                GetComponent<Rigidbody>();
+
 
             if (rb != null)
             {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
+                rb.linearVelocity =
+                    Vector3.zero;
 
-                rb.isKinematic = true;
-                rb.useGravity = false;
+                rb.angularVelocity =
+                    Vector3.zero;
+
+                rb.isKinematic =
+                    true;
+
+                rb.useGravity =
+                    false;
             }
 
-            breakAnimator.SetTrigger(breakTrigger);
+
+            breakAnimator.SetTrigger(
+                breakTrigger
+            );
+
 
             Destroy(
                 gameObject,
                 animationDestroyDelay
             );
 
+
             return;
         }
+
 
         // =====================================================
         // PARTICLES
@@ -178,31 +239,38 @@ public class BreakableObject : MonoBehaviour
                     gameObject
                 );
 
-                Destroy(gameObject, particleDestroyDelay);
+
+                Destroy(
+                    gameObject,
+                    particleDestroyDelay
+                );
+
+
                 return;
             }
+
 
             // =================================================
             // DIREÇÃO DO ARREMESSO
             // =================================================
 
-            Vector3 direction = throwDirection;
+            Vector3 direction =
+                throwDirection;
+
 
             if (direction.sqrMagnitude <= 0.001f)
             {
-                direction = transform.forward;
+                direction =
+                    transform.forward;
             }
 
+
             direction.Normalize();
+
 
             // =================================================
             // ROTAÇÃO DO PARTICLE SYSTEM
             // =================================================
-            //
-            // IMPORTANTE:
-            // O Cone do Particle System aponta pelo eixo Y.
-            // Portanto usamos FromToRotation com Vector3.up.
-            //
 
             Quaternion particleRotation =
                 Quaternion.FromToRotation(
@@ -210,8 +278,9 @@ public class BreakableObject : MonoBehaviour
                     direction
                 );
 
+
             // =================================================
-            // CRIA AS PARTÍCULAS
+            // CRIA PARTÍCULAS
             // =================================================
 
             GameObject particles =
@@ -221,24 +290,29 @@ public class BreakableObject : MonoBehaviour
                     particleRotation
                 );
 
+
             // =================================================
-            // INICIA AS PARTÍCULAS
+            // INICIA PARTÍCULAS
             // =================================================
 
             ParticleSystem particleSystem =
                 particles.GetComponent<ParticleSystem>();
 
+
             if (particleSystem != null)
             {
                 particleSystem.Play();
 
+
                 var main =
                     particleSystem.main;
+
 
                 float particleLifetime =
                     main.duration +
                     main.startLifetime.constantMax +
                     0.5f;
+
 
                 Destroy(
                     particles,
@@ -254,14 +328,16 @@ public class BreakableObject : MonoBehaviour
                     particles
                 );
 
+
                 Destroy(
                     particles,
                     3f
                 );
             }
 
+
             // =================================================
-            // DESTROI A GARRAFA
+            // DESTROI OBJETO
             // =================================================
 
             Destroy(

@@ -31,6 +31,19 @@ public class Door : MonoBehaviour
 
 
     // =========================================================
+    // SOM DA PORTA
+    // =========================================================
+
+    [Header("Som - Porta Abrindo")]
+    public AudioSource doorAudioSource;
+
+    public AudioClip doorOpeningSound;
+
+    [Range(0f, 10f)]
+    public float doorOpeningVolume = 1f;
+
+
+    // =========================================================
     // POSIÇÕES
     // =========================================================
 
@@ -82,6 +95,41 @@ public class Door : MonoBehaviour
                 Vector3.back *
                 openDistance;
         }
+
+
+        // =====================================================
+        // CONFIGURA AUDIO SOURCE
+        // =====================================================
+
+        if (doorAudioSource != null)
+        {
+            doorAudioSource.Stop();
+
+            doorAudioSource.playOnAwake = false;
+
+            doorAudioSource.loop = true;
+
+            doorAudioSource.volume =
+                doorOpeningVolume;
+
+
+            // Áudio 3D.
+
+            doorAudioSource.spatialBlend = 1f;
+
+
+            // Alcance do som.
+
+            doorAudioSource.minDistance = 5f;
+
+            doorAudioSource.maxDistance = 50f;
+
+
+            // Rolloff.
+
+            doorAudioSource.rolloffMode =
+                AudioRolloffMode.Linear;
+        }
     }
 
 
@@ -95,7 +143,9 @@ public class Door : MonoBehaviour
             return;
 
 
-        // Espera a sirene terminar.
+        // =====================================================
+        // ESPERA A SIRENE TERMINAR
+        // =====================================================
 
         if (!opening)
         {
@@ -103,16 +153,100 @@ public class Door : MonoBehaviour
                 doorNoise.CanDoorOpen())
             {
                 opening = true;
+
+
+                // Começa o som da porta.
+
+                PlayDoorOpeningSound();
             }
         }
 
 
-        // Abre.
+        // =====================================================
+        // ABRE
+        // =====================================================
 
         if (opening)
         {
             OpenDoor();
         }
+    }
+
+
+    // =========================================================
+    // SOM DA PORTA
+    // =========================================================
+
+    private void PlayDoorOpeningSound()
+    {
+        if (doorAudioSource == null)
+        {
+            Debug.LogWarning(
+                "DOOR: Audio Source da porta não configurado!"
+            );
+
+            return;
+        }
+
+
+        if (doorOpeningSound == null)
+        {
+            Debug.LogWarning(
+                "DOOR: Som de abertura não configurado!"
+            );
+
+            return;
+        }
+
+
+        doorAudioSource.Stop();
+
+
+        doorAudioSource.clip =
+            doorOpeningSound;
+
+
+        doorAudioSource.volume =
+            doorOpeningVolume;
+
+
+        doorAudioSource.loop =
+            true;
+
+
+        // =====================================================
+        // ÁUDIO 3D
+        // =====================================================
+
+        doorAudioSource.spatialBlend =
+            1f;
+
+
+        doorAudioSource.Play();
+
+
+        Debug.Log(
+            "DOOR: Som de porta abrindo começou."
+        );
+    }
+
+
+    // =========================================================
+    // PARAR SOM DA PORTA
+    // =========================================================
+
+    private void StopDoorOpeningSound()
+    {
+        if (doorAudioSource == null)
+            return;
+
+
+        doorAudioSource.Stop();
+
+
+        Debug.Log(
+            "DOOR: Som de porta abrindo terminou."
+        );
     }
 
 
@@ -181,6 +315,11 @@ public class Door : MonoBehaviour
             rightFinished)
         {
             opened = true;
+
+
+            // Para o som.
+
+            StopDoorOpeningSound();
 
 
             Debug.Log(
