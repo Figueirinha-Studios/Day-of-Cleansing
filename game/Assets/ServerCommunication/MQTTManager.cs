@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using MQTTnet;
 using MQTTnet.Client;
 
@@ -11,6 +12,10 @@ public class MQTTManager : MonoBehaviour
     [Header("MQTT")]
     public string broker = "localhost";
     public int port = 1883;
+
+    [Header("Botão de Pânico")]
+    public string panicTopic = "game/panic";
+    public string panicScene = "PanicScene";
 
     private IMqttClient mqttClient;
 
@@ -36,6 +41,9 @@ public class MQTTManager : MonoBehaviour
             var factory = new MqttFactory();
             mqttClient = factory.CreateMqttClient();
 
+            // Evento chamado quando uma mensagem chega
+            mqttClient.ApplicationMessageReceivedAsync += OnMessageReceived;
+
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(broker, port)
                 .Build();
@@ -43,6 +51,11 @@ public class MQTTManager : MonoBehaviour
             await mqttClient.ConnectAsync(options);
 
             Debug.Log("MQTT CONECTADO!");
+
+            // Subscribe no botão de pânico
+            await mqttClient.SubscribeAsync(panicTopic);
+
+            Debug.Log($"MQTT SUBSCRITO - Topico: {panicTopic}");
         }
         catch (Exception e)
         {
@@ -50,15 +63,36 @@ public class MQTTManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Envia uma mensagem MQTT.
-    /// Pode ser chamado de qualquer outro script.
-    /// </summary>
+    private Task OnMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+    {
+        string topic = e.ApplicationMessage.Topic;
+        string message = e.ApplicationMessage.PayloadSegment.ToString();
+
+        Debug.Log(
+            $"MQTT RECEBIDO - Topico: {topic} | Mensagem: {message}"
+        );
+
+        if (topic == panicTopic)
+        {
+            UnityMainThreadDispatcher.Enqueue(() =>
+            {
+                Debug.Log("🚨 BOTÃO DE PÂNICO ATIVADO!");
+
+                SceneManager.LoadScene(panicScene);
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
     public async void Publish(string topic, string message)
     {
         if (mqttClient == null || !mqttClient.IsConnected)
         {
-            Debug.LogWarning("MQTT não está conectado. Mensagem não enviada.");
+            Debug.LogWarning(
+                "MQTT não está conectado. Mensagem não enviada."
+            );
+
             return;
         }
 
@@ -71,11 +105,15 @@ public class MQTTManager : MonoBehaviour
 
             await mqttClient.PublishAsync(mqttMessage);
 
-            Debug.Log($"MQTT ENVIADO - Topico: {topic} | Mensagem: {message}");
+            Debug.Log(
+                $"MQTT ENVIADO - Topico: {topic} | Mensagem: {message}"
+            );
         }
         catch (Exception e)
         {
-            Debug.LogError("ERRO AO ENVIAR MQTT: " + e.Message);
+            Debug.LogError(
+                "ERRO AO ENVIAR MQTT: " + e.Message
+            );
         }
     }
 }

@@ -13343,7 +13343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb4059b8d102c343bed30a341b0ed31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WebSocketManager
-  serverUrl: wss://casting-ice-papua-pharmacy.trycloudflare.com
+  serverUrl: wss://filme-avoiding-teaching-incl.trycloudflare.com
   player: {fileID: 1460273160}
   robot: {fileID: 2106347680}
   updateInterval: 3
@@ -16914,6 +16914,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MQTTManager
   broker: doc--server.duckdns.org
   port: 1883
+  panicTopic: game/panic
+  panicScene: PanicScene
 --- !u!1001 &2097050519
 PrefabInstance:
   m_ObjectHideFlags: 0
