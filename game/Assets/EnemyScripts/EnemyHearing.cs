@@ -9,24 +9,35 @@ public class EnemyHearing : MonoBehaviour
 
     void Awake()
     {
-        enemyAI = GetComponent<EnemyAI>();
+        enemyAI =
+            GetComponent<EnemyAI>();
     }
 
-    public bool CanHearNoise(Vector3 noisePosition, float noiseRadius)
+    public bool CanHearNoise(
+        Vector3 noisePosition,
+        float noiseRadius
+    )
     {
-        float distance = Vector3.Distance(
-            transform.position,
-            noisePosition
-        );
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                noisePosition
+            );
 
-        return distance <= noiseRadius * hearingMultiplier;
+        return distance <=
+               noiseRadius *
+               hearingMultiplier;
     }
 
-    public void HearNoise(Vector3 noisePosition)
+    public void HearNoise(
+        Vector3 noisePosition
+    )
     {
         if (enemyAI == null)
             return;
 
-        enemyAI.ReceiveNoise(noisePosition);
+        enemyAI.ReceiveNoise(
+            noisePosition
+        );
     }
 }

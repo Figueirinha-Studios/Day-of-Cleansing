@@ -22,6 +22,12 @@ public class EnemyAI : MonoBehaviour
 
     private EnemyVision vision;
 
+    [Header("Detecção de Proximidade")]
+    [Tooltip("Raio ao redor do Chappie que força a perseguição.")]
+    public float proximityDetectionRadius = 1f;
+
+    private bool wasPlayerInProximity = false;
+
     [Header("Patrol")]
     public Transform patrolPointsParent;
     private Transform[] patrolPoints;
@@ -67,7 +73,9 @@ public class EnemyAI : MonoBehaviour
         vision = GetComponent<EnemyVision>();
         enemyAudio = GetComponent<EnemyAudio>();
         animator = GetComponent<Animator>();
+
         agent.speed = patrolSpeed;
+
         patrolPoints = new Transform[patrolPointsParent.childCount];
 
         for (int i = 0; i < patrolPointsParent.childCount; i++)
@@ -77,110 +85,199 @@ public class EnemyAI : MonoBehaviour
 
         if (patrolPoints.Length > 0)
         {
-            agent.SetDestination(patrolPoints[currentPoint].position);
+            agent.SetDestination(
+                patrolPoints[currentPoint].position
+            );
         }
     }
 
     void Update()
     {
+        HandleProximityDetection();
 
         switch (currentState)
         {
             case EnemyState.Patrol:
 
                 Patrol();
+
                 if (vision.CanSeePlayer())
                 {
                     lastKnownPosition = player.position;
                     currentState = EnemyState.Chase;
                     musicManager.StartChaseMusic();
                 }
+
                 break;
 
             case EnemyState.Chase:
 
                 Chase();
+
                 if (!vision.CanSeePlayer())
                 {
-                    currentState = EnemyState.LostSight;
-                    memoryTimer = memoryTime;
-                    lastKnownPosition = player.position;
+                    if (!vision.IsVisionStillActive())
+                    {
+                        currentState = EnemyState.LostSight;
+                        memoryTimer = memoryTime;
+                        lastKnownPosition = player.position;
+                    }
                 }
+
                 break;
 
             case EnemyState.LostSight:
 
                 LostSight();
+
                 break;
 
             case EnemyState.Search:
 
                 Search();
+
                 if (vision.CanSeePlayer())
                 {
                     currentState = EnemyState.Chase;
+                    musicManager.StartChaseMusic();
                 }
+
                 break;
 
             case EnemyState.Investigate:
 
                 Investigate();
+
                 break;
         }
-        
+
         float currentSpeed = agent.velocity.magnitude;
 
-        animator.SetFloat("Speed", currentSpeed);
+        if (animator != null)
+        {
+            animator.SetFloat(
+                "Speed",
+                currentSpeed
+            );
+        }
 
         bool isMoving = currentSpeed > 0.1f;
-        bool isChasing = currentState == EnemyState.Chase;
+        bool isChasing =
+            currentState == EnemyState.Chase;
 
-        enemyAudio.UpdateFootsteps(isMoving, isChasing);
+        if (enemyAudio != null)
+        {
+            enemyAudio.UpdateFootsteps(
+                isMoving,
+                isChasing
+            );
+        }
+    }
+
+    void HandleProximityDetection()
+    {
+        if (player == null)
+            return;
+
+        float distance = Vector3.Distance(
+            transform.position,
+            player.position
+        );
+
+        bool playerInProximity =
+            distance <= proximityDetectionRadius;
+
+        /*
+         * O player acabou de entrar no raio.
+         * Força o Chappie a entrar em Chase.
+         */
+        if (playerInProximity && !wasPlayerInProximity)
+        {
+            lastKnownPosition = player.position;
+
+            if (currentState != EnemyState.Chase)
+            {
+                currentState = EnemyState.Chase;
+
+                if (musicManager != null)
+                {
+                    musicManager.StartChaseMusic();
+                }
+            }
+        }
+
+        wasPlayerInProximity = playerInProximity;
     }
 
     void StartSearch()
     {
         currentState = EnemyState.Search;
+
         searchMusicTimer = searchMusicDuration;
-        musicManager.StartSearchMusic();
+
+        if (musicManager != null)
+        {
+            musicManager.StartSearchMusic();
+        }
 
         searchCenter = lastKnownPosition;
+
         searchTimer = searchTime;
+
         searchPoints.Clear();
 
         foreach (Transform point in patrolPoints)
         {
-            if (Vector3.Distance(point.position, lastKnownPosition) <= searchRadius)
+            if (Vector3.Distance(
+                point.position,
+                lastKnownPosition
+            ) <= searchRadius)
             {
                 searchPoints.Add(point);
             }
         }
 
-        // Se nenhum ponto estiver perto,
-        // procura exatamente onde perdeu o jogador.
         if (searchPoints.Count == 0)
         {
-            agent.SetDestination(lastKnownPosition);
+            agent.SetDestination(
+                lastKnownPosition
+            );
+
             return;
         }
 
         ShuffleSearchPoints();
+
         currentSearchIndex = 0;
+
         agent.speed = searchSpeed;
-        agent.SetDestination(searchPoints[currentSearchIndex].position);
+
+        agent.SetDestination(
+            searchPoints[currentSearchIndex].position
+        );
     }
 
     void ShuffleSearchPoints()
     {
         for (int i = 0; i < searchPoints.Count; i++)
         {
-            int randomIndex = Random.Range(i, searchPoints.Count);
+            int randomIndex =
+                Random.Range(
+                    i,
+                    searchPoints.Count
+                );
 
-            Transform temp = searchPoints[i];
-            searchPoints[i] = searchPoints[randomIndex];
-            searchPoints[randomIndex] = temp;
+            Transform temp =
+                searchPoints[i];
+
+            searchPoints[i] =
+                searchPoints[randomIndex];
+
+            searchPoints[randomIndex] =
+                temp;
         }
     }
+
     void Patrol()
     {
         if (patrolPoints.Length == 0)
@@ -194,15 +291,28 @@ public class EnemyAI : MonoBehaviour
             if (waitTimer >= waitTime)
             {
                 currentPoint++;
+
                 int nextPoint;
+
                 do
                 {
-                    nextPoint = Random.Range(0, patrolPoints.Length);
+                    nextPoint =
+                        Random.Range(
+                            0,
+                            patrolPoints.Length
+                        );
                 }
-                while (nextPoint == currentPoint);
+                while (
+                    patrolPoints.Length > 1 &&
+                    nextPoint == currentPoint
+                );
 
                 currentPoint = nextPoint;
-                agent.SetDestination(patrolPoints[currentPoint].position);
+
+                agent.SetDestination(
+                    patrolPoints[currentPoint].position
+                );
+
                 waitTimer = 0;
             }
         }
@@ -212,41 +322,69 @@ public class EnemyAI : MonoBehaviour
     {
         if (vision.CanSeePlayer())
         {
-            lastKnownPosition = player.position;
+            lastKnownPosition =
+                player.position;
         }
 
         agent.speed = chaseSpeed;
-        agent.SetDestination(lastKnownPosition);
+
+        agent.SetDestination(
+            lastKnownPosition
+        );
     }
 
     void Search()
     {
         if (searchMusicTimer > 0)
         {
-            searchMusicTimer -= Time.deltaTime;
+            searchMusicTimer -=
+                Time.deltaTime;
 
             if (searchMusicTimer <= 0)
             {
-                musicManager.StopEnemyMusic();
+                if (musicManager != null)
+                {
+                    musicManager.StopEnemyMusic();
+                }
             }
         }
 
-        // Encontrou o jogador?
         if (vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-            musicManager.StartChaseMusic();
+            currentState =
+                EnemyState.Chase;
+
+            if (musicManager != null)
+            {
+                musicManager.StartChaseMusic();
+            }
+
             return;
         }
 
-        searchTimer -= Time.deltaTime;
+        searchTimer -=
+            Time.deltaTime;
 
         if (searchTimer <= 0f)
         {
-            currentState = EnemyState.Patrol;
-            musicManager.StopEnemyMusic();
-            agent.speed = patrolSpeed;
-            agent.SetDestination(patrolPoints[currentPoint].position);
+            currentState =
+                EnemyState.Patrol;
+
+            if (musicManager != null)
+            {
+                musicManager.StopEnemyMusic();
+            }
+
+            agent.speed =
+                patrolSpeed;
+
+            if (patrolPoints.Length > 0)
+            {
+                agent.SetDestination(
+                    patrolPoints[currentPoint].position
+                );
+            }
+
             return;
         }
 
@@ -254,13 +392,17 @@ public class EnemyAI : MonoBehaviour
             agent.remainingDistance <= agent.stoppingDistance)
         {
             currentSearchIndex++;
+
             if (currentSearchIndex >= searchPoints.Count)
             {
                 ShuffleSearchPoints();
+
                 currentSearchIndex = 0;
             }
 
-            agent.SetDestination(searchPoints[currentSearchIndex].position);
+            agent.SetDestination(
+                searchPoints[currentSearchIndex].position
+            );
         }
     }
 
@@ -268,39 +410,51 @@ public class EnemyAI : MonoBehaviour
     {
         agent.speed = searchSpeed;
 
-        agent.SetDestination(lastKnownPosition);
+        agent.SetDestination(
+            lastKnownPosition
+        );
 
-        // Se enxergar o jogador durante investigação
         if (vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-            musicManager.StartChaseMusic();
+            currentState =
+                EnemyState.Chase;
+
+            if (musicManager != null)
+            {
+                musicManager.StartChaseMusic();
+            }
+
             return;
         }
 
-        // Chegou no local do barulho
         if (!agent.pathPending &&
-           agent.remainingDistance <= agent.stoppingDistance)
+            agent.remainingDistance <= agent.stoppingDistance)
         {
-            currentState = EnemyState.Search;
             StartSearch();
         }
     }
 
     void LostSight()
     {
-        // Continua indo para a última posição conhecida
-        agent.SetDestination(lastKnownPosition);
+        agent.SetDestination(
+            lastKnownPosition
+        );
 
-        // Encontrou o jogador novamente?
         if (vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-            musicManager.StartChaseMusic();
+            currentState =
+                EnemyState.Chase;
+
+            if (musicManager != null)
+            {
+                musicManager.StartChaseMusic();
+            }
+
             return;
         }
 
-        memoryTimer -= Time.deltaTime;
+        memoryTimer -=
+            Time.deltaTime;
 
         if (memoryTimer <= 0)
         {
@@ -312,15 +466,20 @@ public class EnemyAI : MonoBehaviour
     {
         if (currentState == EnemyState.Search)
         {
-            // Centro da busca
             Gizmos.color = Color.red;
-            Gizmos.DrawSphere(searchCenter, 0.5f);
 
-            // Área de procura
+            Gizmos.DrawSphere(
+                searchCenter,
+                0.5f
+            );
+
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(searchCenter, searchRadius);
 
-            // Pontos que ele está procurando
+            Gizmos.DrawWireSphere(
+                searchCenter,
+                searchRadius
+            );
+
             if (searchPoints != null)
             {
                 Gizmos.color = Color.green;
@@ -329,24 +488,46 @@ public class EnemyAI : MonoBehaviour
                 {
                     if (point != null)
                     {
-                        Gizmos.DrawSphere(point.position, 0.3f);
-                        Gizmos.DrawLine(searchCenter, point.position);
+                        Gizmos.DrawSphere(
+                            point.position,
+                            0.3f
+                        );
+
+                        Gizmos.DrawLine(
+                            searchCenter,
+                            point.position
+                        );
                     }
                 }
             }
         }
+
+        /*
+         * Mostra o hitbox de proximidade
+         * do Chappie no Editor.
+         */
+        Gizmos.color = Color.magenta;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            proximityDetectionRadius
+        );
     }
 
     public void ReceiveNoise(Vector3 noisePosition)
     {
-        // A visão tem prioridade sobre o som
         if (currentState == EnemyState.Chase)
             return;
 
-        lastKnownPosition = noisePosition;
+        lastKnownPosition =
+            noisePosition;
 
-        Debug.Log("OUVIU UM SOM EM: " + noisePosition);
+        Debug.Log(
+            "OUVIU UM SOM EM: " +
+            noisePosition
+        );
 
-        currentState = EnemyState.Investigate;
+        currentState =
+            EnemyState.Investigate;
     }
 }

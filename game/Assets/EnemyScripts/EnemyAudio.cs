@@ -16,7 +16,10 @@ public class EnemyAudio : MonoBehaviour
     private float stepTimer;
     private bool nextStepIsFirst = true;
 
-    public void UpdateFootsteps(bool isMoving, bool isChasing)
+    public void UpdateFootsteps(
+        bool isMoving,
+        bool isChasing
+    )
     {
         if (!isMoving)
         {
@@ -25,32 +28,47 @@ public class EnemyAudio : MonoBehaviour
             return;
         }
 
-        float stepInterval = isChasing
-            ? chaseStepInterval
-            : normalStepInterval;
+        float stepInterval =
+            isChasing
+                ? chaseStepInterval
+                : normalStepInterval;
 
-        stepTimer += Time.deltaTime;
+        stepTimer +=
+            Time.deltaTime;
 
         if (stepTimer >= stepInterval)
         {
             stepTimer = 0f;
+
             PlayFootstep();
         }
     }
 
     private void PlayFootstep()
     {
+        if (audioSource == null)
+            return;
+
         if (nextStepIsFirst)
         {
             if (stepSound1 != null)
-                audioSource.PlayOneShot(stepSound1);
+            {
+                audioSource.PlayOneShot(
+                    stepSound1
+                );
+            }
         }
         else
         {
             if (stepSound2 != null)
-                audioSource.PlayOneShot(stepSound2);
+            {
+                audioSource.PlayOneShot(
+                    stepSound2
+                );
+            }
         }
 
-        nextStepIsFirst = !nextStepIsFirst;
+        nextStepIsFirst =
+            !nextStepIsFirst;
     }
 }
