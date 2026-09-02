@@ -7158,7 +7158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StaminaUI
   playerMovement: {fileID: 1460273163}
   staminaFill: {fileID: 897852784}
-  fadeInSpeed: 3
+  fadeInSpeed: 1.5
   fadeOutSpeed: 8
 --- !u!114 &897852784
 MonoBehaviour:
@@ -12582,6 +12582,10 @@ MonoBehaviour:
   jumpHeight: 1
   gravity: -13
   cameraTransform: {fileID: 1864729955}
+  breathingAudioSource: {fileID: 184849090}
+  tiredBreathingSound: {fileID: 8300000, guid: e70890b0dba15a346aac92fbf1729c2c, type: 3}
+  breathingVolume: 0.5
+  breathingFadeOutSpeed: 5
   currentStamina: 0
 --- !u!136 &1460273164
 CapsuleCollider:
