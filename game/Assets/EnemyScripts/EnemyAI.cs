@@ -26,6 +26,9 @@ public class EnemyAI : MonoBehaviour
     [Tooltip("Raio ao redor do Chappie que força a perseguição.")]
     public float proximityDetectionRadius = 1f;
 
+    [Tooltip("Layer usado para detectar paredes e obstáculos.")]
+    public LayerMask proximityObstacleMask;
+
     private bool wasPlayerInProximity = false;
 
     [Header("Patrol")]
@@ -105,7 +108,9 @@ public class EnemyAI : MonoBehaviour
                 {
                     lastKnownPosition = player.position;
                     currentState = EnemyState.Chase;
-                    musicManager.StartChaseMusic();
+
+                    if (musicManager != null)
+                        musicManager.StartChaseMusic();
                 }
 
                 break;
@@ -139,7 +144,9 @@ public class EnemyAI : MonoBehaviour
                 if (vision.CanSeePlayer())
                 {
                     currentState = EnemyState.Chase;
-                    musicManager.StartChaseMusic();
+
+                    if (musicManager != null)
+                        musicManager.StartChaseMusic();
                 }
 
                 break;
@@ -162,8 +169,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         bool isMoving = currentSpeed > 0.1f;
-        bool isChasing =
-            currentState == EnemyState.Chase;
+        bool isChasing = currentState == EnemyState.Chase;
 
         if (enemyAudio != null)
         {
@@ -179,19 +185,56 @@ public class EnemyAI : MonoBehaviour
         if (player == null)
             return;
 
+        Vector3 origin = transform.position;
+        Vector3 target = player.position;
+
         float distance = Vector3.Distance(
-            transform.position,
-            player.position
+            origin,
+            target
         );
 
         bool playerInProximity =
             distance <= proximityDetectionRadius;
 
+        if (!playerInProximity)
+        {
+            wasPlayerInProximity = false;
+            return;
+        }
+
         /*
-         * O player acabou de entrar no raio.
-         * Força o Chappie a entrar em Chase.
+         * Verifica se existe um obstáculo do layer
+         * definido em Proximity Obstacle Mask
+         * entre o Chappie e o player.
          */
-        if (playerInProximity && !wasPlayerInProximity)
+
+        Vector3 direction =
+            target - origin;
+
+        bool blocked = Physics.Raycast(
+            origin,
+            direction.normalized,
+            out RaycastHit hit,
+            distance,
+            proximityObstacleMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        /*
+         * Se existe uma parede/obstáculo entre os dois,
+         * o Chappie NÃO detecta o player.
+         */
+        if (blocked)
+        {
+            wasPlayerInProximity = false;
+            return;
+        }
+
+        /*
+         * Player entrou no raio e não existe
+         * obstáculo entre ele e o Chappie.
+         */
+        if (!wasPlayerInProximity)
         {
             lastKnownPosition = player.position;
 
@@ -206,7 +249,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        wasPlayerInProximity = playerInProximity;
+        wasPlayerInProximity = true;
     }
 
     void StartSearch()
@@ -503,8 +546,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         /*
-         * Mostra o hitbox de proximidade
-         * do Chappie no Editor.
+         * Hitbox de proximidade de 1 metro.
          */
         Gizmos.color = Color.magenta;
 
