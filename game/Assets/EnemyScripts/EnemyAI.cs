@@ -23,12 +23,14 @@ public class EnemyAI : MonoBehaviour
 
     private EnemyVision vision;
     private Generator generator;
+    private NavMeshAgent agent;
+    private Animator animator;
+    private EnemyAudio enemyAudio;
 
     [Header("Detecção de Proximidade")]
-    [Tooltip("Distância necessária para o Chappie detectar o player mesmo sem visão normal.")]
     public float proximityDetectionRadius = 1f;
 
-    [Tooltip("Layers que representam paredes/obstáculos.")]
+    [Tooltip("Layers das paredes e obstáculos.")]
     public LayerMask proximityObstacleMask;
 
     private bool wasPlayerInProximity = false;
@@ -40,29 +42,31 @@ public class EnemyAI : MonoBehaviour
 
     public float patrolSpeed = 5f;
 
-    [Tooltip("Velocidade usada tanto no Chase quanto na corrida especial.")]
+    [Tooltip("Velocidade usada no Chase e no RunAround.")]
     public float chaseSpeed = 8f;
 
-    public float waitTime = 2f;
+    [Tooltip("Quantidade de Patrol Points recentes que não poderão ser escolhidos novamente.")]
+    [Min(0)]
+    public int rememberedPatrolPoints = 5;
+
+    [Tooltip("Quanto maior, mais ele evita voltar na direção de onde veio.")]
+    [Range(-1f, 1f)]
+    public float backtrackDotThreshold = -0.25f;
+
+    private List<int> recentlyVisitedPoints = new List<int>();
+
+    private int currentPoint = -1;
+    private int previousPoint = -1;
 
     [Header("Memory")]
     public float memoryTime = 2f;
 
     private float memoryTimer;
-
-    private NavMeshAgent agent;
-
-    private int currentPoint = 0;
-
-    private float waitTimer;
-
     private Vector3 lastKnownPosition;
 
     [Header("Search")]
     public float searchTime = 30f;
-
     public float searchRadius = 20f;
-
     public float searchSpeed = 5f;
 
     private float searchTimer;
@@ -80,61 +84,39 @@ public class EnemyAI : MonoBehaviour
 
     private float searchMusicTimer;
 
-    private Animator animator;
-
-    private EnemyAudio enemyAudio;
-
     [Header("Corrida Especial")]
-    [Tooltip("Indica se o Chappie está atualmente na corrida especial.")]
+    [SerializeField]
     private bool runAroundActive = false;
 
 
-    // ============================================================
+    // =========================================================
     // START
-    // ============================================================
+    // =========================================================
 
-    void Start()
+    private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
 
         vision = GetComponent<EnemyVision>();
-
         enemyAudio = GetComponent<EnemyAudio>();
-
         animator = GetComponent<Animator>();
 
         generator = FindFirstObjectByType<Generator>();
 
-        agent.speed = patrolSpeed;
+        LoadPatrolPoints();
 
-        if (patrolPointsParent != null)
+        if (patrolPoints != null && patrolPoints.Length > 0)
         {
-            patrolPoints = new Transform[
-                patrolPointsParent.childCount
-            ];
-
-            for (int i = 0; i < patrolPointsParent.childCount; i++)
-            {
-                patrolPoints[i] =
-                    patrolPointsParent.GetChild(i);
-            }
-        }
-
-        if (patrolPoints != null &&
-            patrolPoints.Length > 0)
-        {
-            agent.SetDestination(
-                patrolPoints[currentPoint].position
-            );
+            ChooseNextPatrolPoint();
         }
     }
 
 
-    // ============================================================
+    // =========================================================
     // UPDATE
-    // ============================================================
+    // =========================================================
 
-    void Update()
+    private void Update()
     {
         HandleGeneratorRunAround();
 
@@ -143,706 +125,561 @@ public class EnemyAI : MonoBehaviour
         switch (currentState)
         {
             case EnemyState.Patrol:
-
                 Patrol();
-
-                if (vision != null &&
-                    vision.CanSeePlayer())
-                {
-                    lastKnownPosition =
-                        player.position;
-
-                    currentState =
-                        EnemyState.Chase;
-
-                    if (musicManager != null)
-                    {
-                        musicManager.StartChaseMusic();
-                    }
-                }
-
                 break;
-
-
-            case EnemyState.Chase:
-
-                Chase();
-
-                if (vision != null &&
-                    !vision.CanSeePlayer())
-                {
-                    if (!vision.IsVisionStillActive())
-                    {
-                        /*
-                         * Se estava na corrida especial,
-                         * NÃO entra em LostSight/Search.
-                         *
-                         * Ele simplesmente volta a correr
-                         * pelos Patrol Points.
-                         */
-                        if (runAroundActive)
-                        {
-                            currentState =
-                                EnemyState.RunAround;
-
-                            agent.speed =
-                                chaseSpeed;
-
-                            SetRandomRunPoint();
-                        }
-                        else
-                        {
-                            currentState =
-                                EnemyState.LostSight;
-
-                            memoryTimer =
-                                memoryTime;
-
-                            lastKnownPosition =
-                                player.position;
-                        }
-                    }
-                }
-
-                break;
-
-
-            case EnemyState.LostSight:
-
-                LostSight();
-
-                break;
-
-
-            case EnemyState.Search:
-
-                Search();
-
-                if (vision != null &&
-                    vision.CanSeePlayer())
-                {
-                    currentState =
-                        EnemyState.Chase;
-
-                    if (musicManager != null)
-                    {
-                        musicManager.StartChaseMusic();
-                    }
-                }
-
-                break;
-
 
             case EnemyState.Investigate:
-
                 Investigate();
-
                 break;
 
+            case EnemyState.Chase:
+                Chase();
+                break;
+
+            case EnemyState.LostSight:
+                LostSight();
+                break;
+
+            case EnemyState.Search:
+                Search();
+                break;
 
             case EnemyState.RunAround:
-
                 RunAround();
-
                 break;
         }
 
-
-        // ========================================================
-        // ANIMAÇÃO
-        // ========================================================
-
-        float currentSpeed =
-            agent.velocity.magnitude;
-
-        if (animator != null)
-        {
-            animator.SetFloat(
-                "Speed",
-                currentSpeed
-            );
-        }
-
-
-        // ========================================================
-        // PASSOS
-        // ========================================================
-
-        bool isMoving =
-            currentSpeed > 0.1f;
-
-        bool isChasing =
-            currentState == EnemyState.Chase;
-
-        if (enemyAudio != null)
-        {
-            enemyAudio.UpdateFootsteps(
-                isMoving,
-                isChasing
-            );
-        }
+        UpdateAnimation();
+        UpdateFootsteps();
     }
 
 
-    // ============================================================
-    // VERIFICA CORRIDA ESPECIAL
-    // ============================================================
+    // =========================================================
+    // PATROL POINTS
+    // =========================================================
 
-    void HandleGeneratorRunAround()
+    private void LoadPatrolPoints()
     {
-        if (generator == null)
+        if (patrolPointsParent == null)
         {
-            generator =
-                FindFirstObjectByType<Generator>();
-
+            Debug.LogWarning("EnemyAI: Patrol Points Parent não foi definido.");
+            patrolPoints = new Transform[0];
             return;
         }
 
+        List<Transform> points = new List<Transform>();
 
-        bool shouldRunAround =
-            generator.IsExactlyOneItemMissing();
-
-
-        // --------------------------------------------------------
-        // COMEÇA A CORRIDA
-        // --------------------------------------------------------
-
-        if (shouldRunAround)
+        foreach (Transform child in patrolPointsParent)
         {
-            if (!runAroundActive)
-            {
-                runAroundActive = true;
-
-                /*
-                 * Só muda para RunAround se não estiver
-                 * atualmente perseguindo o player.
-                 *
-                 * Se já estiver em Chase, continua em Chase.
-                 */
-                if (currentState != EnemyState.Chase)
-                {
-                    currentState =
-                        EnemyState.RunAround;
-
-                    agent.speed =
-                        chaseSpeed;
-
-                    SetRandomRunPoint();
-                }
-
-                Debug.Log(
-                    "CHAPPIE: Falta exatamente 1 item. Corrida especial ativada."
-                );
-            }
-
-            return;
+            points.Add(child);
         }
 
+        patrolPoints = points.ToArray();
 
-        // --------------------------------------------------------
-        // TERMINA A CORRIDA
-        // --------------------------------------------------------
+        Debug.Log("EnemyAI: " + patrolPoints.Length + " Patrol Points encontrados.");
+    }
 
-        if (runAroundActive)
+
+    // =========================================================
+    // ESCOLHER PRÓXIMO PONTO
+    // =========================================================
+
+    private void ChooseNextPatrolPoint()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            return;
+
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        List<int> availablePoints = new List<int>();
+
+        // -----------------------------------------------------
+        // PRIMEIRO: remove os últimos 5 pontos da escolha
+        // -----------------------------------------------------
+
+        for (int i = 0; i < patrolPoints.Length; i++)
         {
-            runAroundActive = false;
+            if (i == currentPoint)
+                continue;
 
+            if (recentlyVisitedPoints.Contains(i))
+                continue;
 
-            /*
-             * Se estiver perseguindo o player, não interrompe
-             * o Chase imediatamente.
-             *
-             * Caso contrário, volta ao Patrol normal.
-             */
-            if (currentState == EnemyState.RunAround)
+            availablePoints.Add(i);
+        }
+
+        // -----------------------------------------------------
+        // Se não houver pontos disponíveis, libera a memória.
+        // -----------------------------------------------------
+
+        if (availablePoints.Count == 0)
+        {
+            recentlyVisitedPoints.Clear();
+
+            for (int i = 0; i < patrolPoints.Length; i++)
             {
-                currentState =
-                    EnemyState.Patrol;
-
-                agent.speed =
-                    patrolSpeed;
-
-                if (patrolPoints != null &&
-                    patrolPoints.Length > 0)
+                if (i != currentPoint)
                 {
-                    agent.SetDestination(
-                        patrolPoints[currentPoint].position
-                    );
+                    availablePoints.Add(i);
                 }
             }
+        }
 
-            Debug.Log(
-                "CHAPPIE: Corrida especial encerrada."
-            );
+        // -----------------------------------------------------
+        // EVITAR VOLTAR NA DIREÇÃO CONTRÁRIA
+        // -----------------------------------------------------
+
+        List<int> directionalPoints = new List<int>();
+
+        if (previousPoint >= 0 &&
+            currentPoint >= 0 &&
+            previousPoint < patrolPoints.Length &&
+            currentPoint < patrolPoints.Length)
+        {
+            Vector3 previousPosition = patrolPoints[previousPoint].position;
+            Vector3 currentPosition = patrolPoints[currentPoint].position;
+
+            Vector3 travelDirection =
+                (currentPosition - previousPosition).normalized;
+
+            foreach (int index in availablePoints)
+            {
+                Vector3 candidateDirection =
+                    (patrolPoints[index].position - currentPosition).normalized;
+
+                float dot =
+                    Vector3.Dot(travelDirection, candidateDirection);
+
+                // Dot negativo significa que o ponto está
+                // aproximadamente atrás dele.
+                if (dot >= backtrackDotThreshold)
+                {
+                    directionalPoints.Add(index);
+                }
+            }
+        }
+
+        // Se encontrou pontos que não fazem ele voltar,
+        // usamos somente esses.
+        if (directionalPoints.Count > 0)
+        {
+            availablePoints = directionalPoints;
+        }
+
+        // -----------------------------------------------------
+        // ESCOLHA ALEATÓRIA
+        // -----------------------------------------------------
+
+        int selectedPoint =
+            availablePoints[Random.Range(0, availablePoints.Count)];
+
+        // -----------------------------------------------------
+        // ATUALIZA MEMÓRIA
+        // -----------------------------------------------------
+
+        previousPoint = currentPoint;
+        currentPoint = selectedPoint;
+
+        recentlyVisitedPoints.Add(selectedPoint);
+
+        // Mantém somente os últimos 5.
+        while (recentlyVisitedPoints.Count > rememberedPatrolPoints)
+        {
+            recentlyVisitedPoints.RemoveAt(0);
+        }
+
+        // -----------------------------------------------------
+        // MOVE
+        // -----------------------------------------------------
+
+        agent.SetDestination(patrolPoints[selectedPoint].position);
+    }
+
+
+    // =========================================================
+    // PATROL NORMAL
+    // =========================================================
+
+    private void Patrol()
+    {
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        agent.speed = patrolSpeed;
+
+        if (!agent.pathPending &&
+            agent.remainingDistance <= agent.stoppingDistance)
+        {
+            ChooseNextPatrolPoint();
+        }
+
+        if (vision != null && vision.CanSeePlayer())
+        {
+            currentState = EnemyState.Chase;
+
+            agent.speed = chaseSpeed;
+
+            lastKnownPosition = player.position;
+
+            memoryTimer = memoryTime;
+
+            if (musicManager != null)
+            {
+                musicManager.StartChaseMusic();
+            }
         }
     }
 
 
-    // ============================================================
-    // DETECÇÃO DE PROXIMIDADE
-    // ============================================================
+    // =========================================================
+    // CORRIDA ESPECIAL
+    // =========================================================
 
-    void HandleProximityDetection()
+    private void RunAround()
+    {
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        agent.speed = chaseSpeed;
+
+        if (!agent.pathPending &&
+            agent.remainingDistance <= agent.stoppingDistance)
+        {
+            ChooseNextPatrolPoint();
+        }
+
+        // Durante o RunAround ele ainda pode detectar
+        // o jogador pela visão normal.
+        if (vision != null && vision.CanSeePlayer())
+        {
+            currentState = EnemyState.Chase;
+
+            agent.speed = chaseSpeed;
+
+            lastKnownPosition = player.position;
+
+            memoryTimer = memoryTime;
+
+            if (musicManager != null)
+            {
+                musicManager.StartChaseMusic();
+            }
+        }
+    }
+
+
+    // =========================================================
+    // CHASE
+    // =========================================================
+
+    private void Chase()
+    {
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        agent.speed = chaseSpeed;
+
+        if (player == null)
+            return;
+
+        if (vision != null && vision.CanSeePlayer())
+        {
+            lastKnownPosition = player.position;
+
+            memoryTimer = memoryTime;
+
+            agent.SetDestination(player.position);
+        }
+        else
+        {
+            memoryTimer -= Time.deltaTime;
+
+            if (memoryTimer <= 0f)
+            {
+                // Se ainda estiver na corrida especial,
+                // não entra em LostSight/Search.
+                if (runAroundActive)
+                {
+                    currentState = EnemyState.RunAround;
+
+                    agent.speed = chaseSpeed;
+
+                    ChooseNextPatrolPoint();
+                }
+                else
+                {
+                    currentState = EnemyState.LostSight;
+
+                    agent.speed = searchSpeed;
+
+                    agent.SetDestination(lastKnownPosition);
+                }
+            }
+        }
+    }
+
+
+    // =========================================================
+    // PROXIMIDADE
+    // =========================================================
+
+    private void HandleProximityDetection()
     {
         if (player == null)
             return;
 
-
-        Vector3 origin =
-            transform.position;
-
-        Vector3 target =
-            player.position;
-
-
         float distance =
-            Vector3.Distance(
-                origin,
-                target
-            );
+            Vector3.Distance(transform.position, player.position);
 
-
-        /*
-         * Fora do raio de 1 metro:
-         * não faz nada.
-         */
-        if (distance >
-            proximityDetectionRadius)
+        if (distance > proximityDetectionRadius)
         {
-            wasPlayerInProximity =
-                false;
-
+            wasPlayerInProximity = false;
             return;
         }
 
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+
+        Vector3 target =
+            player.position + Vector3.up * 0.5f;
 
         Vector3 direction =
             target - origin;
 
+        float distanceToPlayer =
+            direction.magnitude;
 
-        /*
-         * Verifica se existe uma parede entre
-         * o Chappie e o player.
-         */
-        bool blocked =
-            Physics.Raycast(
-                origin,
-                direction.normalized,
-                out RaycastHit hit,
-                distance,
-                proximityObstacleMask,
-                QueryTriggerInteraction.Ignore
-            );
-
-
-        /*
-         * Existe parede.
-         */
-        if (blocked)
+        if (Physics.Raycast(
+            origin,
+            direction.normalized,
+            out RaycastHit hit,
+            distanceToPlayer,
+            proximityObstacleMask,
+            QueryTriggerInteraction.Ignore))
         {
-            wasPlayerInProximity =
-                false;
-
+            // Existe uma parede/obstáculo entre Chappie e o jogador.
+            wasPlayerInProximity = false;
             return;
         }
 
-
-        /*
-         * Player está realmente dentro de 1 metro
-         * e não existe parede.
-         */
         if (!wasPlayerInProximity)
         {
-            lastKnownPosition =
-                player.position;
+            wasPlayerInProximity = true;
 
+            lastKnownPosition = player.position;
 
-            currentState =
-                EnemyState.Chase;
+            memoryTimer = memoryTime;
 
+            currentState = EnemyState.Chase;
 
-            /*
-             * Durante o Chase, usa chaseSpeed.
-             */
-            agent.speed =
-                chaseSpeed;
-
+            agent.speed = chaseSpeed;
 
             if (musicManager != null)
             {
                 musicManager.StartChaseMusic();
             }
-
-
-            Debug.Log(
-                "CHAPPIE: Player entrou no raio de proximidade! CHASE!"
-            );
-        }
-
-
-        wasPlayerInProximity =
-            true;
-    }
-
-
-    // ============================================================
-    // RUN AROUND
-    // ============================================================
-
-    void RunAround()
-    {
-        /*
-         * Segurança:
-         * se por algum motivo o estado mudou,
-         * não executa essa função.
-         */
-        if (currentState !=
-            EnemyState.RunAround)
-        {
-            return;
-        }
-
-
-        /*
-         * A corrida especial usa EXATAMENTE
-         * a velocidade do Chase.
-         */
-        agent.speed =
-            chaseSpeed;
-
-
-        /*
-         * Não usa waitTime.
-         *
-         * Assim que chegar no ponto,
-         * escolhe outro imediatamente.
-         */
-        if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
-        {
-            SetRandomRunPoint();
         }
     }
 
 
-    // ============================================================
-    // ESCOLHER NOVO PONTO
-    // ============================================================
+    // =========================================================
+    // GENERATOR / CORRIDA ESPECIAL
+    // =========================================================
 
-    void SetRandomRunPoint()
+    private void HandleGeneratorRunAround()
     {
-        if (patrolPoints == null ||
-            patrolPoints.Length == 0)
+        if (generator == null)
         {
-            return;
+            generator = FindFirstObjectByType<Generator>();
+
+            if (generator == null)
+                return;
         }
 
+        bool shouldRunAround =
+            generator.IsExactlyOneItemMissing();
 
-        int nextPoint;
+        // -----------------------------------------------------
+        // COMEÇOU A FALTAR EXATAMENTE 1 ITEM
+        // -----------------------------------------------------
 
-
-        /*
-         * Escolhe um Patrol Point aleatório,
-         * evitando repetir o atual quando existem
-         * pelo menos dois pontos.
-         */
-        do
+        if (shouldRunAround && !runAroundActive)
         {
-            nextPoint =
-                Random.Range(
-                    0,
-                    patrolPoints.Length
-                );
+            runAroundActive = true;
 
-        } while (
-            patrolPoints.Length > 1 &&
-            nextPoint == currentPoint
-        );
-
-
-        currentPoint =
-            nextPoint;
-
-
-        agent.speed =
-            chaseSpeed;
-
-
-        agent.SetDestination(
-            patrolPoints[currentPoint].position
-        );
-    }
-
-
-    // ============================================================
-    // PATROL NORMAL
-    // ============================================================
-
-    void Patrol()
-    {
-        if (patrolPoints == null ||
-            patrolPoints.Length == 0)
-        {
-            return;
-        }
-
-
-        agent.speed =
-            patrolSpeed;
-
-
-        if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
-        {
-            waitTimer +=
-                Time.deltaTime;
-
-
-            if (waitTimer >= waitTime)
+            // Se não estiver perseguindo o jogador,
+            // começa imediatamente a correr pelos pontos.
+            if (currentState != EnemyState.Chase)
             {
-                int nextPoint;
+                currentState = EnemyState.RunAround;
 
+                agent.speed = chaseSpeed;
 
-                do
-                {
-                    nextPoint =
-                        Random.Range(
-                            0,
-                            patrolPoints.Length
-                        );
+                ChooseNextPatrolPoint();
+            }
+        }
 
-                } while (
-                    patrolPoints.Length > 1 &&
-                    nextPoint == currentPoint
-                );
+        // -----------------------------------------------------
+        // ÚLTIMO ITEM FOI COLOCADO
+        // -----------------------------------------------------
 
+        else if (!shouldRunAround && runAroundActive)
+        {
+            runAroundActive = false;
 
-                currentPoint =
-                    nextPoint;
+            if (currentState == EnemyState.RunAround)
+            {
+                currentState = EnemyState.Patrol;
 
+                agent.speed = patrolSpeed;
 
-                agent.SetDestination(
-                    patrolPoints[currentPoint].position
-                );
-
-
-                waitTimer = 0f;
+                ChooseNextPatrolPoint();
             }
         }
     }
 
 
-    // ============================================================
-    // CHASE
-    // ============================================================
-
-    void Chase()
-    {
-        /*
-         * Chase usa chaseSpeed.
-         */
-        agent.speed =
-            chaseSpeed;
-
-
-        if (vision != null &&
-            vision.CanSeePlayer())
-        {
-            lastKnownPosition =
-                player.position;
-        }
-
-
-        agent.SetDestination(
-            lastKnownPosition
-        );
-    }
-
-
-    // ============================================================
-    // LOST SIGHT
-    // ============================================================
-
-    void LostSight()
-    {
-        agent.speed =
-            chaseSpeed;
-
-
-        agent.SetDestination(
-            lastKnownPosition
-        );
-
-
-        if (vision != null &&
-            vision.CanSeePlayer())
-        {
-            currentState =
-                EnemyState.Chase;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
-
-            return;
-        }
-
-
-        memoryTimer -=
-            Time.deltaTime;
-
-
-        if (memoryTimer <= 0)
-        {
-            StartSearch();
-        }
-    }
-
-
-    // ============================================================
+    // =========================================================
     // INVESTIGATE
-    // ============================================================
+    // =========================================================
 
-    void Investigate()
+    private void Investigate()
     {
-        agent.speed =
-            searchSpeed;
-
-
-        agent.SetDestination(
-            lastKnownPosition
-        );
-
-
-        if (vision != null &&
-            vision.CanSeePlayer())
-        {
-            currentState =
-                EnemyState.Chase;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
-
+        if (agent == null || !agent.isOnNavMesh)
             return;
-        }
 
+        agent.speed = searchSpeed;
+
+        agent.SetDestination(lastKnownPosition);
 
         if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
+            agent.remainingDistance <= agent.stoppingDistance)
         {
             StartSearch();
+        }
+
+        if (vision != null && vision.CanSeePlayer())
+        {
+            currentState = EnemyState.Chase;
+
+            agent.speed = chaseSpeed;
+
+            memoryTimer = memoryTime;
         }
     }
 
 
-    // ============================================================
-    // START SEARCH
-    // ============================================================
+    // =========================================================
+    // LOST SIGHT
+    // =========================================================
 
-    void StartSearch()
+    private void LostSight()
     {
-        currentState =
-            EnemyState.Search;
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        agent.speed = searchSpeed;
+
+        agent.SetDestination(lastKnownPosition);
+
+        if (!agent.pathPending &&
+            agent.remainingDistance <= agent.stoppingDistance)
+        {
+            StartSearch();
+        }
+
+        if (vision != null && vision.CanSeePlayer())
+        {
+            currentState = EnemyState.Chase;
+
+            agent.speed = chaseSpeed;
+
+            memoryTimer = memoryTime;
+        }
+    }
 
 
-        searchMusicTimer =
-            searchMusicDuration;
+    // =========================================================
+    // SEARCH
+    // =========================================================
 
+    private void StartSearch()
+    {
+        currentState = EnemyState.Search;
+
+        searchTimer = searchTime;
+
+        searchCenter = lastKnownPosition;
+
+        GenerateSearchPoints();
+
+        currentSearchIndex = 0;
+
+        if (searchPoints.Count > 0)
+        {
+            agent.speed = searchSpeed;
+
+            agent.SetDestination(
+                searchPoints[currentSearchIndex].position);
+        }
 
         if (musicManager != null)
         {
             musicManager.StartSearchMusic();
+
+            searchMusicTimer = searchMusicDuration;
         }
-
-
-        searchCenter =
-            lastKnownPosition;
-
-
-        searchTimer =
-            searchTime;
-
-
-        searchPoints.Clear();
-
-
-        if (patrolPoints != null)
-        {
-            foreach (Transform point in patrolPoints)
-            {
-                if (point == null)
-                    continue;
-
-
-                if (Vector3.Distance(
-                    point.position,
-                    lastKnownPosition
-                ) <= searchRadius)
-                {
-                    searchPoints.Add(point);
-                }
-            }
-        }
-
-
-        if (searchPoints.Count == 0)
-        {
-            agent.SetDestination(
-                lastKnownPosition
-            );
-
-            return;
-        }
-
-
-        ShuffleSearchPoints();
-
-
-        currentSearchIndex = 0;
-
-
-        agent.speed =
-            searchSpeed;
-
-
-        agent.SetDestination(
-            searchPoints[
-                currentSearchIndex
-            ].position
-        );
     }
 
 
-    // ============================================================
-    // SHUFFLE SEARCH POINTS
-    // ============================================================
-
-    void ShuffleSearchPoints()
+    private void GenerateSearchPoints()
     {
-        for (int i = 0;
-             i < searchPoints.Count;
-             i++)
+        searchPoints.Clear();
+
+        int amount = 6;
+
+        for (int i = 0; i < amount; i++)
+        {
+            Vector2 random =
+                Random.insideUnitCircle * searchRadius;
+
+            Vector3 point =
+                searchCenter +
+                new Vector3(random.x, 0f, random.y);
+
+            if (NavMesh.SamplePosition(
+                point,
+                out NavMeshHit hit,
+                5f,
+                NavMesh.AllAreas))
+            {
+                GameObject searchObject =
+                    new GameObject("SearchPoint");
+
+                searchObject.transform.position =
+                    hit.position;
+
+                searchPoints.Add(
+                    searchObject.transform);
+            }
+        }
+
+        ShuffleSearchPoints();
+    }
+
+
+    private void ShuffleSearchPoints()
+    {
+        for (int i = 0; i < searchPoints.Count; i++)
         {
             int randomIndex =
-                Random.Range(
-                    i,
-                    searchPoints.Count
-                );
-
+                Random.Range(i, searchPoints.Count);
 
             Transform temp =
                 searchPoints[i];
 
-
             searchPoints[i] =
                 searchPoints[randomIndex];
-
 
             searchPoints[randomIndex] =
                 temp;
@@ -850,218 +687,166 @@ public class EnemyAI : MonoBehaviour
     }
 
 
-    // ============================================================
-    // SEARCH
-    // ============================================================
-
-    void Search()
+    private void Search()
     {
-        if (searchMusicTimer > 0)
-        {
-            searchMusicTimer -=
-                Time.deltaTime;
-
-
-            if (searchMusicTimer <= 0)
-            {
-                if (musicManager != null)
-                {
-                    musicManager.StopEnemyMusic();
-                }
-            }
-        }
-
-
-        if (vision != null &&
-            vision.CanSeePlayer())
-        {
-            currentState =
-                EnemyState.Chase;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
-
+        if (agent == null || !agent.isOnNavMesh)
             return;
-        }
 
-
-        searchTimer -=
-            Time.deltaTime;
-
+        searchTimer -= Time.deltaTime;
 
         if (searchTimer <= 0f)
         {
-            currentState =
-                EnemyState.Patrol;
-
-
-            if (musicManager != null)
+            foreach (Transform point in searchPoints)
             {
-                musicManager.StopEnemyMusic();
+                if (point != null)
+                {
+                    Destroy(point.gameObject);
+                }
             }
 
+            searchPoints.Clear();
 
-            agent.speed =
-                patrolSpeed;
+            currentState = EnemyState.Patrol;
 
+            agent.speed = patrolSpeed;
 
-            if (patrolPoints != null &&
-                patrolPoints.Length > 0)
-            {
-                agent.SetDestination(
-                    patrolPoints[currentPoint].position
-                );
-            }
-
+            ChooseNextPatrolPoint();
 
             return;
         }
 
+        if (vision != null && vision.CanSeePlayer())
+        {
+            currentState = EnemyState.Chase;
+
+            agent.speed = chaseSpeed;
+
+            memoryTimer = memoryTime;
+
+            foreach (Transform point in searchPoints)
+            {
+                if (point != null)
+                {
+                    Destroy(point.gameObject);
+                }
+
+                searchPoints.Clear();
+
+                return;
+            }
+        }
+
+        if (searchPoints.Count == 0)
+            return;
 
         if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
+            agent.remainingDistance <= agent.stoppingDistance)
         {
             currentSearchIndex++;
 
-
-            if (currentSearchIndex >=
-                searchPoints.Count)
+            if (currentSearchIndex >= searchPoints.Count)
             {
-                ShuffleSearchPoints();
-
                 currentSearchIndex = 0;
             }
 
-
-            agent.SetDestination(
-                searchPoints[
-                    currentSearchIndex
-                ].position
-            );
-        }
-    }
-
-
-    // ============================================================
-    // GIZMOS
-    // ============================================================
-
-    void OnDrawGizmos()
-    {
-        /*
-         * Raio de proximidade.
-         */
-        Gizmos.color =
-            Color.magenta;
-
-
-        Gizmos.DrawWireSphere(
-            transform.position,
-            proximityDetectionRadius
-        );
-
-
-        /*
-         * Área de Search.
-         */
-        if (currentState ==
-            EnemyState.Search)
-        {
-            Gizmos.color =
-                Color.red;
-
-
-            Gizmos.DrawSphere(
-                searchCenter,
-                0.5f
-            );
-
-
-            Gizmos.color =
-                Color.yellow;
-
-
-            Gizmos.DrawWireSphere(
-                searchCenter,
-                searchRadius
-            );
-
-
-            if (searchPoints != null)
+            if (searchPoints[currentSearchIndex] != null)
             {
-                Gizmos.color =
-                    Color.green;
-
-
-                foreach (
-                    Transform point
-                    in searchPoints
-                )
-                {
-                    if (point != null)
-                    {
-                        Gizmos.DrawSphere(
-                            point.position,
-                            0.3f
-                        );
-
-
-                        Gizmos.DrawLine(
-                            searchCenter,
-                            point.position
-                        );
-                    }
-                }
+                agent.SetDestination(
+                    searchPoints[currentSearchIndex].position);
             }
         }
     }
 
 
-    // ============================================================
-    // RECEBER SOM
-    // ============================================================
+    // =========================================================
+    // NOISE
+    // =========================================================
 
-    public void ReceiveNoise(
-        Vector3 noisePosition
-    )
+    public void ReceiveNoise(Vector3 noisePosition)
     {
-        /*
-         * Se estiver perseguindo,
-         * ignora sons.
-         */
-        if (currentState ==
-            EnemyState.Chase)
+        // Durante Chase ou RunAround ele não abandona
+        // seu comportamento para investigar sons.
+        if (currentState == EnemyState.Chase ||
+            currentState == EnemyState.RunAround)
         {
             return;
         }
 
+        lastKnownPosition = noisePosition;
 
-        /*
-         * Durante a corrida especial,
-         * também não queremos que um som
-         * faça ele abandonar os Patrol Points.
-         */
-        if (currentState ==
-            EnemyState.RunAround)
+        currentState = EnemyState.Investigate;
+
+        memoryTimer = memoryTime;
+
+        if (agent != null && agent.isOnNavMesh)
         {
-            return;
+            agent.speed = searchSpeed;
+
+            agent.SetDestination(noisePosition);
         }
+    }
 
 
-        lastKnownPosition =
-            noisePosition;
+    // =========================================================
+    // ANIMAÇÃO
+    // =========================================================
+
+    private void UpdateAnimation()
+    {
+        if (animator == null || agent == null)
+            return;
+
+        float speed =
+            agent.velocity.magnitude;
+
+        animator.SetFloat(
+            "Speed",
+            speed,
+            0.1f,
+            Time.deltaTime);
+    }
 
 
-        Debug.Log(
-            "OUVIU UM SOM EM: " +
-            noisePosition
-        );
+    // =========================================================
+    // PASSOS
+    // =========================================================
+
+    private void UpdateFootsteps()
+    {
+        if (enemyAudio == null || agent == null)
+            return;
+
+        bool isMoving =
+            agent.velocity.magnitude > 0.1f;
+
+        bool isChasing =
+            currentState == EnemyState.Chase;
+
+        enemyAudio.UpdateFootsteps(
+            isMoving,
+            isChasing);
+    }
 
 
-        currentState =
-            EnemyState.Investigate;
+    // =========================================================
+    // DEBUG
+    // =========================================================
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            proximityDetectionRadius);
+
+        if (player != null)
+        {
+            Gizmos.color = Color.red;
+
+            Gizmos.DrawLine(
+                transform.position + Vector3.up * 0.5f,
+                player.position + Vector3.up * 0.5f);
+        }
     }
 }
