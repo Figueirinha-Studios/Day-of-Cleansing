@@ -510,8 +510,6 @@ MonoBehaviour:
   generatorReady: 0
   generatorOn: 0
   interactionDistance: 4
-  player: {fileID: 1460273160}
-  tutorialAlreadyShown: 0
 --- !u!114 &31245302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12602,8 +12600,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45fcd2855214fbf4b8315bd18ec89655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  walkSpeed: 2
-  runSpeed: 4
+  walkSpeed: 2.5
+  runSpeed: 4.5
   joggingSpeed: 3
   crouchSpeed: 1
   crouchKey: 306
@@ -17476,9 +17474,12 @@ MonoBehaviour:
   currentState: 0
   player: {fileID: 1460273160}
   proximityDetectionRadius: 1
+  proximityObstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
   patrolPointsParent: {fileID: 1657827568}
   patrolSpeed: 1.5
-  chaseSpeed: 3
+  chaseSpeed: 4
   waitTime: 0
   memoryTime: 2
   searchTime: 16
@@ -17802,7 +17803,7 @@ Transform:
   m_GameObject: {fileID: 2120334534}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710665, z: -0, w: 0.707107}
-  m_LocalPosition: {x: 39.1691, y: 0.63, z: 69.02}
+  m_LocalPosition: {x: 33.48, y: 0.63, z: 69.02}
   m_LocalScale: {x: 1.2854064, y: 3.0770078, z: 7.2091126}
   m_ConstrainProportionsScale: 0
   m_Children: []

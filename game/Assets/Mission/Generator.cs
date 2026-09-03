@@ -8,106 +8,37 @@ public class Generator : MonoBehaviour
 
     [Header("Itens necessários")]
     public int gasolineRequired = 2;
+
     public bool fuseRequired = true;
 
 
     [Header("Itens colocados")]
-    [SerializeField] private int gasolineInserted = 0;
-    [SerializeField] private bool fuseInserted = false;
+    [SerializeField]
+    private int gasolineInserted = 0;
+
+    [SerializeField]
+    private bool fuseInserted = false;
 
 
     [Header("Estado")]
-    [SerializeField] private bool generatorReady = false;
-    [SerializeField] private bool generatorOn = false;
+    [SerializeField]
+    private bool generatorReady = false;
+
+    [SerializeField]
+    private bool generatorOn = false;
 
 
     [Header("Interação")]
     public float interactionDistance = 3f;
 
 
-    [Header("Objetivo - Primeira Aproximação")]
-    public Transform player;
-
-    public bool tutorialAlreadyShown = false;
-
-
-    // =========================================================
-    // CONTROLE
-    // =========================================================
-
-    private bool waitingForLastItemVideo = false;
-
-
-    // =========================================================
-    // START
-    // =========================================================
-
-    private void Start()
-    {
-        if (player == null)
-        {
-            GameObject playerObject =
-                GameObject.FindGameObjectWithTag("Player");
-
-            if (playerObject != null)
-            {
-                player = playerObject.transform;
-            }
-        }
-    }
-
-
-    // =========================================================
-    // UPDATE
-    // =========================================================
-
-    private void Update()
-    {
-        CheckPlayerApproach();
-    }
-
-
-    // =========================================================
-    // APROXIMAÇÃO
-    // =========================================================
-
-    private void CheckPlayerApproach()
-    {
-        if (tutorialAlreadyShown)
-            return;
-
-        if (player == null)
-            return;
-
-        if (generatorUI == null)
-            return;
-
-
-        float distance =
-            Vector3.Distance(
-                transform.position,
-                player.position
-            );
-
-
-        if (distance <= interactionDistance)
-        {
-            tutorialAlreadyShown = true;
-
-            Debug.Log(
-                "Player se aproximou do gerador pela primeira vez."
-            );
-
-            generatorUI.ShowGeneratorTutorial();
-        }
-    }
-
-
-    // =========================================================
+    // ============================================================
     // INTERAÇÃO
-    // =========================================================
+    // ============================================================
 
-    public bool TryInteract(PlayerPickup player)
+    public bool TryInteract(
+        PlayerPickup player
+    )
     {
         if (player == null)
             return false;
@@ -120,19 +51,18 @@ public class Generator : MonoBehaviour
             );
 
 
-        if (distance > interactionDistance)
+        if (distance >
+            interactionDistance)
+        {
             return false;
+        }
 
 
-        // Gerador já ligado.
-
+        /*
+         * Se já estiver ligado,
+         * não aceita mais itens.
+         */
         if (generatorOn)
-            return true;
-
-
-        // Está esperando o último vídeo terminar.
-
-        if (waitingForLastItemVideo)
             return true;
 
 
@@ -144,10 +74,9 @@ public class Generator : MonoBehaviour
             return false;
 
 
-        // =====================================================
-        // GASOLINA
-        // =====================================================
-
+        /*
+         * GASOLINA
+         */
         if (heldObject.IsGasoline())
         {
             InsertGasoline(player);
@@ -156,10 +85,9 @@ public class Generator : MonoBehaviour
         }
 
 
-        // =====================================================
-        // FUSÍVEL
-        // =====================================================
-
+        /*
+         * FUSÍVEL
+         */
         if (heldObject.IsFuse())
         {
             InsertFuse(player);
@@ -168,36 +96,44 @@ public class Generator : MonoBehaviour
         }
 
 
+        /*
+         * Não é um item do gerador.
+         */
         return false;
     }
 
 
-    // =========================================================
-    // GASOLINA
-    // =========================================================
+    // ============================================================
+    // COLOCAR GASOLINA
+    // ============================================================
 
-    private void InsertGasoline(PlayerPickup player)
+    private void InsertGasoline(
+        PlayerPickup player
+    )
     {
-        if (gasolineInserted >= gasolineRequired)
+        if (gasolineInserted >=
+            gasolineRequired)
+        {
             return;
+        }
 
 
         gasolineInserted++;
 
 
+        /*
+         * Remove o objeto que está
+         * na mão do player.
+         */
         player.ConsumeHeldObject();
-
-
-        bool isLastItem =
-            gasolineInserted >= gasolineRequired &&
-            (!fuseRequired || fuseInserted);
 
 
         if (generatorUI != null)
         {
             generatorUI.ShowGasolineInserted(
                 gasolineInserted,
-                isLastItem
+                gasolineInserted >= gasolineRequired &&
+                (!fuseRequired || fuseInserted)
             );
         }
 
@@ -214,11 +150,13 @@ public class Generator : MonoBehaviour
     }
 
 
-    // =========================================================
-    // FUSÍVEL
-    // =========================================================
+    // ============================================================
+    // COLOCAR FUSÍVEL
+    // ============================================================
 
-    private void InsertFuse(PlayerPickup player)
+    private void InsertFuse(
+        PlayerPickup player
+    )
     {
         if (fuseInserted)
             return;
@@ -227,17 +165,17 @@ public class Generator : MonoBehaviour
         fuseInserted = true;
 
 
+        /*
+         * Remove o fusível da mão.
+         */
         player.ConsumeHeldObject();
-
-
-        bool isLastItem =
-            gasolineInserted >= gasolineRequired;
 
 
         if (generatorUI != null)
         {
             generatorUI.ShowFuseInserted(
-                isLastItem
+                gasolineInserted >= gasolineRequired &&
+                (!fuseRequired || fuseInserted)
             );
         }
 
@@ -251,14 +189,15 @@ public class Generator : MonoBehaviour
     }
 
 
-    // =========================================================
-    // VERIFICAR GERADOR
-    // =========================================================
+    // ============================================================
+    // VERIFICAR SE ESTÁ COMPLETO
+    // ============================================================
 
     private void CheckGeneratorReady()
     {
         bool gasolineComplete =
-            gasolineInserted >= gasolineRequired;
+            gasolineInserted >=
+            gasolineRequired;
 
 
         bool fuseComplete =
@@ -271,99 +210,100 @@ public class Generator : MonoBehaviour
         {
             generatorReady = true;
 
-            waitingForLastItemVideo = true;
-
 
             Debug.Log(
                 "TODOS OS ITENS FORAM COLOCADOS!"
             );
 
-            Debug.Log(
-                "Esperando o vídeo do último item terminar..."
-            );
+
+            if (generatorUI != null)
+            {
+                generatorUI.StartGeneratorOnSequence();
+            }
         }
     }
 
 
-    // =========================================================
-    // ÚLTIMO VÍDEO TERMINOU
-    // =========================================================
+    // ============================================================
+    // FALTA EXATAMENTE 1 ITEM
+    // ============================================================
 
-    public void LastItemVideoFinished()
+    public bool IsExactlyOneItemMissing()
     {
-        if (!waitingForLastItemVideo)
-            return;
+        /*
+         * Quantidade total necessária.
+         *
+         * Exemplo:
+         * 2 gasolinas + 1 fusível = 3.
+         */
+        int totalRequired =
+            gasolineRequired;
 
 
-        waitingForLastItemVideo = false;
+        if (fuseRequired)
+        {
+            totalRequired++;
+        }
 
 
-        Debug.Log(
-            "Vídeo do último item terminou!"
-        );
+        /*
+         * Quantidade já colocada.
+         */
+        int totalInserted =
+            gasolineInserted;
 
 
-        StartGeneratorSequence();
+        if (fuseInserted)
+        {
+            totalInserted++;
+        }
+
+
+        /*
+         * Quantos faltam.
+         */
+        int itemsMissing =
+            totalRequired -
+            totalInserted;
+
+
+        /*
+         * SOMENTE retorna true quando
+         * falta exatamente UM.
+         */
+        return itemsMissing == 1;
     }
 
 
-    // =========================================================
-    // COMEÇAR GENERATOR ON
-    // =========================================================
+    // ============================================================
+    // GERADOR LIGADO
+    // ============================================================
 
-    private void StartGeneratorSequence()
+    public void CompleteGeneratorOn()
     {
-        if (generatorOn)
-            return;
-
-
         if (!generatorReady)
             return;
 
 
-        if (generatorUI != null)
-        {
-            generatorUI.StartGeneratorOnSequence();
-        }
-        else
-        {
-            CompleteGeneratorOn();
-        }
-    }
-
-
-    // =========================================================
-    // GERADOR REALMENTE LIGADO
-    // =========================================================
-
-    public void CompleteGeneratorOn()
-    {
         if (generatorOn)
             return;
 
 
         generatorOn = true;
 
+
         generatorReady = false;
 
 
         Debug.Log(
-            "================================="
-        );
-
-        Debug.Log(
-            "GERADOR ON!"
-        );
-
-        Debug.Log(
-            "================================="
+            "GERADOR LIGADO!"
         );
     }
 
 
-    // =========================================================
-    // ESTADOS
-    // =========================================================
+    // ============================================================
+    // GETTERS
+    // ============================================================
 
     public bool IsGeneratorReady()
     {
@@ -386,5 +326,16 @@ public class Generator : MonoBehaviour
     public bool IsFuseInserted()
     {
         return fuseInserted;
+    }
+
+
+    // ============================================================
+    // COMPATIBILIDADE
+    // ============================================================
+
+    public void LastItemVideoFinished()
+    {
+        // Mantido para compatibilidade
+        // com o GeneratorUI.
     }
 }
