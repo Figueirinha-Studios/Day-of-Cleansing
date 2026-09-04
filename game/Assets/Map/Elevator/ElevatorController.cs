@@ -34,6 +34,7 @@ public class ElevatorController : MonoBehaviour
     {
         if (!isMoving)
         {
+            isMoving = true;
             movementAudio.Play();
             StartCoroutine(MoveElevator());
         }
@@ -41,7 +42,6 @@ public class ElevatorController : MonoBehaviour
 
     private IEnumerator MoveElevator()
     {
-        isMoving = true;
 
         float totalDistance = Vector3.Distance(startPosition, targetPosition);
 
@@ -108,13 +108,19 @@ public class ElevatorController : MonoBehaviour
 
         // Força a posição final
         transform.position = targetPosition;
+        transform.position = targetPosition;
         isMoving = false;
 
         movementAudio.Stop();
         arrivalAudio.Play();
 
-        Debug.Log("ELEVADOR CHEGOU!");
         SerialManager.Instance.Enviar("Portas abertas. Boa Sorte.");
+
+        Debug.Log("ELEVADOR CHEGOU!");
+        Debug.Log("doorController = " + doorController);
+
         doorController.OpenDoors();
+
+        Debug.Log("OpenDoors() FOI CHAMADO!");
     }
 }
