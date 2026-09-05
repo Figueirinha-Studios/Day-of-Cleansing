@@ -155,6 +155,34 @@ public class EnemyAI : MonoBehaviour
 
 
     // =========================================================
+    // ENTRAR NO CHASE
+    // =========================================================
+
+    private void EnterChase()
+    {
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        currentState = EnemyState.Chase;
+
+        agent.speed = chaseSpeed;
+
+        if (player != null)
+        {
+            lastKnownPosition = player.position;
+        }
+
+        memoryTimer = memoryTime;
+
+        // Toca a mesma música do Chase normal.
+        if (musicManager != null)
+        {
+            musicManager.StartChaseMusic();
+        }
+    }
+
+
+    // =========================================================
     // PATROL POINTS
     // =========================================================
 
@@ -163,7 +191,9 @@ public class EnemyAI : MonoBehaviour
         if (patrolPointsParent == null)
         {
             Debug.LogWarning("EnemyAI: Patrol Points Parent não foi definido.");
+
             patrolPoints = new Transform[0];
+
             return;
         }
 
@@ -176,7 +206,11 @@ public class EnemyAI : MonoBehaviour
 
         patrolPoints = points.ToArray();
 
-        Debug.Log("EnemyAI: " + patrolPoints.Length + " Patrol Points encontrados.");
+        Debug.Log(
+            "EnemyAI: " +
+            patrolPoints.Length +
+            " Patrol Points encontrados."
+        );
     }
 
 
@@ -195,7 +229,7 @@ public class EnemyAI : MonoBehaviour
         List<int> availablePoints = new List<int>();
 
         // -----------------------------------------------------
-        // PRIMEIRO: remove os últimos 5 pontos da escolha
+        // Remove os últimos 5 pontos da escolha
         // -----------------------------------------------------
 
         for (int i = 0; i < patrolPoints.Length; i++)
@@ -210,7 +244,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         // -----------------------------------------------------
-        // Se não houver pontos disponíveis, libera a memória.
+        // Caso não existam pontos disponíveis
         // -----------------------------------------------------
 
         if (availablePoints.Count == 0)
@@ -227,7 +261,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         // -----------------------------------------------------
-        // EVITAR VOLTAR NA DIREÇÃO CONTRÁRIA
+        // EVITA VOLTAR DIRETAMENTE
         // -----------------------------------------------------
 
         List<int> directionalPoints = new List<int>();
@@ -237,8 +271,11 @@ public class EnemyAI : MonoBehaviour
             previousPoint < patrolPoints.Length &&
             currentPoint < patrolPoints.Length)
         {
-            Vector3 previousPosition = patrolPoints[previousPoint].position;
-            Vector3 currentPosition = patrolPoints[currentPoint].position;
+            Vector3 previousPosition =
+                patrolPoints[previousPoint].position;
+
+            Vector3 currentPosition =
+                patrolPoints[currentPoint].position;
 
             Vector3 travelDirection =
                 (currentPosition - previousPosition).normalized;
@@ -249,10 +286,11 @@ public class EnemyAI : MonoBehaviour
                     (patrolPoints[index].position - currentPosition).normalized;
 
                 float dot =
-                    Vector3.Dot(travelDirection, candidateDirection);
+                    Vector3.Dot(
+                        travelDirection,
+                        candidateDirection
+                    );
 
-                // Dot negativo significa que o ponto está
-                // aproximadamente atrás dele.
                 if (dot >= backtrackDotThreshold)
                 {
                     directionalPoints.Add(index);
@@ -260,8 +298,6 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // Se encontrou pontos que não fazem ele voltar,
-        // usamos somente esses.
         if (directionalPoints.Count > 0)
         {
             availablePoints = directionalPoints;
@@ -272,18 +308,24 @@ public class EnemyAI : MonoBehaviour
         // -----------------------------------------------------
 
         int selectedPoint =
-            availablePoints[Random.Range(0, availablePoints.Count)];
+            availablePoints[
+                Random.Range(
+                    0,
+                    availablePoints.Count
+                )
+            ];
 
         // -----------------------------------------------------
         // ATUALIZA MEMÓRIA
         // -----------------------------------------------------
 
         previousPoint = currentPoint;
+
         currentPoint = selectedPoint;
 
         recentlyVisitedPoints.Add(selectedPoint);
 
-        // Mantém somente os últimos 5.
+        // Mantém apenas os últimos 5.
         while (recentlyVisitedPoints.Count > rememberedPatrolPoints)
         {
             recentlyVisitedPoints.RemoveAt(0);
@@ -293,7 +335,9 @@ public class EnemyAI : MonoBehaviour
         // MOVE
         // -----------------------------------------------------
 
-        agent.SetDestination(patrolPoints[selectedPoint].position);
+        agent.SetDestination(
+            patrolPoints[selectedPoint].position
+        );
     }
 
 
@@ -308,26 +352,18 @@ public class EnemyAI : MonoBehaviour
 
         agent.speed = patrolSpeed;
 
+        // Não espera no ponto.
         if (!agent.pathPending &&
             agent.remainingDistance <= agent.stoppingDistance)
         {
             ChooseNextPatrolPoint();
         }
 
-        if (vision != null && vision.CanSeePlayer())
+        // Visão normal.
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            lastKnownPosition = player.position;
-
-            memoryTimer = memoryTime;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
+            EnterChase();
         }
     }
 
@@ -341,30 +377,27 @@ public class EnemyAI : MonoBehaviour
         if (agent == null || !agent.isOnNavMesh)
             return;
 
+        // Corre na mesma velocidade do Chase.
         agent.speed = chaseSpeed;
 
+        // Chegou em um Patrol Point.
+        // Não espera, escolhe outro imediatamente.
         if (!agent.pathPending &&
             agent.remainingDistance <= agent.stoppingDistance)
         {
             ChooseNextPatrolPoint();
         }
 
-        // Durante o RunAround ele ainda pode detectar
-        // o jogador pela visão normal.
-        if (vision != null && vision.CanSeePlayer())
+        // -----------------------------------------------------
+        // VIU O PLAYER
+        // -----------------------------------------------------
+
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            lastKnownPosition = player.position;
-
-            memoryTimer = memoryTime;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
+            // Entra no Chase NORMAL.
+            // Isso também inicia a música de Chase.
+            EnterChase();
         }
     }
 
@@ -383,7 +416,9 @@ public class EnemyAI : MonoBehaviour
         if (player == null)
             return;
 
-        if (vision != null && vision.CanSeePlayer())
+        // Continua vendo o jogador.
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
             lastKnownPosition = player.position;
 
@@ -397,8 +432,9 @@ public class EnemyAI : MonoBehaviour
 
             if (memoryTimer <= 0f)
             {
-                // Se ainda estiver na corrida especial,
-                // não entra em LostSight/Search.
+                // Se o gerador ainda estiver na condição
+                // de faltar exatamente 1 item,
+                // volta para a corrida especial.
                 if (runAroundActive)
                 {
                     currentState = EnemyState.RunAround;
@@ -421,7 +457,7 @@ public class EnemyAI : MonoBehaviour
 
 
     // =========================================================
-    // PROXIMIDADE
+    // DETECÇÃO DE PROXIMIDADE
     // =========================================================
 
     private void HandleProximityDetection()
@@ -430,18 +466,25 @@ public class EnemyAI : MonoBehaviour
             return;
 
         float distance =
-            Vector3.Distance(transform.position, player.position);
+            Vector3.Distance(
+                transform.position,
+                player.position
+            );
 
         if (distance > proximityDetectionRadius)
         {
             wasPlayerInProximity = false;
+
             return;
         }
 
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        Vector3 origin =
+            transform.position +
+            Vector3.up * 0.5f;
 
         Vector3 target =
-            player.position + Vector3.up * 0.5f;
+            player.position +
+            Vector3.up * 0.5f;
 
         Vector3 direction =
             target - origin;
@@ -449,6 +492,7 @@ public class EnemyAI : MonoBehaviour
         float distanceToPlayer =
             direction.magnitude;
 
+        // Verifica se existe parede entre os dois.
         if (Physics.Raycast(
             origin,
             direction.normalized,
@@ -457,40 +501,31 @@ public class EnemyAI : MonoBehaviour
             proximityObstacleMask,
             QueryTriggerInteraction.Ignore))
         {
-            // Existe uma parede/obstáculo entre Chappie e o jogador.
             wasPlayerInProximity = false;
+
             return;
         }
 
+        // Player está dentro de 1 metro e sem parede.
         if (!wasPlayerInProximity)
         {
             wasPlayerInProximity = true;
 
-            lastKnownPosition = player.position;
-
-            memoryTimer = memoryTime;
-
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            if (musicManager != null)
-            {
-                musicManager.StartChaseMusic();
-            }
+            EnterChase();
         }
     }
 
 
     // =========================================================
-    // GENERATOR / CORRIDA ESPECIAL
+    // GERADOR / CORRIDA ESPECIAL
     // =========================================================
 
     private void HandleGeneratorRunAround()
     {
         if (generator == null)
         {
-            generator = FindFirstObjectByType<Generator>();
+            generator =
+                FindFirstObjectByType<Generator>();
 
             if (generator == null)
                 return;
@@ -503,17 +538,20 @@ public class EnemyAI : MonoBehaviour
         // COMEÇOU A FALTAR EXATAMENTE 1 ITEM
         // -----------------------------------------------------
 
-        if (shouldRunAround && !runAroundActive)
+        if (shouldRunAround &&
+            !runAroundActive)
         {
             runAroundActive = true;
 
-            // Se não estiver perseguindo o jogador,
-            // começa imediatamente a correr pelos pontos.
+            // Se não estiver perseguindo,
+            // começa a correr pelos pontos.
             if (currentState != EnemyState.Chase)
             {
-                currentState = EnemyState.RunAround;
+                currentState =
+                    EnemyState.RunAround;
 
-                agent.speed = chaseSpeed;
+                agent.speed =
+                    chaseSpeed;
 
                 ChooseNextPatrolPoint();
             }
@@ -523,15 +561,19 @@ public class EnemyAI : MonoBehaviour
         // ÚLTIMO ITEM FOI COLOCADO
         // -----------------------------------------------------
 
-        else if (!shouldRunAround && runAroundActive)
+        else if (!shouldRunAround &&
+                 runAroundActive)
         {
             runAroundActive = false;
 
-            if (currentState == EnemyState.RunAround)
+            if (currentState ==
+                EnemyState.RunAround)
             {
-                currentState = EnemyState.Patrol;
+                currentState =
+                    EnemyState.Patrol;
 
-                agent.speed = patrolSpeed;
+                agent.speed =
+                    patrolSpeed;
 
                 ChooseNextPatrolPoint();
             }
@@ -545,7 +587,8 @@ public class EnemyAI : MonoBehaviour
 
     private void Investigate()
     {
-        if (agent == null || !agent.isOnNavMesh)
+        if (agent == null ||
+            !agent.isOnNavMesh)
             return;
 
         agent.speed = searchSpeed;
@@ -558,13 +601,10 @@ public class EnemyAI : MonoBehaviour
             StartSearch();
         }
 
-        if (vision != null && vision.CanSeePlayer())
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            memoryTimer = memoryTime;
+            EnterChase();
         }
     }
 
@@ -575,7 +615,8 @@ public class EnemyAI : MonoBehaviour
 
     private void LostSight()
     {
-        if (agent == null || !agent.isOnNavMesh)
+        if (agent == null ||
+            !agent.isOnNavMesh)
             return;
 
         agent.speed = searchSpeed;
@@ -588,28 +629,28 @@ public class EnemyAI : MonoBehaviour
             StartSearch();
         }
 
-        if (vision != null && vision.CanSeePlayer())
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            memoryTimer = memoryTime;
+            EnterChase();
         }
     }
 
 
     // =========================================================
-    // SEARCH
+    // START SEARCH
     // =========================================================
 
     private void StartSearch()
     {
-        currentState = EnemyState.Search;
+        currentState =
+            EnemyState.Search;
 
-        searchTimer = searchTime;
+        searchTimer =
+            searchTime;
 
-        searchCenter = lastKnownPosition;
+        searchCenter =
+            lastKnownPosition;
 
         GenerateSearchPoints();
 
@@ -617,20 +658,29 @@ public class EnemyAI : MonoBehaviour
 
         if (searchPoints.Count > 0)
         {
-            agent.speed = searchSpeed;
+            agent.speed =
+                searchSpeed;
 
             agent.SetDestination(
-                searchPoints[currentSearchIndex].position);
+                searchPoints[
+                    currentSearchIndex
+                ].position
+            );
         }
 
         if (musicManager != null)
         {
             musicManager.StartSearchMusic();
 
-            searchMusicTimer = searchMusicDuration;
+            searchMusicTimer =
+                searchMusicDuration;
         }
     }
 
+
+    // =========================================================
+    // GERAR PONTOS DE SEARCH
+    // =========================================================
 
     private void GenerateSearchPoints()
     {
@@ -641,11 +691,16 @@ public class EnemyAI : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             Vector2 random =
-                Random.insideUnitCircle * searchRadius;
+                Random.insideUnitCircle *
+                searchRadius;
 
             Vector3 point =
                 searchCenter +
-                new Vector3(random.x, 0f, random.y);
+                new Vector3(
+                    random.x,
+                    0f,
+                    random.y
+                );
 
             if (NavMesh.SamplePosition(
                 point,
@@ -654,13 +709,16 @@ public class EnemyAI : MonoBehaviour
                 NavMesh.AllAreas))
             {
                 GameObject searchObject =
-                    new GameObject("SearchPoint");
+                    new GameObject(
+                        "SearchPoint"
+                    );
 
                 searchObject.transform.position =
                     hit.position;
 
                 searchPoints.Add(
-                    searchObject.transform);
+                    searchObject.transform
+                );
             }
         }
 
@@ -668,12 +726,21 @@ public class EnemyAI : MonoBehaviour
     }
 
 
+    // =========================================================
+    // EMBARALHAR SEARCH
+    // =========================================================
+
     private void ShuffleSearchPoints()
     {
-        for (int i = 0; i < searchPoints.Count; i++)
+        for (int i = 0;
+             i < searchPoints.Count;
+             i++)
         {
             int randomIndex =
-                Random.Range(i, searchPoints.Count);
+                Random.Range(
+                    i,
+                    searchPoints.Count
+                );
 
             Transform temp =
                 searchPoints[i];
@@ -687,72 +754,90 @@ public class EnemyAI : MonoBehaviour
     }
 
 
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
     private void Search()
     {
-        if (agent == null || !agent.isOnNavMesh)
+        if (agent == null ||
+            !agent.isOnNavMesh)
             return;
 
-        searchTimer -= Time.deltaTime;
+        searchTimer -=
+            Time.deltaTime;
 
         if (searchTimer <= 0f)
         {
-            foreach (Transform point in searchPoints)
+            foreach (Transform point
+                     in searchPoints)
             {
                 if (point != null)
                 {
-                    Destroy(point.gameObject);
+                    Destroy(
+                        point.gameObject
+                    );
                 }
             }
 
             searchPoints.Clear();
 
-            currentState = EnemyState.Patrol;
+            currentState =
+                EnemyState.Patrol;
 
-            agent.speed = patrolSpeed;
+            agent.speed =
+                patrolSpeed;
 
             ChooseNextPatrolPoint();
 
             return;
         }
 
-        if (vision != null && vision.CanSeePlayer())
+        // Encontrou o jogador.
+        if (vision != null &&
+            vision.CanSeePlayer())
         {
-            currentState = EnemyState.Chase;
-
-            agent.speed = chaseSpeed;
-
-            memoryTimer = memoryTime;
-
-            foreach (Transform point in searchPoints)
+            foreach (Transform point
+                     in searchPoints)
             {
                 if (point != null)
                 {
-                    Destroy(point.gameObject);
+                    Destroy(
+                        point.gameObject
+                    );
                 }
-
-                searchPoints.Clear();
-
-                return;
             }
+
+            searchPoints.Clear();
+
+            EnterChase();
+
+            return;
         }
 
         if (searchPoints.Count == 0)
             return;
 
         if (!agent.pathPending &&
-            agent.remainingDistance <= agent.stoppingDistance)
+            agent.remainingDistance <=
+            agent.stoppingDistance)
         {
             currentSearchIndex++;
 
-            if (currentSearchIndex >= searchPoints.Count)
+            if (currentSearchIndex >=
+                searchPoints.Count)
             {
                 currentSearchIndex = 0;
             }
 
-            if (searchPoints[currentSearchIndex] != null)
+            if (searchPoints[
+                currentSearchIndex] != null)
             {
                 agent.SetDestination(
-                    searchPoints[currentSearchIndex].position);
+                    searchPoints[
+                        currentSearchIndex
+                    ].position
+                );
             }
         }
     }
@@ -762,27 +847,37 @@ public class EnemyAI : MonoBehaviour
     // NOISE
     // =========================================================
 
-    public void ReceiveNoise(Vector3 noisePosition)
+    public void ReceiveNoise(
+        Vector3 noisePosition)
     {
-        // Durante Chase ou RunAround ele não abandona
-        // seu comportamento para investigar sons.
-        if (currentState == EnemyState.Chase ||
-            currentState == EnemyState.RunAround)
+        // Durante Chase ou RunAround,
+        // sons não interrompem o comportamento.
+        if (currentState ==
+            EnemyState.Chase ||
+            currentState ==
+            EnemyState.RunAround)
         {
             return;
         }
 
-        lastKnownPosition = noisePosition;
+        lastKnownPosition =
+            noisePosition;
 
-        currentState = EnemyState.Investigate;
+        currentState =
+            EnemyState.Investigate;
 
-        memoryTimer = memoryTime;
+        memoryTimer =
+            memoryTime;
 
-        if (agent != null && agent.isOnNavMesh)
+        if (agent != null &&
+            agent.isOnNavMesh)
         {
-            agent.speed = searchSpeed;
+            agent.speed =
+                searchSpeed;
 
-            agent.SetDestination(noisePosition);
+            agent.SetDestination(
+                noisePosition
+            );
         }
     }
 
@@ -793,7 +888,8 @@ public class EnemyAI : MonoBehaviour
 
     private void UpdateAnimation()
     {
-        if (animator == null || agent == null)
+        if (animator == null ||
+            agent == null)
             return;
 
         float speed =
@@ -803,7 +899,8 @@ public class EnemyAI : MonoBehaviour
             "Speed",
             speed,
             0.1f,
-            Time.deltaTime);
+            Time.deltaTime
+        );
     }
 
 
@@ -813,18 +910,22 @@ public class EnemyAI : MonoBehaviour
 
     private void UpdateFootsteps()
     {
-        if (enemyAudio == null || agent == null)
+        if (enemyAudio == null ||
+            agent == null)
             return;
 
         bool isMoving =
-            agent.velocity.magnitude > 0.1f;
+            agent.velocity.magnitude >
+            0.1f;
 
         bool isChasing =
-            currentState == EnemyState.Chase;
+            currentState ==
+            EnemyState.Chase;
 
         enemyAudio.UpdateFootsteps(
             isMoving,
-            isChasing);
+            isChasing
+        );
     }
 
 
@@ -834,19 +935,26 @@ public class EnemyAI : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.yellow;
+        Gizmos.color =
+            Color.yellow;
 
         Gizmos.DrawWireSphere(
             transform.position,
-            proximityDetectionRadius);
+            proximityDetectionRadius
+        );
 
         if (player != null)
         {
-            Gizmos.color = Color.red;
+            Gizmos.color =
+                Color.red;
 
             Gizmos.DrawLine(
-                transform.position + Vector3.up * 0.5f,
-                player.position + Vector3.up * 0.5f);
+                transform.position +
+                Vector3.up * 0.5f,
+
+                player.position +
+                Vector3.up * 0.5f
+            );
         }
     }
 }

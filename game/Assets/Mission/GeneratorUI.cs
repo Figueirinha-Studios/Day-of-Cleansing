@@ -98,25 +98,16 @@ public class GeneratorUI : MonoBehaviour
 
             generatorAudioSource.loop = false;
 
-
-            // =================================================
-            // ÁUDIO 3D
-            // =================================================
-
             generatorAudioSource.spatialBlend = 1f;
-
 
             generatorAudioSource.minDistance =
                 generatorMinDistance;
 
-
             generatorAudioSource.maxDistance =
                 generatorMaxDistance;
 
-
             generatorAudioSource.rolloffMode =
                 AudioRolloffMode.Linear;
-
 
             generatorAudioSource.volume =
                 generatorSoundVolume;
@@ -154,10 +145,8 @@ public class GeneratorUI : MonoBehaviour
         objectiveVideoPlayer.clip =
             generatorTutorialVideo;
 
-
         objectiveVideoPlayer.isLooping =
             false;
-
 
         objectiveVideoPlayer.Prepare();
 
@@ -169,7 +158,6 @@ public class GeneratorUI : MonoBehaviour
 
 
         objectiveVideoImage.gameObject.SetActive(true);
-
 
         objectiveVideoPlayer.Play();
 
@@ -305,6 +293,23 @@ public class GeneratorUI : MonoBehaviour
         if (videoPlayer == null ||
             videoImage == null)
         {
+            /*
+             * Se este era o último item,
+             * ainda tenta iniciar o Generator ON.
+             */
+            currentSequence = null;
+
+            if (isLastItem)
+            {
+                Generator generator =
+                    FindFirstObjectByType<Generator>();
+
+                if (generator != null)
+                {
+                    generator.LastItemVideoFinished();
+                }
+            }
+
             yield break;
         }
 
@@ -320,7 +325,6 @@ public class GeneratorUI : MonoBehaviour
 
         videoPlayer.isLooping =
             false;
-
 
         videoPlayer.Prepare();
 
@@ -412,6 +416,8 @@ public class GeneratorUI : MonoBehaviour
         if (currentSequence != null)
         {
             StopCoroutine(currentSequence);
+
+            currentSequence = null;
         }
 
 
@@ -456,15 +462,14 @@ public class GeneratorUI : MonoBehaviour
 
         if (generatorStartSound != null)
         {
-            generatorAudioSource.loop = false;
+            generatorAudioSource.loop =
+                false;
 
             generatorAudioSource.clip =
                 generatorStartSound;
 
             generatorAudioSource.Play();
 
-
-            // Espera o som terminar.
 
             yield return new WaitForSeconds(
                 generatorStartSound.length
@@ -507,14 +512,11 @@ public class GeneratorUI : MonoBehaviour
         {
             generatorOnVideoPlayer.Stop();
 
-
             generatorOnVideoPlayer.clip =
                 generatorOnVideo;
 
-
             generatorOnVideoPlayer.isLooping =
                 false;
-
 
             generatorOnVideoPlayer.Prepare();
 
@@ -538,8 +540,6 @@ public class GeneratorUI : MonoBehaviour
                 yield return null;
             }
 
-
-            // Espera o vídeo terminar.
 
             while (generatorOnVideoPlayer.isPlaying)
             {
@@ -591,10 +591,6 @@ public class GeneratorUI : MonoBehaviour
         generatorAudioSource.volume =
             generatorSoundVolume;
 
-
-        // =====================================================
-        // 3D
-        // =====================================================
 
         generatorAudioSource.spatialBlend =
             1f;
