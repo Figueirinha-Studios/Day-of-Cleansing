@@ -90,4 +90,18 @@ public class ElevatorDoorController : MonoBehaviour
 
         doorCoroutine = null;
     }
+    public bool AreDoorsOpen()
+    {
+        float leftDistance = Vector3.Distance(
+            leftDoor.localPosition,
+            leftOpenPosition
+        );
+
+        float rightDistance = Vector3.Distance(
+            rightDoor.localPosition,
+            rightOpenPosition
+        );
+
+        return leftDistance < 0.01f && rightDistance < 0.01f;
+    }
 }

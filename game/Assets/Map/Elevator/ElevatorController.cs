@@ -22,6 +22,10 @@ public class ElevatorController : MonoBehaviour
     public AudioSource arrivalAudio;
     public AudioSource doorAudio;
 
+    [Header("Emergency Door")]
+    public GameObject forceOpen;
+    public float forceOpenDelay = 2f;
+
     private void Start()
     {
         startPosition = transform.position;
@@ -120,7 +124,19 @@ public class ElevatorController : MonoBehaviour
         Debug.Log("doorController = " + doorController);
 
         doorController.OpenDoors();
+        StartCoroutine(CheckIfDoorsOpened());
 
         Debug.Log("OpenDoors() FOI CHAMADO!");
+    }
+    private IEnumerator CheckIfDoorsOpened()
+    {
+        yield return new WaitForSeconds(forceOpenDelay);
+
+        if (!doorController.AreDoorsOpen())
+        {
+            Debug.Log("ELEVADOR EMPERROU! Ativando ForceOpen.");
+
+            forceOpen.SetActive(true);
+        }
     }
 }
