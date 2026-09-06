@@ -1,10 +1,15 @@
 using System;
-using System.IO.Ports;
 using UnityEngine;
+
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+using System.IO.Ports;
+#endif
 
 public class SerialManager : MonoBehaviour
 {
     public static SerialManager Instance;
+
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
 
     [Header("Serial")]
     [SerializeField] private string portName = "COM6";
@@ -15,6 +20,8 @@ public class SerialManager : MonoBehaviour
 
     private SerialPort serialPort;
     private float nextReconnectTime;
+
+#endif
 
     private void Awake()
     {
@@ -28,8 +35,18 @@ public class SerialManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+
         Conectar();
+
+#else
+
+        Debug.Log("[SERIAL] Desativada nesta plataforma.");
+
+#endif
     }
+
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
 
     private void Update()
     {
@@ -38,7 +55,9 @@ public class SerialManager : MonoBehaviour
         {
             if (Time.unscaledTime >= nextReconnectTime)
             {
-                nextReconnectTime = Time.unscaledTime + reconnectInterval;
+                nextReconnectTime =
+                    Time.unscaledTime + reconnectInterval;
+
                 Conectar();
             }
         }
@@ -65,7 +84,8 @@ public class SerialManager : MonoBehaviour
                 serialPort = null;
             }
 
-            serialPort = new SerialPort(portName, baudRate);
+            serialPort =
+                new SerialPort(portName, baudRate);
 
             serialPort.NewLine = "\n";
             serialPort.ReadTimeout = 100;
@@ -73,7 +93,9 @@ public class SerialManager : MonoBehaviour
 
             serialPort.Open();
 
-            Debug.Log($"[SERIAL] Conectado em {portName}");
+            Debug.Log(
+                $"[SERIAL] Conectado em {portName}"
+            );
         }
         catch (Exception e)
         {
@@ -89,15 +111,24 @@ public class SerialManager : MonoBehaviour
         }
     }
 
+#endif
+
+    // =========================================================
+    // ENVIAR
+    // =========================================================
+
     public void Enviar(string mensagem)
     {
         if (string.IsNullOrEmpty(mensagem))
             return;
 
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+
         if (serialPort == null || !serialPort.IsOpen)
         {
             Debug.LogWarning(
-                "[SERIAL] Pico não está conectada. Mensagem não enviada: " + mensagem
+                "[SERIAL] Pico não está conectada. Mensagem não enviada: "
+                + mensagem
             );
 
             return;
@@ -107,7 +138,9 @@ public class SerialManager : MonoBehaviour
         {
             serialPort.WriteLine(mensagem);
 
-            Debug.Log("[SERIAL] Enviado: " + mensagem);
+            Debug.Log(
+                "[SERIAL] Enviado: " + mensagem
+            );
         }
         catch (Exception e)
         {
@@ -123,12 +156,35 @@ public class SerialManager : MonoBehaviour
             {
             }
         }
+
+#else
+
+        // WebGL:
+        // Serial desativada.
+        // Não faz nada.
+
+#endif
     }
+
+    // =========================================================
+    // STATUS
+    // =========================================================
 
     public bool EstaConectado()
     {
-        return serialPort != null && serialPort.IsOpen;
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+
+        return serialPort != null &&
+               serialPort.IsOpen;
+
+#else
+
+        return false;
+
+#endif
     }
+
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
 
     private void OnApplicationQuit()
     {
@@ -162,4 +218,6 @@ public class SerialManager : MonoBehaviour
 
         serialPort = null;
     }
+
+#endif
 }
