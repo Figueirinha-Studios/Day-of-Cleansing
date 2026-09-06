@@ -598,17 +598,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 458533527d184ea4c95ce0948fd40103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneratorUI
+  gasolineOneVideo: 1-2.mp4
+  gasolineTwoVideo: 2-2.mp4
+  fuseVideo: 1-1.mp4
+  generatorOnVideo: GeneratorON.mp4
+  generatorTutorialVideo: Objective.mp4
   videoPlayer: {fileID: 813134382}
   videoImage: {fileID: 166381593}
-  gasolineOneVideo: {fileID: 32900000, guid: 5b00b4e19f9ba7f40ad009d1006fe2e7, type: 3}
-  gasolineTwoVideo: {fileID: 32900000, guid: eed078f1b5a5cc643920de33c16af7dc, type: 3}
-  fuseVideo: {fileID: 32900000, guid: 4839c69088e0f3f4bbffe292063f5865, type: 3}
   generatorOnVideoPlayer: {fileID: 1495926899}
   generatorOnVideoImage: {fileID: 1211830137}
-  generatorOnVideo: {fileID: 32900000, guid: e5d7bf13751c2774699f2dfb579421e1, type: 3}
   objectiveVideoPlayer: {fileID: 657932102}
   objectiveVideoImage: {fileID: 1435498501}
-  generatorTutorialVideo: {fileID: 32900000, guid: baabcd1510f1e4642b9772f9cb4b34a9, type: 3}
   gasolineInsertSound: {fileID: 8300000, guid: b9b7e768c2e1b014b8b9f891ab5bc232, type: 3}
   fuseInsertSound: {fileID: 8300000, guid: 87cb2970444d86e43a216cf63903c793, type: 3}
   generatorStartSound: {fileID: 8300000, guid: 0b8c9c024ab6b1b4bb091b9c3ec60a25, type: 3}
@@ -17198,6 +17198,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 860290591}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1809157444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1809157445}
+  - component: {fileID: 1809157446}
+  m_Layer: 0
+  m_Name: VideoManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1809157445
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809157444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -36.04202, y: 3.32419, z: 12.15547}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1809157446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809157444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15d1c469240be464e9381721eba9658c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VideoManager
+  githubBaseUrl: https://github.com/viniciusam11/doc-videos/raw/refs/heads/main/videos/
+  localFolder: Videos
 --- !u!1 &1839220579 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 94b3f6bc76bd5214b909e74371b4a748, type: 3}
@@ -20620,3 +20666,4 @@ SceneRoots:
   - {fileID: 1905636501}
   - {fileID: 2047857909}
   - {fileID: 1443325791}
+  - {fileID: 1809157445}

@@ -171,6 +171,13 @@ public class MapController : MonoBehaviour
 
             if (videoPlayer != null)
             {
+                videoPlayer.source = VideoSource.Url;
+
+                videoPlayer.url =
+                    VideoManager.Instance.GetVideoUrl(
+                        "Map.mp4"
+                    );
+
                 videoPlayer.Play();
             }
         }
@@ -229,7 +236,10 @@ public class MapController : MonoBehaviour
 
         // Para vídeo
         if (videoPlayer != null)
+        {
             videoPlayer.Stop();
+            videoPlayer.url = "";
+        }
 
         // Para áudio do vídeo
         if (mapVideoAudio != null)
@@ -583,4 +593,4 @@ public class MapController : MonoBehaviour
         if (playerPickup != null)
             playerPickup.enabled = enabled;
     }
-}
+}   

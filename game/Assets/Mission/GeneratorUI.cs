@@ -5,28 +5,24 @@ using UnityEngine.Video;
 
 public class GeneratorUI : MonoBehaviour
 {
+    [Header("Nomes dos vídeos")]
+    public string gasolineOneVideo = "1-1.mp4";
+    public string gasolineTwoVideo = "1-2.mp4";
+    public string fuseVideo = "2-2.mp4";
+    public string generatorOnVideo = "GeneratorON.mp4";
+    public string generatorTutorialVideo = "Objective.mp4";
+
     [Header("Vídeos dos Itens")]
     public VideoPlayer videoPlayer;
     public RawImage videoImage;
-
-    public VideoClip gasolineOneVideo;
-    public VideoClip gasolineTwoVideo;
-    public VideoClip fuseVideo;
-
 
     [Header("Vídeo - Gerador Ligado")]
     public VideoPlayer generatorOnVideoPlayer;
     public RawImage generatorOnVideoImage;
 
-    public VideoClip generatorOnVideo;
-
-
     [Header("Vídeo - Objetivo")]
     public VideoPlayer objectiveVideoPlayer;
     public RawImage objectiveVideoImage;
-
-    public VideoClip generatorTutorialVideo;
-
 
     [Header("Sons de Colocar")]
     public AudioClip gasolineInsertSound;
@@ -121,7 +117,7 @@ public class GeneratorUI : MonoBehaviour
 
     public void ShowGeneratorTutorial()
     {
-        if (generatorTutorialVideo == null)
+        if (string.IsNullOrEmpty(generatorTutorialVideo))
             return;
 
         if (objectiveVideoPlayer == null)
@@ -142,8 +138,8 @@ public class GeneratorUI : MonoBehaviour
         HideObjectiveVideo();
 
 
-        objectiveVideoPlayer.clip =
-            generatorTutorialVideo;
+        objectiveVideoPlayer.source = VideoSource.Url;
+        objectiveVideoPlayer.url = VideoManager.Instance.GetVideoUrl(generatorTutorialVideo);
 
         objectiveVideoPlayer.isLooping =
             false;
@@ -181,8 +177,7 @@ public class GeneratorUI : MonoBehaviour
         bool isLastItem
     )
     {
-        VideoClip video = null;
-
+        string video = null;
 
         if (gasolineCount == 1)
         {
@@ -193,8 +188,7 @@ public class GeneratorUI : MonoBehaviour
             video = gasolineTwoVideo;
         }
 
-
-        if (video == null)
+        if (string.IsNullOrEmpty(video))
             return;
 
 
@@ -214,7 +208,7 @@ public class GeneratorUI : MonoBehaviour
         bool isLastItem
     )
     {
-        if (fuseVideo == null)
+        if (string.IsNullOrEmpty(fuseVideo))
             return;
 
 
@@ -231,7 +225,7 @@ public class GeneratorUI : MonoBehaviour
     // =========================================================
 
     private void StartVideoSequence(
-        VideoClip video,
+        string video,
         AudioClip insertSound,
         bool isLastItem
     )
@@ -258,7 +252,7 @@ public class GeneratorUI : MonoBehaviour
     // =========================================================
 
     private IEnumerator PlayInsertSequence(
-        VideoClip video,
+        string video,
         AudioClip insertSound,
         bool isLastItem
     )
@@ -320,8 +314,8 @@ public class GeneratorUI : MonoBehaviour
 
         videoPlayer.Stop();
 
-        videoPlayer.clip =
-            video;
+        videoPlayer.source = VideoSource.Url;
+        videoPlayer.url = VideoManager.Instance.GetVideoUrl(video);
 
         videoPlayer.isLooping =
             false;
@@ -506,14 +500,15 @@ public class GeneratorUI : MonoBehaviour
         // VÍDEO
         // -----------------------------------------------------
 
-        if (generatorOnVideo != null &&
+        if (!string.IsNullOrEmpty(generatorOnVideo) &&
             generatorOnVideoPlayer != null &&
             generatorOnVideoImage != null)
         {
             generatorOnVideoPlayer.Stop();
 
-            generatorOnVideoPlayer.clip =
-                generatorOnVideo;
+
+            generatorOnVideoPlayer.source = VideoSource.Url;
+            generatorOnVideoPlayer.url = VideoManager.Instance.GetVideoUrl(generatorOnVideo);
 
             generatorOnVideoPlayer.isLooping =
                 false;
@@ -640,8 +635,6 @@ public class GeneratorUI : MonoBehaviour
         if (videoPlayer != null)
         {
             videoPlayer.Stop();
-
-            videoPlayer.clip = null;
         }
 
 
@@ -661,8 +654,6 @@ public class GeneratorUI : MonoBehaviour
         if (generatorOnVideoPlayer != null)
         {
             generatorOnVideoPlayer.Stop();
-
-            generatorOnVideoPlayer.clip = null;
         }
 
 
@@ -682,8 +673,6 @@ public class GeneratorUI : MonoBehaviour
         if (objectiveVideoPlayer != null)
         {
             objectiveVideoPlayer.Stop();
-
-            objectiveVideoPlayer.clip = null;
         }
 
 
