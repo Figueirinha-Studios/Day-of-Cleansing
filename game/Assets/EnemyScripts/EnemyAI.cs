@@ -62,8 +62,18 @@ public class EnemyAI : MonoBehaviour
     [Header("Memory")]
     public float memoryTime = 2f;
 
+    [Tooltip("Tempo que o Chappie segue a posição atual do player após chegar ao último ponto conhecido.")]
+    public float lastKnownPositionKnowledgeTime = 1f;
+
     private float memoryTimer;
     private Vector3 lastKnownPosition;
+
+    /*
+     * Controla o período especial de 1 segundo
+     * após chegar ao último ponto conhecido.
+     */
+    private float knowledgeTimer;
+    private bool followingLastKnownPlayer = false;
 
     [Header("Search")]
     public float searchTime = 30f;
@@ -181,6 +191,12 @@ public class EnemyAI : MonoBehaviour
                 player.position;
         }
 
+        /*
+         * Reseta o período especial de 1 segundo.
+         */
+        followingLastKnownPlayer = false;
+        knowledgeTimer = 0f;
+
         memoryTimer =
             memoryTime;
 
@@ -248,9 +264,6 @@ public class EnemyAI : MonoBehaviour
             if (memoryTimer <= 0f)
             {
                 /*
-                 * Tanto faz se estava em RunAround
-                 * ou Patrol:
-                 *
                  * Chase -> LostSight -> Search
                  *
                  * A decisão de voltar para RunAround
@@ -259,6 +272,9 @@ public class EnemyAI : MonoBehaviour
                  */
                 searchingForPlayer =
                     true;
+
+                followingLastKnownPlayer =
+                    false;
 
                 currentState =
                     EnemyState.LostSight;
@@ -402,50 +418,63 @@ public class EnemyAI : MonoBehaviour
 
         /*
          * =====================================================
-         * 3/3
+         * GENERATOR ON
          * =====================================================
          *
-         * Depois que RunAround começou em 2/3,
-         * ele continua ativo mesmo em 3/3.
+         * IMPORTANTE:
          *
-         * NÃO usamos IsExactlyOneItemMissing()
-         * para desligar o RunAround.
+         * Generator ON NÃO encerra o RunAround.
+         *
+         * O Chappie continua correndo.
+         *
+         * Se ele estiver em Chase, Investigate, LostSight
+         * ou Search, deixa o estado atual terminar normalmente.
+         *
+         * Quando voltar ao estado de movimento normal,
+         * continuará em RunAround.
          */
-
-        /*
-         * =====================================================
-         * GERADOR LIGADO
-         * =====================================================
-         *
-         * Somente aqui o RunAround termina.
-         */
-        if (runAroundActive &&
-            generatorOn)
+        if (generatorOn)
         {
+            /*
+             * Garante que o RunAround continue ativo.
+             */
             runAroundActive =
-                false;
+                true;
 
-            StopEnemyMusic();
-
-            ClearSearchPoints();
-
-            searchingForPlayer =
-                false;
-
-            currentState =
-                EnemyState.Patrol;
-
-            if (agent != null &&
-                agent.isOnNavMesh)
+            /*
+             * Se estiver em Patrol, muda para RunAround.
+             */
+            if (currentState ==
+                EnemyState.Patrol)
             {
-                agent.speed =
-                    patrolSpeed;
+                StopEnemyMusic();
 
-                ChooseNextPatrolPoint();
+                currentState =
+                    EnemyState.RunAround;
+
+                if (agent != null &&
+                    agent.isOnNavMesh)
+                {
+                    agent.speed =
+                        chaseSpeed;
+
+                    ChooseNextPatrolPoint();
+                }
             }
 
             return;
         }
+
+        /*
+         * =====================================================
+         * 3/3
+         * =====================================================
+         *
+         * Depois que RunAround começou em 2/3,
+         * ele continua ativo em 3/3.
+         *
+         * Não fazemos nada aqui para desligá-lo.
+         */
     }
 
     private void RunAround()
@@ -676,8 +705,6 @@ public class EnemyAI : MonoBehaviour
             return;
 
         /*
-         * IMPORTANTE:
-         *
          * Aqui NÃO estamos procurando o jogador.
          *
          * É somente investigação de barulho.
@@ -700,13 +727,6 @@ public class EnemyAI : MonoBehaviour
             agent.stoppingDistance)
         {
             StartSearch();
-
-            /*
-             * StartSearch() verá que
-             * searchingForPlayer == false.
-             *
-             * Portanto não tocará Search Music.
-             */
         }
 
         /*
@@ -731,42 +751,128 @@ public class EnemyAI : MonoBehaviour
             !agent.isOnNavMesh)
             return;
 
-        /*
-         * Agora estamos procurando o jogador.
-         */
-        searchingForPlayer =
-            true;
+        if (player == null)
+            return;
 
         agent.speed =
             searchSpeed;
 
-        agent.SetDestination(
-            lastKnownPosition
-        );
-
         /*
-         * Chegou à última posição conhecida.
+         * =====================================================
+         * FASE 1
+         * =====================================================
          *
-         * Agora começa Search.
+         * Vai até o último ponto onde viu o player.
          */
-        if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
+        if (!followingLastKnownPlayer)
         {
-            StartSearch();
+            agent.SetDestination(
+                lastKnownPosition
+            );
+
+            /*
+             * Chegou ao último ponto conhecido.
+             *
+             * Agora começa o período de 1 segundo.
+             */
+            if (!agent.pathPending &&
+                agent.remainingDistance <=
+                agent.stoppingDistance)
+            {
+                followingLastKnownPlayer =
+                    true;
+
+                knowledgeTimer =
+                    lastKnownPositionKnowledgeTime;
+
+                /*
+                 * Começa imediatamente a seguir
+                 * a posição atual do player.
+                 */
+                agent.SetDestination(
+                    player.position
+                );
+            }
+
+            /*
+             * Se encontrar o player antes de chegar
+             * ao último ponto:
+             *
+             * LostSight -> Chase
+             */
+            if (vision != null &&
+                vision.CanSeePlayer())
+            {
+                followingLastKnownPlayer =
+                    false;
+
+                EnterChase();
+            }
 
             return;
         }
 
         /*
-         * Se encontrar o jogador novamente:
+         * =====================================================
+         * FASE 2
+         * =====================================================
+         *
+         * Durante 1 segundo:
+         *
+         * O Chappie sabe onde o player está e
+         * continua seguindo a posição atual dele,
+         * mesmo sem enxergá-lo.
+         */
+        knowledgeTimer -=
+            Time.deltaTime;
+
+        /*
+         * Atualiza a posição do player constantemente.
+         */
+        lastKnownPosition =
+            player.position;
+
+        agent.SetDestination(
+            player.position
+        );
+
+        /*
+         * Se encontrar o player durante esse 1 segundo:
          *
          * LostSight -> Chase
          */
         if (vision != null &&
             vision.CanSeePlayer())
         {
+            followingLastKnownPlayer =
+                false;
+
             EnterChase();
+
+            return;
+        }
+
+        /*
+         * =====================================================
+         * ACABOU O 1 SEGUNDO
+         * =====================================================
+         *
+         * Se não encontrou o player:
+         *
+         * LostSight -> Search
+         */
+        if (knowledgeTimer <= 0f)
+        {
+            followingLastKnownPlayer =
+                false;
+
+            lastKnownPosition =
+                player.position;
+
+            searchingForPlayer =
+                true;
+
+            StartSearch();
         }
     }
 
@@ -875,11 +981,13 @@ public class EnemyAI : MonoBehaviour
              * =================================================
              *
              * Se o RunAround estava ativo,
-             * significa que o gerador está em 2/3 ou 3/3.
+             * continua nele.
              *
-             * Portanto:
+             * Isso vale tanto para:
              *
-             * Search -> RunAround
+             * 2/3
+             * 3/3
+             * Generator ON
              */
             if (runAroundActive)
             {
@@ -900,12 +1008,8 @@ public class EnemyAI : MonoBehaviour
 
             /*
              * =================================================
-             * INVESTIGAÇÃO NORMAL
+             * PATROL
              * =================================================
-             *
-             * Se não era RunAround:
-             *
-             * Search -> Patrol
              */
             currentState =
                 EnemyState.Patrol;
@@ -1064,14 +1168,7 @@ public class EnemyAI : MonoBehaviour
     )
     {
         /*
-         * =====================================================
-         * IMPORTANTE
-         * =====================================================
-         *
-         * NÃO ignoramos mais o barulho quando estiver
-         * em RunAround.
-         *
-         * Agora:
+         * Não ignoramos o barulho durante RunAround.
          *
          * RunAround + objeto
          * -> Investigate
@@ -1087,12 +1184,15 @@ public class EnemyAI : MonoBehaviour
         }
 
         /*
-         * Se já está investigando outro objeto,
-         * pode atualizar para o novo barulho.
-         *
-         * Se está em Search procurando o jogador,
-         * um barulho de objeto pode interromper essa busca.
+         * Se estava no período especial de 1 segundo,
+         * o barulho interrompe esse comportamento.
          */
+        followingLastKnownPlayer =
+            false;
+
+        knowledgeTimer =
+            0f;
+
         searchingForPlayer =
             false;
 
