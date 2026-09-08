@@ -19550,7 +19550,7 @@ MonoBehaviour:
   rememberedPatrolPoints: 3
   backtrackDotThreshold: -0.25
   memoryTime: 2
-  lastKnownPositionKnowledgeTime: 1
+  lastKnownPositionKnowledgeTime: 0.5
   searchTime: 16
   searchRadius: 20
   searchSpeed: 2.5
