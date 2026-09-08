@@ -29,13 +29,9 @@ public class MusicManager : MonoBehaviour
 
     private bool ambientPaused = false;
 
-    // ---------------------------------------------------------
-    // IMPORTANTE
+
     // ---------------------------------------------------------
     // Diz se uma música de inimigo deve estar ativa.
-    //
-    // Isso impede UpdateChaseVolume() de interferir
-    // no FadeOutEnemy().
     // ---------------------------------------------------------
 
     private bool enemyMusicActive = false;
@@ -95,20 +91,28 @@ public class MusicManager : MonoBehaviour
 
     private void Update()
     {
+        // -----------------------------------------------------
+        // MÚSICA AMBIENTE
+        // -----------------------------------------------------
+
         if (ambientSource != null &&
             !ambientSource.isPlaying &&
-            remainingTracks.Count > 0)
+            !ambientPaused)
         {
             PlayNextAmbient();
         }
 
+
+        // -----------------------------------------------------
+        // MÚSICA DO INIMIGO
+        // -----------------------------------------------------
 
         UpdateChaseVolume();
     }
 
 
     // =========================================================
-    // PLAYLIST
+    // PREPARAR PLAYLIST
     // =========================================================
 
     private void PreparePlaylist()
@@ -126,6 +130,10 @@ public class MusicManager : MonoBehaviour
         Shuffle();
     }
 
+
+    // =========================================================
+    // EMBARALHAR PLAYLIST
+    // =========================================================
 
     private void Shuffle()
     {
@@ -153,7 +161,7 @@ public class MusicManager : MonoBehaviour
 
 
     // =========================================================
-    // AMBIENTE
+    // TOCAR PRÓXIMA MÚSICA AMBIENTE
     // =========================================================
 
     private void PlayNextAmbient()
@@ -161,14 +169,37 @@ public class MusicManager : MonoBehaviour
         if (ambientSource == null)
             return;
 
+
+        // -----------------------------------------------------
+        // Se acabaram as músicas,
+        // cria a playlist novamente.
+        // -----------------------------------------------------
+
+        if (remainingTracks.Count == 0)
+        {
+            PreparePlaylist();
+        }
+
+
         if (remainingTracks.Count == 0)
             return;
 
 
-        ambientSource.clip =
+        // -----------------------------------------------------
+        // Pega a primeira música da lista.
+        // -----------------------------------------------------
+
+        AudioClip nextTrack =
             remainingTracks[0];
 
         remainingTracks.RemoveAt(0);
+
+
+        ambientSource.clip =
+            nextTrack;
+
+        ambientSource.loop =
+            false;
 
         ambientSource.Play();
     }
@@ -385,12 +416,7 @@ public class MusicManager : MonoBehaviour
     public void StopEnemyMusic()
     {
         // -----------------------------------------------------
-        // MUITO IMPORTANTE:
-        //
         // Desliga primeiro o controle de volume por distância.
-        //
-        // Assim UpdateChaseVolume() não consegue mais aumentar
-        // o volume enquanto FadeOutEnemy() estiver diminuindo.
         // -----------------------------------------------------
 
         enemyMusicActive = false;
