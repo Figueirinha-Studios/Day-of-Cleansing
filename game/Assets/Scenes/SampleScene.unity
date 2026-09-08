@@ -331,8 +331,8 @@ MonoBehaviour:
   impactSound: {fileID: 0}
   volume: 1
   dropNoiseRadius: 2
-  dropSound: {fileID: 8300000, guid: 18e33cc4ac308f2439d15dfb59b3f13b, type: 3}
-  dropVolume: 2
+  dropSound: {fileID: 8300000, guid: 01c41ce2d1f177248848829c95094b2a, type: 3}
+  dropVolume: 4
 --- !u!114 &21660518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1117,8 +1117,8 @@ MonoBehaviour:
   impactSound: {fileID: 8300000, guid: b374acae67d2e37428843df1e9f35fec, type: 3}
   volume: 0.8
   dropNoiseRadius: 10
-  dropSound: {fileID: 8300000, guid: d631d867815cec240995964ed9b37cd9, type: 3}
-  dropVolume: 2
+  dropSound: {fileID: 8300000, guid: 85ab8f2ab03d6e540a7efe3217ab13c0, type: 3}
+  dropVolume: 5
 --- !u!114 &52109546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3801,7 +3801,7 @@ MonoBehaviour:
   impactSound: {fileID: 0}
   volume: 1
   dropNoiseRadius: 2
-  dropSound: {fileID: 0}
+  dropSound: {fileID: 8300000, guid: 7785d0537b2af2847b9bf56fa8616c78, type: 3}
   dropVolume: 0.25
 --- !u!114 &373412915
 MonoBehaviour:
@@ -5096,7 +5096,7 @@ MonoBehaviour:
   volume: 1
   dropNoiseRadius: 10
   dropSound: {fileID: 8300000, guid: 0dc1bc0569af7f240bbd01fc8528143e, type: 3}
-  dropVolume: 0.25
+  dropVolume: 0.5
 --- !u!114 &566246936
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7807,8 +7807,8 @@ MonoBehaviour:
   impactSound: {fileID: 0}
   volume: 1
   dropNoiseRadius: 2
-  dropSound: {fileID: 8300000, guid: 18e33cc4ac308f2439d15dfb59b3f13b, type: 3}
-  dropVolume: 2
+  dropSound: {fileID: 8300000, guid: 01c41ce2d1f177248848829c95094b2a, type: 3}
+  dropVolume: 4
 --- !u!114 &904487467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16852,8 +16852,8 @@ MonoBehaviour:
   impactSound: {fileID: 8300000, guid: b374acae67d2e37428843df1e9f35fec, type: 3}
   volume: 0.8
   dropNoiseRadius: 10
-  dropSound: {fileID: 8300000, guid: d631d867815cec240995964ed9b37cd9, type: 3}
-  dropVolume: 2
+  dropSound: {fileID: 8300000, guid: 85ab8f2ab03d6e540a7efe3217ab13c0, type: 3}
+  dropVolume: 5
 --- !u!114 &1839220582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17871,7 +17871,7 @@ MonoBehaviour:
   volume: 1
   dropNoiseRadius: 10
   dropSound: {fileID: 8300000, guid: 0dc1bc0569af7f240bbd01fc8528143e, type: 3}
-  dropVolume: 0.25
+  dropVolume: 0.5
 --- !u!114 &1920654977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19873,7 +19873,7 @@ Transform:
   m_GameObject: {fileID: 2120334534}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710665, z: -0, w: 0.707107}
-  m_LocalPosition: {x: 33.61, y: 0.63, z: 68.56}
+  m_LocalPosition: {x: 39.6, y: 0.63, z: 68.56}
   m_LocalScale: {x: 1.2854064, y: 3.0770078, z: 7.2091126}
   m_ConstrainProportionsScale: 0
   m_Children: []
