@@ -291,7 +291,8 @@ public class Generator : MonoBehaviour
                 "TODOS OS ITENS FORAM COLOCADOS!"
             );
 
-
+            string codigo = AudioCodeManager.Instance.codigo;
+            Debug.Log("O código é: " + codigo);
             /*
              * IMPORTANTE:
              *
