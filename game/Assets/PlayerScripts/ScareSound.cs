@@ -1,35 +1,88 @@
+using System.Collections;
 using UnityEngine;
 
 public class SomPeriodico : MonoBehaviour
 {
+    [Header("Áudio")]
     public AudioSource audioSource;
     public AudioClip som;
 
-    public float esperaInicial = 30f;
-    public float intervalo = 5f;
+    [Header("Intervalo Aleatório")]
+    public float intervaloMinimo = 30f;
+    public float intervaloMaximo = 120f;
 
-    private float timer;
-    private bool comecou = false;
+    private Coroutine scareCoroutine;
 
-    void Start()
+    private void Start()
     {
-        timer = esperaInicial;
+        scareCoroutine = StartCoroutine(ScareLoop());
     }
 
-    void Update()
+    private IEnumerator ScareLoop()
     {
-        timer -= Time.deltaTime;
-
-        if (timer <= 0f)
+        while (true)
         {
+            // -------------------------------------------------
+            // Escolhe um intervalo aleatório entre 30 e 120s.
+            // -------------------------------------------------
+
+            float espera =
+                Random.Range(
+                    intervaloMinimo,
+                    intervaloMaximo
+                );
+
+            Debug.Log(
+                "SCARE SOUND: Próximo som em " +
+                espera.ToString("F1") +
+                " segundos."
+            );
+
+            yield return new WaitForSeconds(espera);
+
+
+            // -------------------------------------------------
+            // Verificações de segurança
+            // -------------------------------------------------
+
+            if (audioSource == null)
+                continue;
+
+            if (som == null)
+                continue;
+
+
+            // -------------------------------------------------
+            // Toca o som.
+            // -------------------------------------------------
+
             audioSource.PlayOneShot(som);
 
-            if (!comecou)
-            {
-                comecou = true;
-            }
+            Debug.Log(
+                "SCARE SOUND: Som tocado!"
+            );
 
-            timer = intervalo;
+
+            // -------------------------------------------------
+            // Espera o som terminar antes de iniciar uma nova
+            // contagem.
+            // -------------------------------------------------
+
+            yield return new WaitForSeconds(
+                som.length
+            );
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (scareCoroutine != null)
+        {
+            StopCoroutine(
+                scareCoroutine
+            );
+
+            scareCoroutine = null;
         }
     }
 }
