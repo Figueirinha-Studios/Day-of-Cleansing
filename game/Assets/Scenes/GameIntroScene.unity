@@ -644,7 +644,7 @@ MonoBehaviour:
   videoPlayer: {fileID: 1463856715}
   videoImage: {fileID: 254446119}
   videoName: CutScene.mp4
-  PlayOrNot: 1
+  PlayOrNot: 0
 --- !u!4 &1645984931
 Transform:
   m_ObjectHideFlags: 0
