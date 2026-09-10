@@ -28,13 +28,13 @@
   - ***Lucro dividido igualmente entre os membros***
   - Time Principal
     - Arthur Laurentino
-      - Diretor gráfico, programador.
+      - Diretor gráfico, programador e designer 3D.
       - Desenvolvedor indie sem remuneração.
     - Matheus Schlichting
-      - Diretor de desenvolvimento e gerenciador de marketing. 
+      - Diretor de desenvolvimento, programador e debugger. 
       - Desenvolvedor indie sem remuneração.
     - Vinícius Anjos
-      - Diretor da equipe, programador e administrador do jogo.
+      - Diretor de hardware, programador e administrador do servidor.
       - Desenvolvedor indie sem remuneração. 
 
 
