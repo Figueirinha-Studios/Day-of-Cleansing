@@ -61,54 +61,109 @@ public class PlayerMovement : MonoBehaviour
 
     private Coroutine breathingFadeCoroutine;
 
+
+    // =========================================================
+    // START
+    // =========================================================
+
     void Start()
     {
-        controller = GetComponent<CharacterController>();
+        controller =
+            GetComponent<CharacterController>();
 
-        noise = GetComponent<PlayerNoise>();
-        footsteps = GetComponent<PlayerFootsteps>();
+        noise =
+            GetComponent<PlayerNoise>();
 
-        wasGrounded = controller.isGrounded;
+        footsteps =
+            GetComponent<PlayerFootsteps>();
 
-        currentStamina = maxStamina;
+        wasGrounded =
+            controller.isGrounded;
+
+        currentStamina =
+            maxStamina;
 
         SetupBreathingAudio();
     }
 
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
     void Update()
     {
-        bool isGrounded = controller.isGrounded;
+        bool isGrounded =
+            controller.isGrounded;
 
         MovePlayer(isGrounded);
+
         HandleJump(isGrounded);
+
         ApplyGravity();
 
-        bool nowGrounded = controller.isGrounded;
+        bool nowGrounded =
+            controller.isGrounded;
+
+
+        // -----------------------------------------------------
+        // LANDING
+        // -----------------------------------------------------
 
         if (!wasGrounded && nowGrounded)
         {
             if (hasJumped)
             {
                 if (footsteps != null)
+                {
                     footsteps.PlayLandingSound();
+                }
 
                 hasJumped = false;
             }
         }
 
-        wasGrounded = nowGrounded;
+        wasGrounded =
+            nowGrounded;
+
+
+        // -----------------------------------------------------
+        // ESTAMINA
+        // -----------------------------------------------------
 
         UpdateStamina();
+
+
+        // -----------------------------------------------------
+        // RESPIRAÇÃO
+        // -----------------------------------------------------
+
         UpdateBreathing();
     }
 
+
+    // =========================================================
+    // MOVIMENTO
+    // =========================================================
+
     void MovePlayer(bool isGrounded)
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        float horizontal =
+            Input.GetAxis("Horizontal");
 
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
+        float vertical =
+            Input.GetAxis("Vertical");
+
+
+        // -----------------------------------------------------
+        // DIREÇÃO DA CÂMERA
+        // -----------------------------------------------------
+
+        Vector3 forward =
+            cameraTransform.forward;
+
+        Vector3 right =
+            cameraTransform.right;
 
         forward.y = 0;
         right.y = 0;
@@ -116,39 +171,107 @@ public class PlayerMovement : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
+
+        // -----------------------------------------------------
+        // MOVIMENTO
+        // -----------------------------------------------------
+
         Vector3 move =
             forward * vertical +
             right * horizontal;
 
-        bool isMoving = move.magnitude > 0.1f;
 
-        isCrouching = Input.GetKey(crouchKey);
+        // -----------------------------------------------------
+        // CORREÇÃO DA VELOCIDADE DIAGONAL
+        // -----------------------------------------------------
+
+        move =
+            Vector3.ClampMagnitude(
+                move,
+                1f
+            );
+
+
+        bool isMoving =
+            move.magnitude > 0.1f;
+
+
+        // -----------------------------------------------------
+        // AGACHAMENTO
+        // -----------------------------------------------------
+
+        isCrouching =
+            Input.GetKey(crouchKey);
+
+
+        // -----------------------------------------------------
+        // CORRIDA
+        // -----------------------------------------------------
+        //
+        // O jogador só pode correr se:
+        //
+        // 1. Estiver segurando Shift
+        // 2. Estiver segurando W
+        // 3. Estiver realmente se movendo para frente
+        // 4. Não estiver agachado
+        //
+        // Dessa forma:
+        //
+        // W + Shift       = CORRE
+        // W + A + Shift   = CORRE
+        // W + D + Shift   = CORRE
+        // S + Shift       = NÃO CORRE
+        // S + A + Shift   = NÃO CORRE
+        // S + D + Shift   = NÃO CORRE
+        //
+
+        bool movingForward =
+            vertical > 0.1f;
+
 
         bool wantsToRun =
             Input.GetKey(runKey) &&
-            Input.GetKey(KeyCode.W) &&
+            movingForward &&
             isMoving &&
             !isCrouching;
 
-        // Não permite correr enquanto estiver exausto
-        if (staminaExhausted || currentStamina <= 0f)
+
+        // -----------------------------------------------------
+        // CONTROLE DA CORRIDA
+        // -----------------------------------------------------
+
+        if (
+            staminaExhausted ||
+            currentStamina <= 0f
+        )
         {
             isRunning = false;
         }
         else
         {
-            isRunning = wantsToRun;
+            isRunning =
+                wantsToRun;
         }
 
-        // Garante que a estamina nunca fique negativa
+
+        // -----------------------------------------------------
+        // ESTAMINA ESGOTADA
+        // -----------------------------------------------------
+
         if (currentStamina <= 0f)
         {
             currentStamina = 0f;
+
             isRunning = false;
+
             staminaExhausted = true;
         }
 
-        // Ruído
+
+        // -----------------------------------------------------
+        // PLAYER NOISE
+        // -----------------------------------------------------
+
         if (isGrounded)
         {
             if (noise != null)
@@ -172,7 +295,11 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // Passos
+
+        // -----------------------------------------------------
+        // PASSOS
+        // -----------------------------------------------------
+
         if (footsteps != null)
         {
             footsteps.UpdateFootsteps(
@@ -183,35 +310,62 @@ public class PlayerMovement : MonoBehaviour
             );
         }
 
+
+        // -----------------------------------------------------
+        // VELOCIDADE
+        // -----------------------------------------------------
+
         float currentSpeed;
+
 
         if (isCrouching)
         {
-            currentSpeed = crouchSpeed;
+            currentSpeed =
+                crouchSpeed;
         }
         else if (isRunning)
         {
-            currentSpeed = runSpeed;
+            currentSpeed =
+                runSpeed;
         }
         else
         {
-            currentSpeed = walkSpeed;
+            currentSpeed =
+                walkSpeed;
         }
 
+
+        // -----------------------------------------------------
+        // VELOCIDADE ALVO
+        // -----------------------------------------------------
+
         Vector3 targetVelocity =
-            move * currentSpeed;
+            move *
+            currentSpeed;
+
+
+        // -----------------------------------------------------
+        // ACELERAÇÃO / DESACELERAÇÃO
+        // -----------------------------------------------------
 
         float smoothRate =
             isMoving
                 ? acceleration
                 : deceleration;
 
+
         currentMoveVelocity =
             Vector3.Lerp(
                 currentMoveVelocity,
                 targetVelocity,
-                smoothRate * Time.deltaTime
+                smoothRate *
+                Time.deltaTime
             );
+
+
+        // -----------------------------------------------------
+        // MOVE CHARACTER CONTROLLER
+        // -----------------------------------------------------
 
         controller.Move(
             currentMoveVelocity *
@@ -219,27 +373,27 @@ public class PlayerMovement : MonoBehaviour
         );
     }
 
+
+    // =========================================================
+    // ESTAMINA
+    // =========================================================
+
     void UpdateStamina()
     {
-        // =========================
-        // GASTANDO ESTAMINA
-        // =========================
-
         if (isRunning)
         {
             currentStamina -=
                 staminaDrainRate *
                 Time.deltaTime;
 
-            // Chegou a zero
+
             if (currentStamina <= 0f)
             {
                 currentStamina = 0f;
 
                 isRunning = false;
 
-                // Só executa quando realmente
-                // entra no estado de exaustão
+
                 if (!staminaExhausted)
                 {
                     staminaExhausted = true;
@@ -251,13 +405,15 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // =========================
-        // RECUPERANDO ESTAMINA
-        // =========================
+
+        // -----------------------------------------------------
+        // RECUPERAÇÃO
+        // -----------------------------------------------------
 
         currentStamina +=
             staminaRecoveryRate *
             Time.deltaTime;
+
 
         currentStamina =
             Mathf.Clamp(
@@ -266,8 +422,11 @@ public class PlayerMovement : MonoBehaviour
                 maxStamina
             );
 
-        // Precisa chegar a 50%
-        // para poder correr novamente
+
+        // -----------------------------------------------------
+        // SAI DO ESTADO DE EXAUSTÃO EM 50%
+        // -----------------------------------------------------
+
         if (
             staminaExhausted &&
             currentStamina >=
@@ -278,6 +437,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+    // =========================================================
+    // RESPIRAÇÃO
+    // =========================================================
+
     void UpdateBreathing()
     {
         if (breathingAudioSource == null)
@@ -286,14 +450,16 @@ public class PlayerMovement : MonoBehaviour
         if (!breathingAudioSource.isPlaying)
             return;
 
-        // Enquanto estiver abaixo de 50%,
-        // mantém a respiração tocando
         if (staminaExhausted)
             return;
 
-        // Chegou a 50%, então faz fade-out
         FadeOutBreathing();
     }
+
+
+    // =========================================================
+    // INICIA RESPIRAÇÃO CANSADA
+    // =========================================================
 
     void StartTiredBreathing()
     {
@@ -306,6 +472,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
+
         if (tiredBreathingSound == null)
         {
             Debug.LogWarning(
@@ -315,7 +482,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Cancela qualquer fade que esteja acontecendo
+
         if (breathingFadeCoroutine != null)
         {
             StopCoroutine(
@@ -325,37 +492,47 @@ public class PlayerMovement : MonoBehaviour
             breathingFadeCoroutine = null;
         }
 
-        // Configura o áudio
+
         breathingAudioSource.clip =
             tiredBreathingSound;
 
-        breathingAudioSource.loop = true;
+        breathingAudioSource.loop =
+            true;
 
-        breathingAudioSource.playOnAwake = false;
+        breathingAudioSource.playOnAwake =
+            false;
 
-        // Respiração do próprio jogador:
-        // 2D para ficar sempre audível
-        breathingAudioSource.spatialBlend = 0f;
+        breathingAudioSource.spatialBlend =
+            0f;
 
         breathingAudioSource.volume =
             breathingVolume;
 
-        // Sempre inicia o áudio novamente
+
         breathingAudioSource.Stop();
+
         breathingAudioSource.Play();
+
 
         Debug.Log(
             "PlayerMovement: Respiração cansada iniciada!"
         );
     }
 
+
+    // =========================================================
+    // FADE DA RESPIRAÇÃO
+    // =========================================================
+
     void FadeOutBreathing()
     {
         if (breathingAudioSource == null)
             return;
 
+
         if (breathingFadeCoroutine != null)
             return;
+
 
         breathingFadeCoroutine =
             StartCoroutine(
@@ -363,13 +540,20 @@ public class PlayerMovement : MonoBehaviour
             );
     }
 
+
+    // =========================================================
+    // COROUTINE FADE
+    // =========================================================
+
     IEnumerator FadeBreathingCoroutine()
     {
         float targetVolume = 0f;
 
+
         while (
             breathingAudioSource != null &&
-            breathingAudioSource.volume > targetVolume
+            breathingAudioSource.volume >
+            targetVolume
         )
         {
             breathingAudioSource.volume =
@@ -380,8 +564,10 @@ public class PlayerMovement : MonoBehaviour
                     Time.deltaTime
                 );
 
+
             yield return null;
         }
+
 
         if (breathingAudioSource != null)
         {
@@ -391,33 +577,51 @@ public class PlayerMovement : MonoBehaviour
                 breathingVolume;
         }
 
+
         breathingFadeCoroutine = null;
     }
+
+
+    // =========================================================
+    // CONFIGURAÇÃO DA RESPIRAÇÃO
+    // =========================================================
 
     void SetupBreathingAudio()
     {
         if (breathingAudioSource == null)
             return;
 
-        breathingAudioSource.playOnAwake = false;
-        breathingAudioSource.loop = true;
 
-        // 2D
-        breathingAudioSource.spatialBlend = 0f;
+        breathingAudioSource.playOnAwake =
+            false;
+
+        breathingAudioSource.loop =
+            true;
+
+        breathingAudioSource.spatialBlend =
+            0f;
 
         breathingAudioSource.volume =
             breathingVolume;
 
+
         breathingAudioSource.Stop();
     }
+
+
+    // =========================================================
+    // PULO
+    // =========================================================
 
     void HandleJump(bool isGrounded)
     {
         if (!isGrounded)
             return;
 
+
         if (isCrouching)
             return;
+
 
         if (Input.GetButtonDown("Jump"))
         {
@@ -428,15 +632,27 @@ public class PlayerMovement : MonoBehaviour
                     gravity
                 );
 
+
             if (noise != null)
+            {
                 noise.MakeJumpNoise();
+            }
+
 
             if (footsteps != null)
+            {
                 footsteps.PlayJumpSound();
+            }
+
 
             hasJumped = true;
         }
     }
+
+
+    // =========================================================
+    // GRAVIDADE
+    // =========================================================
 
     void ApplyGravity()
     {
@@ -448,9 +664,11 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f;
         }
 
+
         velocity.y +=
             gravity *
             Time.deltaTime;
+
 
         controller.Move(
             velocity *
@@ -458,24 +676,33 @@ public class PlayerMovement : MonoBehaviour
         );
     }
 
+
+    // =========================================================
+    // GETTERS DA ESTAMINA
+    // =========================================================
+
     public float GetCurrentStamina()
     {
         return currentStamina;
     }
+
 
     public float GetMaxStamina()
     {
         return maxStamina;
     }
 
+
     public float GetStaminaPercentage()
     {
         if (maxStamina <= 0f)
             return 0f;
 
+
         return currentStamina /
                maxStamina;
     }
+
 
     public bool IsStaminaExhausted()
     {

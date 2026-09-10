@@ -164,9 +164,21 @@ public class CameraEffects : MonoBehaviour
         if (playerMovement == null)
             return;
 
+        if (playerController == null)
+            return;
 
-        // Só balança se o PlayerMovement
-        // disser que está realmente correndo.
+
+        // -----------------------------------------------------
+        // NÃO BALANÇA ENQUANTO ESTIVER NO AR
+        // -----------------------------------------------------
+
+        if (!playerController.isGrounded)
+            return;
+
+
+        // -----------------------------------------------------
+        // SÓ BALANÇA QUANDO ESTIVER REALMENTE CORRENDO
+        // -----------------------------------------------------
 
         if (!playerMovement.isRunning)
             return;
