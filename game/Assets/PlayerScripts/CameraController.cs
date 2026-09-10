@@ -15,6 +15,8 @@ public class CameraController : MonoBehaviour
     public float maxDistance = 8f;
     public float zoomSpeed = 8f;
     public float zoomSmoothness = 10f;
+    public float targetDistance = 0f;
+    public float currentDistance = 0f;
 
     public float GetDistance()
     {
@@ -28,8 +30,7 @@ public class CameraController : MonoBehaviour
     float yaw;
     float pitch;
 
-    float targetDistance = 4f;
-    float currentDistance = 4f;
+
 
     void Start()
     {
