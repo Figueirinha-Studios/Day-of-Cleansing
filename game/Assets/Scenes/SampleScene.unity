@@ -13014,7 +13014,7 @@ MonoBehaviour:
   audioSource: {fileID: 1703739037}
   scareSound: {fileID: 8300000, guid: 9a4ba1a1731ca1941b7581236cd7df3c, type: 3}
   volume: 1
-  timeWithoutSeeing: 10
+  timeWithoutSeeing: 90
   maxDistance: 50
   requireLineOfSight: 1
   obstacleMask:
@@ -14937,7 +14937,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   walkSpeed: 2.5
-  runSpeed: 4.5
+  runSpeed: 5.5
   joggingSpeed: 3
   crouchSpeed: 1
   crouchKey: 306
@@ -21506,9 +21506,12 @@ MonoBehaviour:
     m_Bits: 8
   patrolPointsParent: {fileID: 1657827568}
   patrolSpeed: 1.5
-  chaseSpeed: 4
+  chaseSpeed: 5
   rememberedPatrolPoints: 3
   backtrackDotThreshold: -0.25
+  movementAcceleration: 8
+  rotationSpeed: 180
+  naturalStoppingDistance: 0.5
   memoryTime: 2
   lastKnownPositionKnowledgeTime: 0.5
   searchTime: 16

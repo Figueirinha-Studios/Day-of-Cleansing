@@ -59,6 +59,16 @@ public class EnemyAI : MonoBehaviour
     private int currentPoint = -1;
     private int previousPoint = -1;
 
+    [Header("Movimento Natural")]
+    [Tooltip("Aceleração usada pelo Chappie.")]
+    public float movementAcceleration = 8f;
+
+    [Tooltip("Velocidade máxima de rotação do Chappie.")]
+    public float rotationSpeed = 180f;
+
+    [Tooltip("Distância mínima para o Chappie desacelerar antes de um ponto.")]
+    public float naturalStoppingDistance = 0.5f;
+
     [Header("Memory")]
     public float memoryTime = 2f;
 
@@ -112,6 +122,11 @@ public class EnemyAI : MonoBehaviour
     [SerializeField]
     private bool runAroundActive = false;
 
+
+    // =========================================================
+    // START
+    // =========================================================
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -119,6 +134,8 @@ public class EnemyAI : MonoBehaviour
         enemyAudio = GetComponent<EnemyAudio>();
         animator = GetComponent<Animator>();
         generator = FindFirstObjectByType<Generator>();
+
+        ConfigureNaturalMovement();
 
         LoadPatrolPoints();
 
@@ -128,6 +145,47 @@ public class EnemyAI : MonoBehaviour
             ChooseNextPatrolPoint();
         }
     }
+
+
+    // =========================================================
+    // CONFIGURAÇÃO DO MOVIMENTO
+    // =========================================================
+
+    private void ConfigureNaturalMovement()
+    {
+        if (agent == null)
+            return;
+
+        /*
+         * Aceleração mais suave.
+         */
+        agent.acceleration =
+            movementAcceleration;
+
+        /*
+         * Rotação gradual.
+         */
+        agent.angularSpeed =
+            rotationSpeed;
+
+        /*
+         * Não precisa frear bruscamente ao chegar
+         * nos Patrol Points.
+         */
+        agent.autoBraking = false;
+
+        /*
+         * Pequena distância para evitar que ele tente
+         * encaixar exatamente no centro do ponto.
+         */
+        agent.stoppingDistance =
+            naturalStoppingDistance;
+    }
+
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
@@ -164,6 +222,7 @@ public class EnemyAI : MonoBehaviour
         UpdateAnimation();
         UpdateFootsteps();
     }
+
 
     // =========================================================
     // CHASE
@@ -209,6 +268,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void ExitChase()
     {
         if (musicManager != null)
@@ -217,6 +277,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void StopEnemyMusic()
     {
         if (musicManager != null)
@@ -224,6 +285,7 @@ public class EnemyAI : MonoBehaviour
             musicManager.StopEnemyMusic();
         }
     }
+
 
     private void Chase()
     {
@@ -295,6 +357,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // PROXIMIDADE
     // =========================================================
@@ -355,6 +418,7 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
+
 
     // =========================================================
     // GENERATOR / RUN AROUND
@@ -421,8 +485,6 @@ public class EnemyAI : MonoBehaviour
          * GENERATOR ON
          * =====================================================
          *
-         * IMPORTANTE:
-         *
          * Generator ON NÃO encerra o RunAround.
          *
          * O Chappie continua correndo.
@@ -477,6 +539,7 @@ public class EnemyAI : MonoBehaviour
          */
     }
 
+
     private void RunAround()
     {
         if (agent == null ||
@@ -507,6 +570,7 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
+
 
     // =========================================================
     // PATROL
@@ -544,6 +608,7 @@ public class EnemyAI : MonoBehaviour
             " Patrol Points encontrados."
         );
     }
+
 
     private void ChooseNextPatrolPoint()
     {
@@ -671,6 +736,7 @@ public class EnemyAI : MonoBehaviour
         );
     }
 
+
     private void Patrol()
     {
         if (agent == null ||
@@ -693,6 +759,7 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
+
 
     // =========================================================
     // INVESTIGATE OBJETO
@@ -740,6 +807,7 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
+
 
     // =========================================================
     // LOST SIGHT
@@ -876,6 +944,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // SEARCH
     // =========================================================
@@ -944,6 +1013,7 @@ public class EnemyAI : MonoBehaviour
          * NÃO toca Search Music.
          */
     }
+
 
     private void Search()
     {
@@ -1071,6 +1141,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // SEARCH POINTS
     // =========================================================
@@ -1120,6 +1191,7 @@ public class EnemyAI : MonoBehaviour
         ShuffleSearchPoints();
     }
 
+
     private void ShuffleSearchPoints()
     {
         for (int i = 0;
@@ -1143,6 +1215,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void ClearSearchPoints()
     {
         foreach (Transform point
@@ -1158,6 +1231,7 @@ public class EnemyAI : MonoBehaviour
 
         searchPoints.Clear();
     }
+
 
     // =========================================================
     // NOISE
@@ -1227,6 +1301,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // ANIMATION
     // =========================================================
@@ -1247,6 +1322,7 @@ public class EnemyAI : MonoBehaviour
             Time.deltaTime
         );
     }
+
 
     // =========================================================
     // FOOTSTEPS
@@ -1271,6 +1347,7 @@ public class EnemyAI : MonoBehaviour
             isChasing
         );
     }
+
 
     // =========================================================
     // GIZMOS
