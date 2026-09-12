@@ -21503,7 +21503,7 @@ MonoBehaviour:
   proximityDetectionRadius: 1
   proximityObstacleMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 72
   patrolPointsParent: {fileID: 1657827568}
   patrolSpeed: 1.5
   chaseSpeed: 5
