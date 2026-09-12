@@ -504,7 +504,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15d1c469240be464e9381721eba9658c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VideoManager
-  githubBaseUrl: https://cdn.jsdelivr.net/gh/viniciusam11/doc-videos@main/videos/
+  githubBaseUrl: https://day-of-cleansing.feira-de-jogos.dev.br/videos/
   localFolder: Videos
 --- !u!4 &1865581516
 Transform:
