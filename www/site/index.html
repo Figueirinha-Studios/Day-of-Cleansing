@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day of Cleansing — Controle de Megafones</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app">
+        <header class="topbar">
+            <div>
+                <h1>DAY OF CLEANSING</h1>
+                <p>Controle de Megafones</p>
+            </div>
+
+            <div id="connectionStatus" class="status disconnected">
+                <span class="status-dot"></span>
+                <span id="statusText">Desconectado</span>
+            </div>
+        </header>
+
+        <section class="map-wrapper">
+            <div id="map" class="map">
+                <!--
+                    Coloque sua imagem do mapa em:
+                    assets/mapa.png
+
+                    Os megafones são posicionados por porcentagem.
+                    Altere left/top de cada botão no JavaScript.
+                -->
+                <img src="assets/mapa.png" alt="Mapa do jogo" class="map-image" id="mapImage">
+
+                <!--
+                    Este palco é redimensionado e reposicionado via JavaScript
+                    para ocupar exatamente a área visível da imagem (a mesma
+                    área que o object-fit: contain desenha). Os botões usam
+                    porcentagem em relação a ELE, não à tela toda — por isso
+                    continuam alinhados independente do tamanho da janela.
+                -->
+                <div class="map-stage" id="mapStage">
+                    <button class="megaphone" data-megaphone="1" style="left: 25%; top: 10%;" aria-label="Megafone 1">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">1</span>
+                    </button>
+
+                    <button class="megaphone" data-megaphone="2" style="left: 51%; top: 32%;" aria-label="Megafone 2">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">2</span>
+                    </button>
+
+                    <button class="megaphone" data-megaphone="3" style="left: 89%; top: 39%;" aria-label="Megafone 3">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">3</span>
+                    </button>
+
+                    <button class="megaphone" data-megaphone="4" style="left: 17%; top: 88%;" aria-label="Megafone 4">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">4</span>
+                    </button>
+
+                    <button class="megaphone" data-megaphone="5" style="left: 31%; top: 53%;" aria-label="Megafone 5">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">5</span>
+                    </button>
+
+                    <button class="megaphone" data-megaphone="6" style="left: 77.8%; top: 78%;" aria-label="Megafone 6">
+                        <span class="megaphone-icon">📢</span>
+                        <span class="megaphone-label">6</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div id="notification" class="notification"></div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
