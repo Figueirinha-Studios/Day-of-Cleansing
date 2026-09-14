@@ -69,6 +69,32 @@ public class EnemyAI : MonoBehaviour
     [Tooltip("Distância mínima para o Chappie desacelerar antes de um ponto.")]
     public float naturalStoppingDistance = 0.5f;
 
+    // =========================================================
+    // OLHAR AO REDOR
+    // =========================================================
+
+    [Header("Olhar ao Redor")]
+    [Tooltip("A cada quantos Patrol Points o Chappie para para olhar.")]
+    public int patrolPointsBeforeLookAround = 10;
+
+    [Tooltip("Ângulo que o Chappie gira para cada lado.")]
+    public float lookAroundAngle = 60f;
+
+    [Tooltip("Velocidade da rotação durante o olhar ao redor.")]
+    public float lookAroundRotationSpeed = 120f;
+
+    [Tooltip("Tempo parado olhando para cada lado.")]
+    public float lookAroundSidePause = 0.3f;
+
+    [Tooltip("Tempo parado depois de voltar ao centro.")]
+    public float lookAroundCenterPause = 0.25f;
+
+    private int patrolPointsVisited = 0;
+
+    private bool lookingAround = false;
+
+    private Coroutine lookAroundCoroutine;
+
     [Header("Memory")]
     public float memoryTime = 2f;
 
@@ -234,12 +260,13 @@ public class EnemyAI : MonoBehaviour
             !agent.isOnNavMesh)
             return;
 
-        /*
-         * Se estava investigando um objeto ou procurando,
-         * agora passa a procurar o jogador.
-         */
+        StopLookAround();
+
         currentState =
             EnemyState.Chase;
+
+        agent.isStopped = false;
+        agent.updateRotation = true;
 
         agent.speed =
             chaseSpeed;
@@ -250,9 +277,6 @@ public class EnemyAI : MonoBehaviour
                 player.position;
         }
 
-        /*
-         * Reseta o período especial de 1 segundo.
-         */
         followingLastKnownPlayer = false;
         knowledgeTimer = 0f;
 
@@ -299,9 +323,6 @@ public class EnemyAI : MonoBehaviour
         if (player == null)
             return;
 
-        /*
-         * Continua vendo o jogador.
-         */
         if (vision != null &&
             vision.CanSeePlayer())
         {
@@ -317,21 +338,11 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            /*
-             * Perdeu o jogador.
-             */
             memoryTimer -=
                 Time.deltaTime;
 
             if (memoryTimer <= 0f)
             {
-                /*
-                 * Chase -> LostSight -> Search
-                 *
-                 * A decisão de voltar para RunAround
-                 * acontecerá somente depois que o Search
-                 * terminar.
-                 */
                 searchingForPlayer =
                     true;
 
@@ -347,12 +358,6 @@ public class EnemyAI : MonoBehaviour
                 agent.SetDestination(
                     lastKnownPosition
                 );
-
-                /*
-                 * NÃO paramos a música de Chase.
-                 *
-                 * Ela continua durante LostSight.
-                 */
             }
         }
     }
@@ -445,20 +450,14 @@ public class EnemyAI : MonoBehaviour
          * =====================================================
          * 2/3
          * =====================================================
-         *
-         * Quando faltar exatamente 1 item,
-         * começa o RunAround.
          */
+
         if (exactlyOneMissing &&
             !runAroundActive)
         {
             runAroundActive =
                 true;
 
-            /*
-             * Se já estiver em Chase,
-             * não interrompe o Chase.
-             */
             if (currentState !=
                 EnemyState.Chase)
             {
@@ -473,6 +472,9 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
+                    agent.isStopped = false;
+                    agent.updateRotation = true;
+
                     ChooseNextPatrolPoint();
                 }
             }
@@ -484,28 +486,13 @@ public class EnemyAI : MonoBehaviour
          * =====================================================
          * GENERATOR ON
          * =====================================================
-         *
-         * Generator ON NÃO encerra o RunAround.
-         *
-         * O Chappie continua correndo.
-         *
-         * Se ele estiver em Chase, Investigate, LostSight
-         * ou Search, deixa o estado atual terminar normalmente.
-         *
-         * Quando voltar ao estado de movimento normal,
-         * continuará em RunAround.
          */
+
         if (generatorOn)
         {
-            /*
-             * Garante que o RunAround continue ativo.
-             */
             runAroundActive =
                 true;
 
-            /*
-             * Se estiver em Patrol, muda para RunAround.
-             */
             if (currentState ==
                 EnemyState.Patrol)
             {
@@ -520,23 +507,15 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
+                    agent.isStopped = false;
+                    agent.updateRotation = true;
+
                     ChooseNextPatrolPoint();
                 }
             }
 
             return;
         }
-
-        /*
-         * =====================================================
-         * 3/3
-         * =====================================================
-         *
-         * Depois que RunAround começou em 2/3,
-         * ele continua ativo em 3/3.
-         *
-         * Não fazemos nada aqui para desligá-lo.
-         */
     }
 
 
@@ -549,9 +528,6 @@ public class EnemyAI : MonoBehaviour
         agent.speed =
             chaseSpeed;
 
-        /*
-         * Continua correndo pelos Patrol Points.
-         */
         if (!agent.pathPending &&
             agent.remainingDistance <=
             agent.stoppingDistance)
@@ -559,11 +535,6 @@ public class EnemyAI : MonoBehaviour
             ChooseNextPatrolPoint();
         }
 
-        /*
-         * Se enxergar o jogador:
-         *
-         * RunAround -> Chase
-         */
         if (vision != null &&
             vision.CanSeePlayer())
         {
@@ -743,6 +714,13 @@ public class EnemyAI : MonoBehaviour
             !agent.isOnNavMesh)
             return;
 
+        /*
+         * Enquanto estiver olhando ao redor,
+         * não tentamos escolher outro ponto.
+         */
+        if (lookingAround)
+            return;
+
         agent.speed =
             patrolSpeed;
 
@@ -750,13 +728,251 @@ public class EnemyAI : MonoBehaviour
             agent.remainingDistance <=
             agent.stoppingDistance)
         {
-            ChooseNextPatrolPoint();
+            /*
+             * Chegou a um Patrol Point.
+             *
+             * Conta somente durante Patrol normal.
+             */
+            patrolPointsVisited++;
+
+            Debug.Log(
+                "CHAPPIE: Patrol Point visitado: " +
+                patrolPointsVisited
+            );
+
+            /*
+             * A cada X pontos:
+             * para e olha ao redor.
+             */
+            if (patrolPointsBeforeLookAround > 0 &&
+                patrolPointsVisited %
+                patrolPointsBeforeLookAround == 0)
+            {
+                StartLookAround();
+            }
+            else
+            {
+                ChooseNextPatrolPoint();
+            }
         }
 
         if (vision != null &&
             vision.CanSeePlayer())
         {
             EnterChase();
+        }
+    }
+
+
+    // =========================================================
+    // OLHAR AO REDOR
+    // =========================================================
+
+    private void StartLookAround()
+    {
+        if (lookingAround)
+            return;
+
+        if (currentState !=
+            EnemyState.Patrol)
+            return;
+
+        if (agent == null ||
+            !agent.isOnNavMesh)
+            return;
+
+        lookingAround = true;
+
+        if (lookAroundCoroutine != null)
+        {
+            StopCoroutine(
+                lookAroundCoroutine
+            );
+        }
+
+        lookAroundCoroutine =
+            StartCoroutine(
+                LookAroundRoutine()
+            );
+    }
+
+
+    private IEnumerator LookAroundRoutine()
+    {
+        /*
+         * Guarda a rotação que ele tinha
+         * quando chegou ao Patrol Point.
+         */
+        Quaternion centerRotation =
+            transform.rotation;
+
+        /*
+         * Para completamente.
+         */
+        agent.isStopped = true;
+
+        /*
+         * Desliga a rotação automática do NavMeshAgent
+         * temporariamente para podermos girar manualmente.
+         */
+        agent.updateRotation = false;
+
+        /*
+         * =====================================================
+         * ESQUERDA
+         * =====================================================
+         */
+
+        Quaternion leftRotation =
+            centerRotation *
+            Quaternion.Euler(
+                0f,
+                -lookAroundAngle,
+                0f
+            );
+
+        yield return RotateToLook(
+            leftRotation
+        );
+
+        yield return new WaitForSeconds(
+            lookAroundSidePause
+        );
+
+        /*
+         * =====================================================
+         * CENTRO
+         * =====================================================
+         */
+
+        yield return RotateToLook(
+            centerRotation
+        );
+
+        yield return new WaitForSeconds(
+            lookAroundCenterPause
+        );
+
+        /*
+         * =====================================================
+         * DIREITA
+         * =====================================================
+         */
+
+        Quaternion rightRotation =
+            centerRotation *
+            Quaternion.Euler(
+                0f,
+                lookAroundAngle,
+                0f
+            );
+
+        yield return RotateToLook(
+            rightRotation
+        );
+
+        yield return new WaitForSeconds(
+            lookAroundSidePause
+        );
+
+        /*
+         * =====================================================
+         * CENTRO NOVAMENTE
+         * =====================================================
+         */
+
+        yield return RotateToLook(
+            centerRotation
+        );
+
+        yield return new WaitForSeconds(
+            lookAroundCenterPause
+        );
+
+        /*
+         * =====================================================
+         * TERMINOU
+         * =====================================================
+         */
+
+        transform.rotation =
+            centerRotation;
+
+        agent.updateRotation = true;
+        agent.isStopped = false;
+
+        lookingAround = false;
+        lookAroundCoroutine = null;
+
+        /*
+         * Continua a patrulha normalmente.
+         */
+        if (currentState ==
+            EnemyState.Patrol)
+        {
+            ChooseNextPatrolPoint();
+        }
+    }
+
+
+    private IEnumerator RotateToLook(
+        Quaternion targetRotation
+    )
+    {
+        while (
+            Quaternion.Angle(
+                transform.rotation,
+                targetRotation
+            ) > 0.5f
+        )
+        {
+            /*
+             * Se o estado mudou no meio do olhar,
+             * interrompe a rotação.
+             */
+            if (currentState !=
+                EnemyState.Patrol)
+            {
+                yield break;
+            }
+
+            transform.rotation =
+                Quaternion.RotateTowards(
+                    transform.rotation,
+                    targetRotation,
+                    lookAroundRotationSpeed *
+                    Time.deltaTime
+                );
+
+            yield return null;
+        }
+
+        transform.rotation =
+            targetRotation;
+    }
+
+
+    private void StopLookAround()
+    {
+        if (!lookingAround)
+            return;
+
+        if (lookAroundCoroutine != null)
+        {
+            StopCoroutine(
+                lookAroundCoroutine
+            );
+
+            lookAroundCoroutine = null;
+        }
+
+        lookingAround = false;
+
+        if (agent != null &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.updateRotation = true;
         }
     }
 
@@ -771,11 +987,6 @@ public class EnemyAI : MonoBehaviour
             !agent.isOnNavMesh)
             return;
 
-        /*
-         * Aqui NÃO estamos procurando o jogador.
-         *
-         * É somente investigação de barulho.
-         */
         searchingForPlayer =
             false;
 
@@ -786,9 +997,6 @@ public class EnemyAI : MonoBehaviour
             lastKnownPosition
         );
 
-        /*
-         * Chegou ao local do objeto.
-         */
         if (!agent.pathPending &&
             agent.remainingDistance <=
             agent.stoppingDistance)
@@ -796,11 +1004,6 @@ public class EnemyAI : MonoBehaviour
             StartSearch();
         }
 
-        /*
-         * Se enxergar o jogador durante a investigação:
-         *
-         * Investigate -> Chase
-         */
         if (vision != null &&
             vision.CanSeePlayer())
         {
@@ -825,24 +1028,12 @@ public class EnemyAI : MonoBehaviour
         agent.speed =
             searchSpeed;
 
-        /*
-         * =====================================================
-         * FASE 1
-         * =====================================================
-         *
-         * Vai até o último ponto onde viu o player.
-         */
         if (!followingLastKnownPlayer)
         {
             agent.SetDestination(
                 lastKnownPosition
             );
 
-            /*
-             * Chegou ao último ponto conhecido.
-             *
-             * Agora começa o período de 1 segundo.
-             */
             if (!agent.pathPending &&
                 agent.remainingDistance <=
                 agent.stoppingDistance)
@@ -853,21 +1044,11 @@ public class EnemyAI : MonoBehaviour
                 knowledgeTimer =
                     lastKnownPositionKnowledgeTime;
 
-                /*
-                 * Começa imediatamente a seguir
-                 * a posição atual do player.
-                 */
                 agent.SetDestination(
                     player.position
                 );
             }
 
-            /*
-             * Se encontrar o player antes de chegar
-             * ao último ponto:
-             *
-             * LostSight -> Chase
-             */
             if (vision != null &&
                 vision.CanSeePlayer())
             {
@@ -880,23 +1061,9 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        /*
-         * =====================================================
-         * FASE 2
-         * =====================================================
-         *
-         * Durante 1 segundo:
-         *
-         * O Chappie sabe onde o player está e
-         * continua seguindo a posição atual dele,
-         * mesmo sem enxergá-lo.
-         */
         knowledgeTimer -=
             Time.deltaTime;
 
-        /*
-         * Atualiza a posição do player constantemente.
-         */
         lastKnownPosition =
             player.position;
 
@@ -904,11 +1071,6 @@ public class EnemyAI : MonoBehaviour
             player.position
         );
 
-        /*
-         * Se encontrar o player durante esse 1 segundo:
-         *
-         * LostSight -> Chase
-         */
         if (vision != null &&
             vision.CanSeePlayer())
         {
@@ -920,15 +1082,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        /*
-         * =====================================================
-         * ACABOU O 1 SEGUNDO
-         * =====================================================
-         *
-         * Se não encontrou o player:
-         *
-         * LostSight -> Search
-         */
         if (knowledgeTimer <= 0f)
         {
             followingLastKnownPlayer =
@@ -979,23 +1132,10 @@ public class EnemyAI : MonoBehaviour
             );
         }
 
-        /*
-         * =====================================================
-         * SEARCH DE PLAYER
-         * =====================================================
-         *
-         * Só toca Search Music se:
-         *
-         * searchingForPlayer == true
-         */
         if (searchingForPlayer)
         {
             if (musicManager != null)
             {
-                /*
-                 * Sai Chase Music
-                 * e entra Search Music.
-                 */
                 musicManager.StopEnemyMusic();
 
                 musicManager.StartSearchMusic();
@@ -1004,14 +1144,6 @@ public class EnemyAI : MonoBehaviour
                     searchMusicDuration;
             }
         }
-
-        /*
-         * Se searchingForPlayer == false:
-         *
-         * É investigação de objeto.
-         *
-         * NÃO toca Search Music.
-         */
     }
 
 
@@ -1024,19 +1156,10 @@ public class EnemyAI : MonoBehaviour
         searchTimer -=
             Time.deltaTime;
 
-        /*
-         * =====================================================
-         * SEARCH TERMINOU
-         * =====================================================
-         */
         if (searchTimer <= 0f)
         {
             ClearSearchPoints();
 
-            /*
-             * Para Search Music somente se era
-             * Search do jogador.
-             */
             if (searchingForPlayer)
             {
                 StopEnemyMusic();
@@ -1046,18 +1169,8 @@ public class EnemyAI : MonoBehaviour
                 false;
 
             /*
-             * =================================================
-             * RUNAROUND
-             * =================================================
-             *
-             * Se o RunAround estava ativo,
+             * Se RunAround estava ativo,
              * continua nele.
-             *
-             * Isso vale tanto para:
-             *
-             * 2/3
-             * 3/3
-             * Generator ON
              */
             if (runAroundActive)
             {
@@ -1070,6 +1183,9 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
+                    agent.isStopped = false;
+                    agent.updateRotation = true;
+
                     ChooseNextPatrolPoint();
                 }
 
@@ -1077,9 +1193,7 @@ public class EnemyAI : MonoBehaviour
             }
 
             /*
-             * =================================================
-             * PATROL
-             * =================================================
+             * Volta para Patrol.
              */
             currentState =
                 EnemyState.Patrol;
@@ -1087,16 +1201,14 @@ public class EnemyAI : MonoBehaviour
             agent.speed =
                 patrolSpeed;
 
+            agent.isStopped = false;
+            agent.updateRotation = true;
+
             ChooseNextPatrolPoint();
 
             return;
         }
 
-        /*
-         * =====================================================
-         * ENCONTROU PLAYER DURANTE SEARCH
-         * =====================================================
-         */
         if (vision != null &&
             vision.CanSeePlayer())
         {
@@ -1110,11 +1222,6 @@ public class EnemyAI : MonoBehaviour
         if (searchPoints.Count == 0)
             return;
 
-        /*
-         * =====================================================
-         * PRÓXIMO PONTO
-         * =====================================================
-         */
         if (!agent.pathPending &&
             agent.remainingDistance <=
             agent.stoppingDistance)
@@ -1241,26 +1348,14 @@ public class EnemyAI : MonoBehaviour
         Vector3 noisePosition
     )
     {
-        /*
-         * Não ignoramos o barulho durante RunAround.
-         *
-         * RunAround + objeto
-         * -> Investigate
-         *
-         * Chase continua ignorando objetos porque ele
-         * já está perseguindo o jogador.
-         */
-
         if (currentState ==
             EnemyState.Chase)
         {
             return;
         }
 
-        /*
-         * Se estava no período especial de 1 segundo,
-         * o barulho interrompe esse comportamento.
-         */
+        StopLookAround();
+
         followingLastKnownPlayer =
             false;
 
@@ -1270,11 +1365,6 @@ public class EnemyAI : MonoBehaviour
         searchingForPlayer =
             false;
 
-        /*
-         * Como agora é investigação de objeto,
-         * qualquer Search Music que esteja tocando
-         * deve parar.
-         */
         if (musicManager != null)
         {
             musicManager.StopEnemyMusic();
@@ -1294,6 +1384,9 @@ public class EnemyAI : MonoBehaviour
         {
             agent.speed =
                 searchSpeed;
+
+            agent.isStopped = false;
+            agent.updateRotation = true;
 
             agent.SetDestination(
                 noisePosition

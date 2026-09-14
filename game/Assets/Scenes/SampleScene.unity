@@ -13283,6 +13283,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f8b4cd28491ca46a1db343f44fcfd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SerialManager
+  portName: COM6
+  baudRate: 115200
+  reconnectInterval: 2
 --- !u!1001 &1263514583
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22181,6 +22184,11 @@ MonoBehaviour:
   movementAcceleration: 8
   rotationSpeed: 180
   naturalStoppingDistance: 0.5
+  patrolPointsBeforeLookAround: 3
+  lookAroundAngle: 60
+  lookAroundRotationSpeed: 120
+  lookAroundSidePause: 0.3
+  lookAroundCenterPause: 0.25
   memoryTime: 2
   lastKnownPositionKnowledgeTime: 0.5
   searchTime: 16
