@@ -2,6 +2,8 @@
 
 - [**Playlist de vídeos das entregas**](https://www.youtube.com/playlist?list=PLenr4EhELqzI)
 - [**Documento oficial do jogo**](./docs/gdd.md)
+- [**Build Web-GL do jogo**](https://day-of-cleansing.feira-de-jogos.dev.br/)
+- [**Site para interação com o jogo**](https://day-of-cleansing.feira-de-jogos.dev.br/site/)
 
 ## Premissa
 Em um mundo distópico onde a população luta por suprimentos, o Neo-Brasil sustenta um espetáculo mortal televisionado para bilhões de pessoas, mas dessa vez quem corre é você.
