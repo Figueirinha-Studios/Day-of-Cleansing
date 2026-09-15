@@ -1,0 +1,9 @@
+# Ignorar arquivos de ShaderLab, HLSL e Wolfram Language do cálculo de estatísticas
+*.shader linguist-vendored
+*.hlsl linguist-vendored
+*.cginc linguist-vendored
+*.wl linguist-vendored
+*.wlt linguist-vendored
+*.nb linguist-vendored
+
+* text=auto eol=lf
