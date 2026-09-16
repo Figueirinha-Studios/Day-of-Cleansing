@@ -27,6 +27,15 @@ public class EnemyAI : MonoBehaviour
     private Animator animator;
     private EnemyAudio enemyAudio;
 
+    // =========================================================
+    // STEALTH
+    // =========================================================
+
+    [Header("Stealth Scare")]
+    public StealthScare stealthScare;
+
+    private bool stealthControlled = false;
+
     [Header("Detecção de Proximidade")]
     public float proximityDetectionRadius = 1f;
 
@@ -104,10 +113,6 @@ public class EnemyAI : MonoBehaviour
     private float memoryTimer;
     private Vector3 lastKnownPosition;
 
-    /*
-     * Controla o período especial de 1 segundo
-     * após chegar ao último ponto conhecido.
-     */
     private float knowledgeTimer;
     private bool followingLastKnownPlayer = false;
 
@@ -124,22 +129,11 @@ public class EnemyAI : MonoBehaviour
     private int currentSearchIndex;
     private Vector3 searchCenter;
 
-    /*
-     * TRUE:
-     * Está procurando o jogador.
-     *
-     * FALSE:
-     * Está investigando apenas um barulho/objeto.
-     */
     private bool searchingForPlayer = false;
 
     [Header("Managers")]
     public MusicManager musicManager;
 
-    /*
-     * Mantido para não quebrar referências
-     * já existentes no Inspector.
-     */
     public float searchMusicDuration = 8f;
 
     private float searchMusicTimer;
@@ -147,7 +141,6 @@ public class EnemyAI : MonoBehaviour
     [Header("Corrida Especial")]
     [SerializeField]
     private bool runAroundActive = false;
-
 
     // =========================================================
     // START
@@ -161,6 +154,12 @@ public class EnemyAI : MonoBehaviour
         animator = GetComponent<Animator>();
         generator = FindFirstObjectByType<Generator>();
 
+        if (stealthScare == null)
+        {
+            stealthScare =
+                GetComponent<StealthScare>();
+        }
+
         ConfigureNaturalMovement();
 
         LoadPatrolPoints();
@@ -172,7 +171,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // CONFIGURAÇÃO DO MOVIMENTO
     // =========================================================
@@ -182,32 +180,17 @@ public class EnemyAI : MonoBehaviour
         if (agent == null)
             return;
 
-        /*
-         * Aceleração mais suave.
-         */
         agent.acceleration =
             movementAcceleration;
 
-        /*
-         * Rotação gradual.
-         */
         agent.angularSpeed =
             rotationSpeed;
 
-        /*
-         * Não precisa frear bruscamente ao chegar
-         * nos Patrol Points.
-         */
         agent.autoBraking = false;
 
-        /*
-         * Pequena distância para evitar que ele tente
-         * encaixar exatamente no centro do ponto.
-         */
         agent.stoppingDistance =
             naturalStoppingDistance;
     }
-
 
     // =========================================================
     // UPDATE
@@ -215,6 +198,17 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
+        // =====================================================
+        // STEALTH
+        // =====================================================
+
+        if (stealthControlled)
+        {
+            UpdateAnimation();
+            UpdateFootsteps();
+            return;
+        }
+
         HandleGeneratorRunAround();
         HandleProximityDetection();
 
@@ -249,6 +243,46 @@ public class EnemyAI : MonoBehaviour
         UpdateFootsteps();
     }
 
+    // =========================================================
+    // STEALTH - CONTROLE TEMPORÁRIO
+    // =========================================================
+
+    public void BeginStealthControl()
+    {
+        stealthControlled = true;
+
+        StopLookAround();
+
+        if (musicManager != null)
+        {
+            musicManager.StopEnemyMusic();
+        }
+
+        if (agent != null &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.updateRotation = true;
+            agent.speed = chaseSpeed;
+        }
+    }
+
+    public void EndStealthControl()
+    {
+        stealthControlled = false;
+    }
+
+    public bool IsStealthControlled()
+    {
+        return stealthControlled;
+    }
+
+    public void ForceChase()
+    {
+        stealthControlled = false;
+
+        EnterChase();
+    }
 
     // =========================================================
     // CHASE
@@ -256,6 +290,9 @@ public class EnemyAI : MonoBehaviour
 
     private void EnterChase()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -292,7 +329,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     private void ExitChase()
     {
         if (musicManager != null)
@@ -300,7 +336,6 @@ public class EnemyAI : MonoBehaviour
             musicManager.StopEnemyMusic();
         }
     }
-
 
     private void StopEnemyMusic()
     {
@@ -310,9 +345,11 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     private void Chase()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -362,13 +399,15 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // PROXIMIDADE
     // =========================================================
 
     private void HandleProximityDetection()
     {
+        if (stealthControlled)
+            return;
+
         if (player == null)
             return;
 
@@ -424,13 +463,15 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // GENERATOR / RUN AROUND
     // =========================================================
 
     private void HandleGeneratorRunAround()
     {
+        if (stealthControlled)
+            return;
+
         if (generator == null)
         {
             generator =
@@ -445,12 +486,6 @@ public class EnemyAI : MonoBehaviour
 
         bool generatorOn =
             generator.IsGeneratorOn();
-
-        /*
-         * =====================================================
-         * 2/3
-         * =====================================================
-         */
 
         if (exactlyOneMissing &&
             !runAroundActive)
@@ -482,12 +517,6 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        /*
-         * =====================================================
-         * GENERATOR ON
-         * =====================================================
-         */
-
         if (generatorOn)
         {
             runAroundActive =
@@ -518,9 +547,11 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     private void RunAround()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -541,7 +572,6 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
-
 
     // =========================================================
     // PATROL
@@ -579,7 +609,6 @@ public class EnemyAI : MonoBehaviour
             " Patrol Points encontrados."
         );
     }
-
 
     private void ChooseNextPatrolPoint()
     {
@@ -707,17 +736,15 @@ public class EnemyAI : MonoBehaviour
         );
     }
 
-
     private void Patrol()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
-        /*
-         * Enquanto estiver olhando ao redor,
-         * não tentamos escolher outro ponto.
-         */
         if (lookingAround)
             return;
 
@@ -728,11 +755,6 @@ public class EnemyAI : MonoBehaviour
             agent.remainingDistance <=
             agent.stoppingDistance)
         {
-            /*
-             * Chegou a um Patrol Point.
-             *
-             * Conta somente durante Patrol normal.
-             */
             patrolPointsVisited++;
 
             Debug.Log(
@@ -740,10 +762,6 @@ public class EnemyAI : MonoBehaviour
                 patrolPointsVisited
             );
 
-            /*
-             * A cada X pontos:
-             * para e olha ao redor.
-             */
             if (patrolPointsBeforeLookAround > 0 &&
                 patrolPointsVisited %
                 patrolPointsBeforeLookAround == 0)
@@ -762,7 +780,6 @@ public class EnemyAI : MonoBehaviour
             EnterChase();
         }
     }
-
 
     // =========================================================
     // OLHAR AO REDOR
@@ -796,32 +813,14 @@ public class EnemyAI : MonoBehaviour
             );
     }
 
-
     private IEnumerator LookAroundRoutine()
     {
-        /*
-         * Guarda a rotação que ele tinha
-         * quando chegou ao Patrol Point.
-         */
         Quaternion centerRotation =
             transform.rotation;
 
-        /*
-         * Para completamente.
-         */
         agent.isStopped = true;
 
-        /*
-         * Desliga a rotação automática do NavMeshAgent
-         * temporariamente para podermos girar manualmente.
-         */
         agent.updateRotation = false;
-
-        /*
-         * =====================================================
-         * ESQUERDA
-         * =====================================================
-         */
 
         Quaternion leftRotation =
             centerRotation *
@@ -839,12 +838,6 @@ public class EnemyAI : MonoBehaviour
             lookAroundSidePause
         );
 
-        /*
-         * =====================================================
-         * CENTRO
-         * =====================================================
-         */
-
         yield return RotateToLook(
             centerRotation
         );
@@ -852,12 +845,6 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(
             lookAroundCenterPause
         );
-
-        /*
-         * =====================================================
-         * DIREITA
-         * =====================================================
-         */
 
         Quaternion rightRotation =
             centerRotation *
@@ -875,12 +862,6 @@ public class EnemyAI : MonoBehaviour
             lookAroundSidePause
         );
 
-        /*
-         * =====================================================
-         * CENTRO NOVAMENTE
-         * =====================================================
-         */
-
         yield return RotateToLook(
             centerRotation
         );
@@ -888,12 +869,6 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(
             lookAroundCenterPause
         );
-
-        /*
-         * =====================================================
-         * TERMINOU
-         * =====================================================
-         */
 
         transform.rotation =
             centerRotation;
@@ -904,16 +879,12 @@ public class EnemyAI : MonoBehaviour
         lookingAround = false;
         lookAroundCoroutine = null;
 
-        /*
-         * Continua a patrulha normalmente.
-         */
         if (currentState ==
             EnemyState.Patrol)
         {
             ChooseNextPatrolPoint();
         }
     }
-
 
     private IEnumerator RotateToLook(
         Quaternion targetRotation
@@ -926,10 +897,6 @@ public class EnemyAI : MonoBehaviour
             ) > 0.5f
         )
         {
-            /*
-             * Se o estado mudou no meio do olhar,
-             * interrompe a rotação.
-             */
             if (currentState !=
                 EnemyState.Patrol)
             {
@@ -950,7 +917,6 @@ public class EnemyAI : MonoBehaviour
         transform.rotation =
             targetRotation;
     }
-
 
     private void StopLookAround()
     {
@@ -976,13 +942,15 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
-    // INVESTIGATE OBJETO
+    // INVESTIGATE
     // =========================================================
 
     private void Investigate()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -1011,13 +979,15 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // LOST SIGHT
     // =========================================================
 
     private void LostSight()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -1097,13 +1067,15 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // SEARCH
     // =========================================================
 
     private void StartSearch()
     {
+        if (stealthControlled)
+            return;
+
         currentState =
             EnemyState.Search;
 
@@ -1146,9 +1118,11 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     private void Search()
     {
+        if (stealthControlled)
+            return;
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
@@ -1168,10 +1142,6 @@ public class EnemyAI : MonoBehaviour
             searchingForPlayer =
                 false;
 
-            /*
-             * Se RunAround estava ativo,
-             * continua nele.
-             */
             if (runAroundActive)
             {
                 currentState =
@@ -1192,9 +1162,6 @@ public class EnemyAI : MonoBehaviour
                 return;
             }
 
-            /*
-             * Volta para Patrol.
-             */
             currentState =
                 EnemyState.Patrol;
 
@@ -1248,7 +1215,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // SEARCH POINTS
     // =========================================================
@@ -1298,7 +1264,6 @@ public class EnemyAI : MonoBehaviour
         ShuffleSearchPoints();
     }
 
-
     private void ShuffleSearchPoints()
     {
         for (int i = 0;
@@ -1322,7 +1287,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     private void ClearSearchPoints()
     {
         foreach (Transform point
@@ -1339,7 +1303,6 @@ public class EnemyAI : MonoBehaviour
         searchPoints.Clear();
     }
 
-
     // =========================================================
     // NOISE
     // =========================================================
@@ -1348,6 +1311,9 @@ public class EnemyAI : MonoBehaviour
         Vector3 noisePosition
     )
     {
+        if (stealthControlled)
+            return;
+
         if (currentState ==
             EnemyState.Chase)
         {
@@ -1394,7 +1360,6 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
     // =========================================================
     // ANIMATION
     // =========================================================
@@ -1415,7 +1380,6 @@ public class EnemyAI : MonoBehaviour
             Time.deltaTime
         );
     }
-
 
     // =========================================================
     // FOOTSTEPS
@@ -1440,7 +1404,6 @@ public class EnemyAI : MonoBehaviour
             isChasing
         );
     }
-
 
     // =========================================================
     // GIZMOS

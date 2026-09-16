@@ -13,7 +13,6 @@ public class EncounterScareSound : MonoBehaviour
     [Tooltip("Chappie que será detectado.")]
     public Transform chappie;
 
-
     // =========================================================
     // ÁUDIO
     // =========================================================
@@ -26,36 +25,28 @@ public class EncounterScareSound : MonoBehaviour
     [Range(0f, 1f)]
     public float volume = 1f;
 
-
     // =========================================================
     // TEMPO
     // =========================================================
 
     [Header("Tempo sem ver o Chappie")]
-    [Tooltip("Tempo que o jogador precisa ficar sem ver o Chappie antes de um novo susto.")]
     public float timeWithoutSeeing = 30f;
-
 
     // =========================================================
     // DISTÂNCIA
     // =========================================================
 
     [Header("Distância")]
-    [Tooltip("Distância máxima para o encontro poder ativar o som.")]
     public float maxDistance = 50f;
-
 
     // =========================================================
     // DETECÇÃO
     // =========================================================
 
     [Header("Detecção")]
-    [Tooltip("Se ativado, o Chappie também precisa estar desobstruído por paredes.")]
     public bool requireLineOfSight = true;
 
-    [Tooltip("Layers que podem bloquear a visão do Chappie.")]
     public LayerMask obstacleMask;
-
 
     // =========================================================
     // ESTADO
@@ -66,7 +57,6 @@ public class EncounterScareSound : MonoBehaviour
     private bool scareReady = false;
 
     private bool wasVisible = false;
-
 
     // =========================================================
     // START
@@ -81,7 +71,6 @@ public class EncounterScareSound : MonoBehaviour
             audioSource.volume = volume;
         }
 
-
         timeSinceLastSeen = 0f;
 
         scareReady = false;
@@ -89,34 +78,40 @@ public class EncounterScareSound : MonoBehaviour
         wasVisible = false;
     }
 
-
     // =========================================================
     // UPDATE
     // =========================================================
 
     private void Update()
     {
+        // =====================================================
+        // STEALTH ESTÁ BLOQUEANDO O ENCOUNTER
+        // =====================================================
+
+        if (StealthScare.IsEncounterBlocked)
+        {
+            timeSinceLastSeen = 0f;
+            scareReady = false;
+            wasVisible = false;
+
+            return;
+        }
+
         if (playerCamera == null)
             return;
 
         if (chappie == null)
             return;
 
-
         bool chappieVisible =
             IsChappieVisible();
 
-
         // =====================================================
-        // CHAPPIE ESTÁ VISÍVEL
+        // VISÍVEL
         // =====================================================
 
         if (chappieVisible)
         {
-            // -------------------------------------------------
-            // SE ELE ACABOU DE APARECER
-            // -------------------------------------------------
-
             if (!wasVisible)
             {
                 if (scareReady)
@@ -132,26 +127,12 @@ public class EncounterScareSound : MonoBehaviour
                 }
             }
 
-
-            // -------------------------------------------------
-            // ELE ESTÁ SENDO VISTO
-            // -------------------------------------------------
-
             timeSinceLastSeen = 0f;
         }
         else
         {
-            // =================================================
-            // CHAPPIE NÃO ESTÁ VISÍVEL
-            // =================================================
-
             timeSinceLastSeen +=
                 Time.deltaTime;
-
-
-            // -------------------------------------------------
-            // ARMA O PRÓXIMO SUSTO
-            // -------------------------------------------------
 
             if (
                 !scareReady &&
@@ -169,18 +150,12 @@ public class EncounterScareSound : MonoBehaviour
             }
         }
 
-
-        // =====================================================
-        // SALVA ESTADO ANTERIOR
-        // =====================================================
-
         wasVisible =
             chappieVisible;
     }
 
-
     // =========================================================
-    // VERIFICA SE CHAPPIE ESTÁ NA TELA
+    // VISIBILIDADE
     // =========================================================
 
     private bool IsChappieVisible()
@@ -190,18 +165,8 @@ public class EncounterScareSound : MonoBehaviour
                 chappie.position
             );
 
-
-        // -----------------------------------------------------
-        // ESTÁ ATRÁS DA CÂMERA
-        // -----------------------------------------------------
-
         if (viewportPosition.z <= 0f)
             return false;
-
-
-        // -----------------------------------------------------
-        // FORA DA TELA
-        // -----------------------------------------------------
 
         if (
             viewportPosition.x < 0f ||
@@ -213,25 +178,14 @@ public class EncounterScareSound : MonoBehaviour
             return false;
         }
 
-
-        // -----------------------------------------------------
-        // DISTÂNCIA
-        // -----------------------------------------------------
-
         float distance =
             Vector3.Distance(
                 playerCamera.transform.position,
                 chappie.position
             );
 
-
         if (distance > maxDistance)
             return false;
-
-
-        // -----------------------------------------------------
-        // LINHA DE VISÃO
-        // -----------------------------------------------------
 
         if (requireLineOfSight)
         {
@@ -239,10 +193,8 @@ public class EncounterScareSound : MonoBehaviour
                 chappie.position -
                 playerCamera.transform.position;
 
-
             float distanceToChappie =
                 direction.magnitude;
-
 
             if (
                 Physics.Raycast(
@@ -259,13 +211,11 @@ public class EncounterScareSound : MonoBehaviour
             }
         }
 
-
         return true;
     }
 
-
     // =========================================================
-    // TOCA O SOM
+    // SOM
     // =========================================================
 
     private void PlayScareSound()
@@ -280,7 +230,6 @@ public class EncounterScareSound : MonoBehaviour
             return;
         }
 
-
         if (scareSound == null)
         {
             Debug.LogWarning(
@@ -290,7 +239,6 @@ public class EncounterScareSound : MonoBehaviour
 
             return;
         }
-
 
         audioSource.PlayOneShot(
             scareSound,

@@ -465,7 +465,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Generator
   generatorUI: {fileID: 31245302}
-  player: {fileID: 0}
+  player: {fileID: 1460273172}
   tutorialDistance: 5
   gasolineRequired: 2
   fuseRequired: 1
@@ -3686,6 +3686,135 @@ MonoBehaviour:
   crouchCameraHeight: -0.5
   crouchSmooth: 8
   playerMovement: {fileID: 1460273163}
+--- !u!1 &328093192
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 328093193}
+  - component: {fileID: 328093194}
+  m_Layer: 0
+  m_Name: Audio Source
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &328093193
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328093192}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1097238377}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &328093194
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328093192}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -6461,6 +6590,7 @@ Transform:
   - {fileID: 2106347680}
   - {fileID: 1299956551}
   - {fileID: 1275412853}
+  - {fileID: 1097238377}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607242135
@@ -11141,6 +11271,38 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8558842602677147486, guid: b2cb3da5d8a18a24d8012609e0caea98, type: 3}
+--- !u!1 &1097238376
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1097238377}
+  m_Layer: 0
+  m_Name: StealthScream
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1097238377
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1097238376}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 328093193}
+  m_Father: {fileID: 602221789}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1101008338
 GameObject:
   m_ObjectHideFlags: 0
@@ -22151,6 +22313,12 @@ PrefabInstance:
       addedObject: {fileID: 2106347689}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 2106347691}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2106347690}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 2106347688}
   m_SourcePrefab: {fileID: 100100000, guid: 7d8e3d81fc14ca64e9fdd4444e63837a, type: 3}
 --- !u!4 &2106347680 stripped
@@ -22172,6 +22340,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   currentState: 0
   player: {fileID: 1460273160}
+  stealthScare: {fileID: 0}
   proximityDetectionRadius: 1
   proximityObstacleMask:
     serializedVersion: 2
@@ -22389,6 +22558,66 @@ MonoBehaviour:
   stepSound2: {fileID: 8300000, guid: 8ec794e8d808f784fb13ae4ea48b4617, type: 3}
   normalStepInterval: 0.5
   chaseStepInterval: 0.25
+--- !u!114 &2106347690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1430975757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b58ce5dd2a8df78459fbba85fa3b7048, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthScare
+  enemyAI: {fileID: 2106347682}
+  enemyVision: {fileID: 2106347683}
+  generator: {fileID: 31245301}
+  cameraController: {fileID: 1460273161}
+  playerCamera: {fileID: 330585545}
+  player: {fileID: 1460273160}
+  chappie: {fileID: 2106347680}
+  agent: {fileID: 2106347685}
+  timeWithoutSeeing: 60
+  stealthChance: 50
+  resetTimerAfterAttempt: 1
+  stealthCooldown: 60
+  minimumGeneratorItemsToDisable: 2
+  stopDistance: 6
+  stealthSpeed: 6
+  cameraLookSpeed: 400
+  audioSource: {fileID: 328093194}
+  spottedSound: {fileID: 8300000, guid: 9d85144ff42053c4ca37e43bee9014e8, type: 3}
+  screamSound: {fileID: 8300000, guid: 9d85144ff42053c4ca37e43bee9014e8, type: 3}
+  spottedVolume: 1
+  screamVolume: 1
+  spottedPause: 0.5
+  screamDuration: 1
+  pauseAfterScream: 0.5
+  encounterBlockDuration: 30
+--- !u!114 &2106347691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1430975757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4974731ddcb09184d8d59402bed50776, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EncounterScareSound
+  playerCamera: {fileID: 330585545}
+  chappie: {fileID: 2106347680}
+  audioSource: {fileID: 1703739037}
+  scareSound: {fileID: 8300000, guid: 9a4ba1a1731ca1941b7581236cd7df3c, type: 3}
+  volume: 1
+  timeWithoutSeeing: 90
+  maxDistance: 50
+  requireLineOfSight: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1001 &2123895193
 PrefabInstance:
   m_ObjectHideFlags: 0
