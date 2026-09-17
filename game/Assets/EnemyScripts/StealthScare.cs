@@ -13,6 +13,8 @@ public class StealthScare : MonoBehaviour
 
     public EnemyVision enemyVision;
 
+    public EnemyAudio enemyAudio;
+
     public Generator generator;
 
     public CameraController cameraController;
@@ -24,6 +26,7 @@ public class StealthScare : MonoBehaviour
     public Transform chappie;
 
     public NavMeshAgent agent;
+
 
     // =========================================================
     // TEMPO PARA ATIVAR
@@ -40,6 +43,7 @@ public class StealthScare : MonoBehaviour
     [Tooltip("Depois de cada tentativa, começa uma nova janela de tempo.")]
     public bool resetTimerAfterAttempt = true;
 
+
     // =========================================================
     // COOLDOWN
     // =========================================================
@@ -50,6 +54,7 @@ public class StealthScare : MonoBehaviour
 
     private float cooldownTimer = 0f;
 
+
     // =========================================================
     // GERADOR
     // =========================================================
@@ -57,6 +62,7 @@ public class StealthScare : MonoBehaviour
     [Header("Gerador")]
     [Tooltip("Quando 2 ou mais itens já foram colocados, o Stealth é desativado.")]
     public int minimumGeneratorItemsToDisable = 2;
+
 
     // =========================================================
     // DISTÂNCIA
@@ -71,6 +77,7 @@ public class StealthScare : MonoBehaviour
 
     [Tooltip("Velocidade com que a câmera vira para o Chappie.")]
     public float cameraLookSpeed = 180f;
+
 
     // =========================================================
     // ÁUDIO
@@ -91,6 +98,17 @@ public class StealthScare : MonoBehaviour
     [Range(0f, 1f)]
     public float screamVolume = 1f;
 
+
+    // =========================================================
+    // PASSOS DURANTE STEALTH
+    // =========================================================
+
+    [Header("Passos durante Stealth")]
+    [Tooltip("Volume dos passos enquanto Chappie corre durante o Stealth.")]
+    [Range(0f, 1f)]
+    public float stealthFootstepVolume = 0.05f;
+
+
     // =========================================================
     // TEMPOS
     // =========================================================
@@ -108,6 +126,7 @@ public class StealthScare : MonoBehaviour
     [Tooltip("Tempo que o Encounter fica bloqueado após o Stealth.")]
     public float encounterBlockDuration = 15f;
 
+
     // =========================================================
     // ESTADO
     // =========================================================
@@ -121,6 +140,7 @@ public class StealthScare : MonoBehaviour
     private Coroutine stealthCoroutine;
 
     private float originalStoppingDistance;
+
 
     // =========================================================
     // BLOQUEIO GLOBAL DO ENCOUNTER
@@ -136,6 +156,7 @@ public class StealthScare : MonoBehaviour
                    encounterBlockedUntil;
         }
     }
+
 
     // =========================================================
     // START
@@ -153,6 +174,12 @@ public class StealthScare : MonoBehaviour
         {
             enemyVision =
                 GetComponent<EnemyVision>();
+        }
+
+        if (enemyAudio == null)
+        {
+            enemyAudio =
+                GetComponent<EnemyAudio>();
         }
 
         if (agent == null)
@@ -184,6 +211,7 @@ public class StealthScare : MonoBehaviour
         cooldownTimer = 0f;
     }
 
+
     // =========================================================
     // UPDATE
     // =========================================================
@@ -199,6 +227,7 @@ public class StealthScare : MonoBehaviour
         if (playerCamera == null)
             return;
 
+
         // -----------------------------------------------------
         // COOLDOWN
         // -----------------------------------------------------
@@ -208,6 +237,7 @@ public class StealthScare : MonoBehaviour
             cooldownTimer -=
                 Time.deltaTime;
         }
+
 
         // -----------------------------------------------------
         // GERADOR
@@ -219,6 +249,7 @@ public class StealthScare : MonoBehaviour
             return;
         }
 
+
         // -----------------------------------------------------
         // COOLDOWN
         // -----------------------------------------------------
@@ -227,6 +258,7 @@ public class StealthScare : MonoBehaviour
         {
             return;
         }
+
 
         // -----------------------------------------------------
         // PLAYER ESTÁ OLHANDO PARA CHAPPIE?
@@ -241,6 +273,7 @@ public class StealthScare : MonoBehaviour
             return;
         }
 
+
         // -----------------------------------------------------
         // PLAYER NÃO VIU CHAPPIE
         // -----------------------------------------------------
@@ -254,6 +287,7 @@ public class StealthScare : MonoBehaviour
             return;
         }
 
+
         // -----------------------------------------------------
         // CHAPPIE PRECISA CONSEGUIR VER PLAYER
         // -----------------------------------------------------
@@ -264,12 +298,14 @@ public class StealthScare : MonoBehaviour
         if (!enemyVision.CanSeePlayer())
             return;
 
+
         // -----------------------------------------------------
         // TENTATIVA
         // -----------------------------------------------------
 
         TryTriggerStealth();
     }
+
 
     // =========================================================
     // TENTAR ATIVAR
@@ -289,6 +325,7 @@ public class StealthScare : MonoBehaviour
             return;
         }
 
+
         // -----------------------------------------------------
         // NOVA JANELA DE TEMPO
         // -----------------------------------------------------
@@ -297,6 +334,7 @@ public class StealthScare : MonoBehaviour
         {
             unseenTimer = 0f;
         }
+
 
         // -----------------------------------------------------
         // SORTEIO
@@ -315,6 +353,7 @@ public class StealthScare : MonoBehaviour
             stealthChance +
             "%"
         );
+
 
         // -----------------------------------------------------
         // 65% → CHASE NORMAL
@@ -335,6 +374,7 @@ public class StealthScare : MonoBehaviour
             return;
         }
 
+
         // -----------------------------------------------------
         // 35% → STEALTH
         // -----------------------------------------------------
@@ -350,6 +390,7 @@ public class StealthScare : MonoBehaviour
             );
     }
 
+
     // =========================================================
     // STEALTH PRINCIPAL
     // =========================================================
@@ -361,6 +402,7 @@ public class StealthScare : MonoBehaviour
         hasSeenPlayerDuringApproach =
             false;
 
+
         // -----------------------------------------------------
         // BLOQUEIA ENCOUNTER
         // -----------------------------------------------------
@@ -368,6 +410,7 @@ public class StealthScare : MonoBehaviour
         encounterBlockedUntil =
             Time.time +
             encounterBlockDuration;
+
 
         // -----------------------------------------------------
         // ASSUME CONTROLE DO CHAPPIE
@@ -377,6 +420,19 @@ public class StealthScare : MonoBehaviour
         {
             enemyAI.BeginStealthControl();
         }
+
+
+        // -----------------------------------------------------
+        // DIMINUI PASSOS
+        // -----------------------------------------------------
+
+        if (enemyAudio != null)
+        {
+            enemyAudio.SetFootstepVolume(
+                stealthFootstepVolume
+            );
+        }
+
 
         if (agent == null)
         {
@@ -390,6 +446,7 @@ public class StealthScare : MonoBehaviour
             yield break;
         }
 
+
         originalStoppingDistance =
             agent.stoppingDistance;
 
@@ -402,6 +459,7 @@ public class StealthScare : MonoBehaviour
         agent.isStopped = false;
         agent.updateRotation = true;
 
+
         // =====================================================
         // APROXIMAÇÃO
         // =====================================================
@@ -413,6 +471,7 @@ public class StealthScare : MonoBehaviour
                 FinishStealthAndChase();
                 yield break;
             }
+
 
             // -------------------------------------------------
             // GERADOR CHEGOU A 2/3
@@ -429,6 +488,7 @@ public class StealthScare : MonoBehaviour
                 yield break;
             }
 
+
             // -------------------------------------------------
             // ATUALIZA DESTINO
             // -------------------------------------------------
@@ -436,6 +496,7 @@ public class StealthScare : MonoBehaviour
             agent.SetDestination(
                 player.position
             );
+
 
             // -------------------------------------------------
             // PLAYER PERCEBEU CHAPPIE
@@ -450,6 +511,7 @@ public class StealthScare : MonoBehaviour
 
                 yield break;
             }
+
 
             // -------------------------------------------------
             // CHEGOU PERTO
@@ -470,11 +532,13 @@ public class StealthScare : MonoBehaviour
             yield return null;
         }
 
+
         // =====================================================
         // PARA
         // =====================================================
 
         agent.isStopped = true;
+
 
         // =====================================================
         // GRITO + CÂMERA
@@ -485,6 +549,7 @@ public class StealthScare : MonoBehaviour
             cameraController.BeginAutomaticLook();
         }
 
+
         if (audioSource != null &&
             screamSound != null)
         {
@@ -493,6 +558,7 @@ public class StealthScare : MonoBehaviour
                 screamVolume
             );
         }
+
 
         float screamTimer = 0f;
 
@@ -514,6 +580,7 @@ public class StealthScare : MonoBehaviour
             yield return null;
         }
 
+
         // =====================================================
         // DEVOLVE CÂMERA
         // =====================================================
@@ -523,6 +590,7 @@ public class StealthScare : MonoBehaviour
             cameraController.EndAutomaticLook();
         }
 
+
         // =====================================================
         // CHAPPIE FICA PARADO
         // =====================================================
@@ -531,12 +599,14 @@ public class StealthScare : MonoBehaviour
             pauseAfterScream
         );
 
+
         // =====================================================
         // CHASE NORMAL
         // =====================================================
 
         FinishStealthAndChase();
     }
+
 
     // =========================================================
     // PLAYER PERCEBEU DURANTE A APROXIMAÇÃO
@@ -548,11 +618,27 @@ public class StealthScare : MonoBehaviour
             "STEALTH SCARE: Jogador percebeu o Chappie durante a aproximação."
         );
 
+
         if (agent != null &&
             agent.isOnNavMesh)
         {
             agent.isStopped = true;
         }
+
+
+        // =====================================================
+        // CÂMERA VIRA PARA O CHAPPIE
+        // =====================================================
+
+        if (cameraController != null)
+        {
+            cameraController.BeginAutomaticLook();
+        }
+
+
+        // =====================================================
+        // SOM DE SPOTTED
+        // =====================================================
 
         if (audioSource != null &&
             spottedSound != null)
@@ -563,12 +649,49 @@ public class StealthScare : MonoBehaviour
             );
         }
 
-        yield return new WaitForSeconds(
-            spottedPause
-        );
+
+        // =====================================================
+        // MANTÉM A CÂMERA OLHANDO
+        // =====================================================
+
+        float spottedTimer = 0f;
+
+        while (spottedTimer <
+               spottedPause)
+        {
+            if (cameraController != null &&
+                chappie != null)
+            {
+                cameraController.RotateAutomaticallyTowards(
+                    chappie.position,
+                    cameraLookSpeed
+                );
+            }
+
+            spottedTimer +=
+                Time.deltaTime;
+
+            yield return null;
+        }
+
+
+        // =====================================================
+        // DEVOLVE CÂMERA
+        // =====================================================
+
+        if (cameraController != null)
+        {
+            cameraController.EndAutomaticLook();
+        }
+
+
+        // =====================================================
+        // CHASE NORMAL
+        // =====================================================
 
         FinishStealthAndChase();
     }
+
 
     // =========================================================
     // FINALIZAR STEALTH
@@ -576,10 +699,29 @@ public class StealthScare : MonoBehaviour
 
     private void FinishStealthAndChase()
     {
+        // -----------------------------------------------------
+        // RESTAURA CÂMERA
+        // -----------------------------------------------------
+
         if (cameraController != null)
         {
             cameraController.EndAutomaticLook();
         }
+
+
+        // -----------------------------------------------------
+        // RESTAURA PASSOS
+        // -----------------------------------------------------
+
+        if (enemyAudio != null)
+        {
+            enemyAudio.RestoreFootstepVolume();
+        }
+
+
+        // -----------------------------------------------------
+        // RESTAURA NAVMESH
+        // -----------------------------------------------------
 
         if (agent != null &&
             agent.isOnNavMesh)
@@ -591,6 +733,11 @@ public class StealthScare : MonoBehaviour
             agent.updateRotation = true;
         }
 
+
+        // -----------------------------------------------------
+        // FINALIZA STEALTH
+        // -----------------------------------------------------
+
         stealthActive = false;
 
         cooldownTimer =
@@ -599,6 +746,11 @@ public class StealthScare : MonoBehaviour
         hasSeenPlayerDuringApproach =
             false;
 
+
+        // -----------------------------------------------------
+        // CHASE NORMAL
+        // -----------------------------------------------------
+
         if (enemyAI != null)
         {
             enemyAI.EndStealthControl();
@@ -606,8 +758,10 @@ public class StealthScare : MonoBehaviour
             enemyAI.ForceChase();
         }
 
+
         stealthCoroutine = null;
     }
+
 
     // =========================================================
     // VERIFICAR GERADOR
@@ -624,7 +778,9 @@ public class StealthScare : MonoBehaviour
         if (generator == null)
             return false;
 
+
         int insertedItems = 0;
+
 
         if (generator.GetGasolineInserted() > 0)
         {
@@ -632,15 +788,18 @@ public class StealthScare : MonoBehaviour
                 generator.GetGasolineInserted();
         }
 
+
         if (generator.IsFuseInserted())
         {
             insertedItems++;
         }
 
+
         return
             insertedItems >=
             minimumGeneratorItemsToDisable;
     }
+
 
     // =========================================================
     // PLAYER OLHANDO PARA CHAPPIE
@@ -652,13 +811,20 @@ public class StealthScare : MonoBehaviour
             chappie == null)
             return false;
 
+
         Vector3 viewport =
             playerCamera.WorldToViewportPoint(
                 chappie.position
             );
 
+
         if (viewport.z <= 0f)
             return false;
+
+
+        // =====================================================
+        // CHAPPIE ESTÁ FORA DA TELA
+        // =====================================================
 
         if (
             viewport.x < 0f ||
@@ -670,40 +836,14 @@ public class StealthScare : MonoBehaviour
             return false;
         }
 
-        Vector3 direction =
-            chappie.position -
-            playerCamera.transform.position;
 
-        float distance =
-            direction.magnitude;
+        // =====================================================
+        // CHAPPIE ESTÁ NA TELA
+        // =====================================================
 
-        if (distance <= 0.01f)
-            return true;
+        // Não precisa estar no centro da câmera.
+        // Só de aparecer na tela, conta como jogador viu.
 
-        // -----------------------------------------------------
-        // RAYCAST
-        // -----------------------------------------------------
-
-        if (Physics.Raycast(
-            playerCamera.transform.position,
-            direction.normalized,
-            out RaycastHit hit,
-            distance,
-            ~0,
-            QueryTriggerInteraction.Ignore
-        ))
-        {
-            if (
-                hit.transform == chappie ||
-                hit.transform.IsChildOf(chappie)
-            )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        return false;
+        return true;
     }
 }

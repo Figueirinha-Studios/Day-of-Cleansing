@@ -16,7 +16,9 @@ public class EnemyAI : MonoBehaviour
     }
 
     [Header("State")]
-    public EnemyState currentState = EnemyState.Patrol;
+    public EnemyState currentState =
+        EnemyState.Patrol;
+
 
     [Header("References")]
     public Transform player;
@@ -27,6 +29,7 @@ public class EnemyAI : MonoBehaviour
     private Animator animator;
     private EnemyAudio enemyAudio;
 
+
     // =========================================================
     // STEALTH
     // =========================================================
@@ -36,6 +39,7 @@ public class EnemyAI : MonoBehaviour
 
     private bool stealthControlled = false;
 
+
     [Header("Detecção de Proximidade")]
     public float proximityDetectionRadius = 1f;
 
@@ -43,6 +47,7 @@ public class EnemyAI : MonoBehaviour
     public LayerMask proximityObstacleMask;
 
     private bool wasPlayerInProximity = false;
+
 
     [Header("Patrol")]
     public Transform patrolPointsParent;
@@ -68,6 +73,7 @@ public class EnemyAI : MonoBehaviour
     private int currentPoint = -1;
     private int previousPoint = -1;
 
+
     [Header("Movimento Natural")]
     [Tooltip("Aceleração usada pelo Chappie.")]
     public float movementAcceleration = 8f;
@@ -77,6 +83,7 @@ public class EnemyAI : MonoBehaviour
 
     [Tooltip("Distância mínima para o Chappie desacelerar antes de um ponto.")]
     public float naturalStoppingDistance = 0.5f;
+
 
     // =========================================================
     // OLHAR AO REDOR
@@ -104,6 +111,7 @@ public class EnemyAI : MonoBehaviour
 
     private Coroutine lookAroundCoroutine;
 
+
     [Header("Memory")]
     public float memoryTime = 2f;
 
@@ -115,6 +123,7 @@ public class EnemyAI : MonoBehaviour
 
     private float knowledgeTimer;
     private bool followingLastKnownPlayer = false;
+
 
     [Header("Search")]
     public float searchTime = 30f;
@@ -131,6 +140,7 @@ public class EnemyAI : MonoBehaviour
 
     private bool searchingForPlayer = false;
 
+
     [Header("Managers")]
     public MusicManager musicManager;
 
@@ -138,9 +148,11 @@ public class EnemyAI : MonoBehaviour
 
     private float searchMusicTimer;
 
+
     [Header("Corrida Especial")]
     [SerializeField]
     private bool runAroundActive = false;
+
 
     // =========================================================
     // START
@@ -148,11 +160,21 @@ public class EnemyAI : MonoBehaviour
 
     private void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        vision = GetComponent<EnemyVision>();
-        enemyAudio = GetComponent<EnemyAudio>();
-        animator = GetComponent<Animator>();
-        generator = FindFirstObjectByType<Generator>();
+        agent =
+            GetComponent<NavMeshAgent>();
+
+        vision =
+            GetComponent<EnemyVision>();
+
+        enemyAudio =
+            GetComponent<EnemyAudio>();
+
+        animator =
+            GetComponent<Animator>();
+
+        generator =
+            FindFirstObjectByType<Generator>();
+
 
         if (stealthScare == null)
         {
@@ -160,9 +182,11 @@ public class EnemyAI : MonoBehaviour
                 GetComponent<StealthScare>();
         }
 
+
         ConfigureNaturalMovement();
 
         LoadPatrolPoints();
+
 
         if (patrolPoints != null &&
             patrolPoints.Length > 0)
@@ -170,6 +194,7 @@ public class EnemyAI : MonoBehaviour
             ChooseNextPatrolPoint();
         }
     }
+
 
     // =========================================================
     // CONFIGURAÇÃO DO MOVIMENTO
@@ -180,17 +205,20 @@ public class EnemyAI : MonoBehaviour
         if (agent == null)
             return;
 
+
         agent.acceleration =
             movementAcceleration;
 
         agent.angularSpeed =
             rotationSpeed;
 
-        agent.autoBraking = false;
+        agent.autoBraking =
+            false;
 
         agent.stoppingDistance =
             naturalStoppingDistance;
     }
+
 
     // =========================================================
     // UPDATE
@@ -206,11 +234,15 @@ public class EnemyAI : MonoBehaviour
         {
             UpdateAnimation();
             UpdateFootsteps();
+
             return;
         }
 
+
         HandleGeneratorRunAround();
+
         HandleProximityDetection();
+
 
         switch (currentState)
         {
@@ -239,9 +271,12 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
+
         UpdateAnimation();
+
         UpdateFootsteps();
     }
+
 
     // =========================================================
     // STEALTH - CONTROLE TEMPORÁRIO
@@ -249,40 +284,107 @@ public class EnemyAI : MonoBehaviour
 
     public void BeginStealthControl()
     {
-        stealthControlled = true;
+        stealthControlled =
+            true;
+
 
         StopLookAround();
+
 
         if (musicManager != null)
         {
             musicManager.StopEnemyMusic();
         }
 
+
         if (agent != null &&
             agent.isOnNavMesh)
         {
-            agent.isStopped = false;
-            agent.updateRotation = true;
-            agent.speed = chaseSpeed;
+            agent.isStopped =
+                false;
+
+            agent.updateRotation =
+                true;
+
+            agent.speed =
+                chaseSpeed;
         }
     }
 
+
     public void EndStealthControl()
     {
-        stealthControlled = false;
+        stealthControlled =
+            false;
     }
+
 
     public bool IsStealthControlled()
     {
         return stealthControlled;
     }
 
+
+    // =========================================================
+    // FORCE CHASE
+    // =========================================================
+
     public void ForceChase()
     {
-        stealthControlled = false;
+        Debug.Log(
+            "ENEMY AI: ForceChase chamado."
+        );
+
+
+        // -----------------------------------------------------
+        // Libera o controle do Stealth.
+        // -----------------------------------------------------
+
+        stealthControlled =
+            false;
+
+
+        // -----------------------------------------------------
+        // Tenta entrar no Chase normalmente.
+        // -----------------------------------------------------
 
         EnterChase();
+
+
+        // -----------------------------------------------------
+        // GARANTIA EXTRA DA MÚSICA.
+        //
+        // Se o estado realmente virou Chase,
+        // garante que a música também seja iniciada.
+        // -----------------------------------------------------
+
+        if (currentState ==
+            EnemyState.Chase)
+        {
+            if (musicManager != null)
+            {
+                Debug.Log(
+                    "ENEMY AI: Chase iniciado. " +
+                    "Iniciando música de Chase."
+                );
+
+                musicManager.StartChaseMusic();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "ENEMY AI: MusicManager não configurado."
+                );
+            }
+        }
+        else
+        {
+            Debug.LogWarning(
+                "ENEMY AI: ForceChase não conseguiu entrar em Chase."
+            );
+        }
     }
+
 
     // =========================================================
     // CHASE
@@ -293,20 +395,35 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
+        {
+            Debug.LogWarning(
+                "ENEMY AI: Não foi possível entrar em Chase. " +
+                "NavMeshAgent não está no NavMesh."
+            );
+
             return;
+        }
+
 
         StopLookAround();
+
 
         currentState =
             EnemyState.Chase;
 
-        agent.isStopped = false;
-        agent.updateRotation = true;
+
+        agent.isStopped =
+            false;
+
+        agent.updateRotation =
+            true;
 
         agent.speed =
             chaseSpeed;
+
 
         if (player != null)
         {
@@ -314,20 +431,38 @@ public class EnemyAI : MonoBehaviour
                 player.position;
         }
 
-        followingLastKnownPlayer = false;
-        knowledgeTimer = 0f;
+
+        followingLastKnownPlayer =
+            false;
+
+        knowledgeTimer =
+            0f;
+
 
         memoryTimer =
             memoryTime;
 
+
         searchingForPlayer =
             true;
+
+
+        // -----------------------------------------------------
+        // MÚSICA DE CHASE
+        // -----------------------------------------------------
 
         if (musicManager != null)
         {
             musicManager.StartChaseMusic();
         }
+        else
+        {
+            Debug.LogWarning(
+                "ENEMY AI: MusicManager não configurado."
+            );
+        }
     }
+
 
     private void ExitChase()
     {
@@ -337,6 +472,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void StopEnemyMusic()
     {
         if (musicManager != null)
@@ -345,20 +481,25 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void Chase()
     {
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         agent.speed =
             chaseSpeed;
 
+
         if (player == null)
             return;
+
 
         if (vision != null &&
             vision.CanSeePlayer())
@@ -369,6 +510,7 @@ public class EnemyAI : MonoBehaviour
             memoryTimer =
                 memoryTime;
 
+
             agent.SetDestination(
                 player.position
             );
@@ -378,6 +520,7 @@ public class EnemyAI : MonoBehaviour
             memoryTimer -=
                 Time.deltaTime;
 
+
             if (memoryTimer <= 0f)
             {
                 searchingForPlayer =
@@ -386,11 +529,14 @@ public class EnemyAI : MonoBehaviour
                 followingLastKnownPlayer =
                     false;
 
+
                 currentState =
                     EnemyState.LostSight;
 
+
                 agent.speed =
                     searchSpeed;
+
 
                 agent.SetDestination(
                     lastKnownPosition
@@ -398,6 +544,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
     }
+
 
     // =========================================================
     // PROXIMIDADE
@@ -408,14 +555,17 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (player == null)
             return;
+
 
         float distance =
             Vector3.Distance(
                 transform.position,
                 player.position
             );
+
 
         if (distance >
             proximityDetectionRadius)
@@ -426,19 +576,24 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+
         Vector3 origin =
             transform.position +
             Vector3.up * 0.5f;
+
 
         Vector3 target =
             player.position +
             Vector3.up * 0.5f;
 
+
         Vector3 direction =
             target - origin;
 
+
         float distanceToPlayer =
             direction.magnitude;
+
 
         if (Physics.Raycast(
             origin,
@@ -446,13 +601,15 @@ public class EnemyAI : MonoBehaviour
             out RaycastHit hit,
             distanceToPlayer,
             proximityObstacleMask,
-            QueryTriggerInteraction.Ignore))
+            QueryTriggerInteraction.Ignore
+        ))
         {
             wasPlayerInProximity =
                 false;
 
             return;
         }
+
 
         if (!wasPlayerInProximity)
         {
@@ -463,6 +620,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // GENERATOR / RUN AROUND
     // =========================================================
@@ -472,20 +630,25 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (generator == null)
         {
             generator =
                 FindFirstObjectByType<Generator>();
 
+
             if (generator == null)
                 return;
         }
 
+
         bool exactlyOneMissing =
             generator.IsExactlyOneItemMissing();
 
+
         bool generatorOn =
             generator.IsGeneratorOn();
+
 
         if (exactlyOneMissing &&
             !runAroundActive)
@@ -493,13 +656,16 @@ public class EnemyAI : MonoBehaviour
             runAroundActive =
                 true;
 
+
             if (currentState !=
                 EnemyState.Chase)
             {
                 StopEnemyMusic();
 
+
                 currentState =
                     EnemyState.RunAround;
+
 
                 if (agent != null &&
                     agent.isOnNavMesh)
@@ -507,28 +673,36 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
-                    agent.isStopped = false;
-                    agent.updateRotation = true;
+                    agent.isStopped =
+                        false;
+
+                    agent.updateRotation =
+                        true;
 
                     ChooseNextPatrolPoint();
                 }
             }
 
+
             return;
         }
+
 
         if (generatorOn)
         {
             runAroundActive =
                 true;
 
+
             if (currentState ==
                 EnemyState.Patrol)
             {
                 StopEnemyMusic();
 
+
                 currentState =
                     EnemyState.RunAround;
+
 
                 if (agent != null &&
                     agent.isOnNavMesh)
@@ -536,28 +710,36 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
-                    agent.isStopped = false;
-                    agent.updateRotation = true;
+                    agent.isStopped =
+                        false;
+
+                    agent.updateRotation =
+                        true;
 
                     ChooseNextPatrolPoint();
                 }
             }
 
+
             return;
         }
     }
+
 
     private void RunAround()
     {
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         agent.speed =
             chaseSpeed;
+
 
         if (!agent.pathPending &&
             agent.remainingDistance <=
@@ -566,12 +748,14 @@ public class EnemyAI : MonoBehaviour
             ChooseNextPatrolPoint();
         }
 
+
         if (vision != null &&
             vision.CanSeePlayer())
         {
             EnterChase();
         }
     }
+
 
     // =========================================================
     // PATROL
@@ -585,14 +769,18 @@ public class EnemyAI : MonoBehaviour
                 "EnemyAI: Patrol Points Parent não foi definido."
             );
 
+
             patrolPoints =
                 new Transform[0];
+
 
             return;
         }
 
+
         List<Transform> points =
             new List<Transform>();
+
 
         foreach (Transform child
                  in patrolPointsParent)
@@ -600,8 +788,10 @@ public class EnemyAI : MonoBehaviour
             points.Add(child);
         }
 
+
         patrolPoints =
             points.ToArray();
+
 
         Debug.Log(
             "EnemyAI: " +
@@ -610,18 +800,22 @@ public class EnemyAI : MonoBehaviour
         );
     }
 
+
     private void ChooseNextPatrolPoint()
     {
         if (patrolPoints == null ||
             patrolPoints.Length == 0)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         List<int> availablePoints =
             new List<int>();
+
 
         for (int i = 0;
              i < patrolPoints.Length;
@@ -630,15 +824,19 @@ public class EnemyAI : MonoBehaviour
             if (i == currentPoint)
                 continue;
 
+
             if (recentlyVisitedPoints.Contains(i))
                 continue;
+
 
             availablePoints.Add(i);
         }
 
+
         if (availablePoints.Count == 0)
         {
             recentlyVisitedPoints.Clear();
+
 
             for (int i = 0;
                  i < patrolPoints.Length;
@@ -651,8 +849,10 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
+
         List<int> directionalPoints =
             new List<int>();
+
 
         if (previousPoint >= 0 &&
             currentPoint >= 0 &&
@@ -664,16 +864,19 @@ public class EnemyAI : MonoBehaviour
                     previousPoint
                 ].position;
 
+
             Vector3 currentPosition =
                 patrolPoints[
                     currentPoint
                 ].position;
+
 
             Vector3 travelDirection =
                 (
                     currentPosition -
                     previousPosition
                 ).normalized;
+
 
             foreach (int index
                      in availablePoints)
@@ -684,24 +887,31 @@ public class EnemyAI : MonoBehaviour
                         currentPosition
                     ).normalized;
 
+
                 float dot =
                     Vector3.Dot(
                         travelDirection,
                         candidateDirection
                     );
 
-                if (dot >= backtrackDotThreshold)
+
+                if (dot >=
+                    backtrackDotThreshold)
                 {
-                    directionalPoints.Add(index);
+                    directionalPoints.Add(
+                        index
+                    );
                 }
             }
         }
+
 
         if (directionalPoints.Count > 0)
         {
             availablePoints =
                 directionalPoints;
         }
+
 
         int selectedPoint =
             availablePoints[
@@ -711,15 +921,19 @@ public class EnemyAI : MonoBehaviour
                 )
             ];
 
+
         previousPoint =
             currentPoint;
+
 
         currentPoint =
             selectedPoint;
 
+
         recentlyVisitedPoints.Add(
             selectedPoint
         );
+
 
         while (
             recentlyVisitedPoints.Count >
@@ -729,6 +943,7 @@ public class EnemyAI : MonoBehaviour
             recentlyVisitedPoints.RemoveAt(0);
         }
 
+
         agent.SetDestination(
             patrolPoints[
                 selectedPoint
@@ -736,20 +951,25 @@ public class EnemyAI : MonoBehaviour
         );
     }
 
+
     private void Patrol()
     {
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         if (lookingAround)
             return;
 
+
         agent.speed =
             patrolSpeed;
+
 
         if (!agent.pathPending &&
             agent.remainingDistance <=
@@ -757,10 +977,12 @@ public class EnemyAI : MonoBehaviour
         {
             patrolPointsVisited++;
 
+
             Debug.Log(
                 "CHAPPIE: Patrol Point visitado: " +
                 patrolPointsVisited
             );
+
 
             if (patrolPointsBeforeLookAround > 0 &&
                 patrolPointsVisited %
@@ -774,12 +996,14 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
+
         if (vision != null &&
             vision.CanSeePlayer())
         {
             EnterChase();
         }
     }
+
 
     // =========================================================
     // OLHAR AO REDOR
@@ -790,15 +1014,19 @@ public class EnemyAI : MonoBehaviour
         if (lookingAround)
             return;
 
+
         if (currentState !=
             EnemyState.Patrol)
             return;
+
 
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         lookingAround = true;
+
 
         if (lookAroundCoroutine != null)
         {
@@ -807,20 +1035,26 @@ public class EnemyAI : MonoBehaviour
             );
         }
 
+
         lookAroundCoroutine =
             StartCoroutine(
                 LookAroundRoutine()
             );
     }
 
+
     private IEnumerator LookAroundRoutine()
     {
         Quaternion centerRotation =
             transform.rotation;
 
-        agent.isStopped = true;
 
-        agent.updateRotation = false;
+        agent.isStopped =
+            true;
+
+        agent.updateRotation =
+            false;
+
 
         Quaternion leftRotation =
             centerRotation *
@@ -830,21 +1064,26 @@ public class EnemyAI : MonoBehaviour
                 0f
             );
 
+
         yield return RotateToLook(
             leftRotation
         );
+
 
         yield return new WaitForSeconds(
             lookAroundSidePause
         );
 
+
         yield return RotateToLook(
             centerRotation
         );
 
+
         yield return new WaitForSeconds(
             lookAroundCenterPause
         );
+
 
         Quaternion rightRotation =
             centerRotation *
@@ -854,30 +1093,44 @@ public class EnemyAI : MonoBehaviour
                 0f
             );
 
+
         yield return RotateToLook(
             rightRotation
         );
+
 
         yield return new WaitForSeconds(
             lookAroundSidePause
         );
 
+
         yield return RotateToLook(
             centerRotation
         );
+
 
         yield return new WaitForSeconds(
             lookAroundCenterPause
         );
 
+
         transform.rotation =
             centerRotation;
 
-        agent.updateRotation = true;
-        agent.isStopped = false;
 
-        lookingAround = false;
-        lookAroundCoroutine = null;
+        agent.updateRotation =
+            true;
+
+        agent.isStopped =
+            false;
+
+
+        lookingAround =
+            false;
+
+        lookAroundCoroutine =
+            null;
+
 
         if (currentState ==
             EnemyState.Patrol)
@@ -885,6 +1138,7 @@ public class EnemyAI : MonoBehaviour
             ChooseNextPatrolPoint();
         }
     }
+
 
     private IEnumerator RotateToLook(
         Quaternion targetRotation
@@ -903,6 +1157,7 @@ public class EnemyAI : MonoBehaviour
                 yield break;
             }
 
+
             transform.rotation =
                 Quaternion.RotateTowards(
                     transform.rotation,
@@ -911,17 +1166,21 @@ public class EnemyAI : MonoBehaviour
                     Time.deltaTime
                 );
 
+
             yield return null;
         }
+
 
         transform.rotation =
             targetRotation;
     }
 
+
     private void StopLookAround()
     {
         if (!lookingAround)
             return;
+
 
         if (lookAroundCoroutine != null)
         {
@@ -929,18 +1188,26 @@ public class EnemyAI : MonoBehaviour
                 lookAroundCoroutine
             );
 
-            lookAroundCoroutine = null;
+            lookAroundCoroutine =
+                null;
         }
 
-        lookingAround = false;
+
+        lookingAround =
+            false;
+
 
         if (agent != null &&
             agent.isOnNavMesh)
         {
-            agent.isStopped = false;
-            agent.updateRotation = true;
+            agent.isStopped =
+                false;
+
+            agent.updateRotation =
+                true;
         }
     }
+
 
     // =========================================================
     // INVESTIGATE
@@ -951,19 +1218,24 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         searchingForPlayer =
             false;
+
 
         agent.speed =
             searchSpeed;
 
+
         agent.SetDestination(
             lastKnownPosition
         );
+
 
         if (!agent.pathPending &&
             agent.remainingDistance <=
@@ -972,12 +1244,14 @@ public class EnemyAI : MonoBehaviour
             StartSearch();
         }
 
+
         if (vision != null &&
             vision.CanSeePlayer())
         {
             EnterChase();
         }
     }
+
 
     // =========================================================
     // LOST SIGHT
@@ -988,21 +1262,26 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         if (player == null)
             return;
 
+
         agent.speed =
             searchSpeed;
+
 
         if (!followingLastKnownPlayer)
         {
             agent.SetDestination(
                 lastKnownPosition
             );
+
 
             if (!agent.pathPending &&
                 agent.remainingDistance <=
@@ -1011,13 +1290,16 @@ public class EnemyAI : MonoBehaviour
                 followingLastKnownPlayer =
                     true;
 
+
                 knowledgeTimer =
                     lastKnownPositionKnowledgeTime;
+
 
                 agent.SetDestination(
                     player.position
                 );
             }
+
 
             if (vision != null &&
                 vision.CanSeePlayer())
@@ -1025,21 +1307,27 @@ public class EnemyAI : MonoBehaviour
                 followingLastKnownPlayer =
                     false;
 
+
                 EnterChase();
             }
+
 
             return;
         }
 
+
         knowledgeTimer -=
             Time.deltaTime;
+
 
         lastKnownPosition =
             player.position;
 
+
         agent.SetDestination(
             player.position
         );
+
 
         if (vision != null &&
             vision.CanSeePlayer())
@@ -1047,25 +1335,32 @@ public class EnemyAI : MonoBehaviour
             followingLastKnownPlayer =
                 false;
 
+
             EnterChase();
+
 
             return;
         }
+
 
         if (knowledgeTimer <= 0f)
         {
             followingLastKnownPlayer =
                 false;
 
+
             lastKnownPosition =
                 player.position;
+
 
             searchingForPlayer =
                 true;
 
+
             StartSearch();
         }
     }
+
 
     // =========================================================
     // SEARCH
@@ -1076,19 +1371,25 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         currentState =
             EnemyState.Search;
+
 
         searchTimer =
             searchTime;
 
+
         searchCenter =
             lastKnownPosition;
 
+
         GenerateSearchPoints();
+
 
         currentSearchIndex =
             0;
+
 
         if (agent != null &&
             agent.isOnNavMesh &&
@@ -1097,12 +1398,14 @@ public class EnemyAI : MonoBehaviour
             agent.speed =
                 searchSpeed;
 
+
             agent.SetDestination(
                 searchPoints[
                     currentSearchIndex
                 ].position
             );
         }
+
 
         if (searchingForPlayer)
         {
@@ -1118,34 +1421,42 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     private void Search()
     {
         if (stealthControlled)
             return;
 
+
         if (agent == null ||
             !agent.isOnNavMesh)
             return;
 
+
         searchTimer -=
             Time.deltaTime;
+
 
         if (searchTimer <= 0f)
         {
             ClearSearchPoints();
+
 
             if (searchingForPlayer)
             {
                 StopEnemyMusic();
             }
 
+
             searchingForPlayer =
                 false;
+
 
             if (runAroundActive)
             {
                 currentState =
                     EnemyState.RunAround;
+
 
                 if (agent != null &&
                     agent.isOnNavMesh)
@@ -1153,41 +1464,62 @@ public class EnemyAI : MonoBehaviour
                     agent.speed =
                         chaseSpeed;
 
-                    agent.isStopped = false;
-                    agent.updateRotation = true;
+
+                    agent.isStopped =
+                        false;
+
+
+                    agent.updateRotation =
+                        true;
+
 
                     ChooseNextPatrolPoint();
                 }
 
+
                 return;
             }
+
 
             currentState =
                 EnemyState.Patrol;
 
+
             agent.speed =
                 patrolSpeed;
 
-            agent.isStopped = false;
-            agent.updateRotation = true;
+
+            agent.isStopped =
+                false;
+
+
+            agent.updateRotation =
+                true;
+
 
             ChooseNextPatrolPoint();
 
+
             return;
         }
+
 
         if (vision != null &&
             vision.CanSeePlayer())
         {
             ClearSearchPoints();
 
+
             EnterChase();
+
 
             return;
         }
 
+
         if (searchPoints.Count == 0)
             return;
+
 
         if (!agent.pathPending &&
             agent.remainingDistance <=
@@ -1195,12 +1527,14 @@ public class EnemyAI : MonoBehaviour
         {
             currentSearchIndex++;
 
+
             if (currentSearchIndex >=
                 searchPoints.Count)
             {
                 currentSearchIndex =
                     0;
             }
+
 
             if (searchPoints[
                 currentSearchIndex
@@ -1215,6 +1549,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+
     // =========================================================
     // SEARCH POINTS
     // =========================================================
@@ -1223,7 +1558,9 @@ public class EnemyAI : MonoBehaviour
     {
         searchPoints.Clear();
 
+
         int amount = 6;
+
 
         for (int i = 0;
              i < amount;
@@ -1233,6 +1570,7 @@ public class EnemyAI : MonoBehaviour
                 Random.insideUnitCircle *
                 searchRadius;
 
+
             Vector3 point =
                 searchCenter +
                 new Vector3(
@@ -1240,6 +1578,7 @@ public class EnemyAI : MonoBehaviour
                     0f,
                     random.y
                 );
+
 
             if (NavMesh.SamplePosition(
                 point,
@@ -1252,8 +1591,10 @@ public class EnemyAI : MonoBehaviour
                         "SearchPoint"
                     );
 
+
                 searchObject.transform.position =
                     hit.position;
+
 
                 searchPoints.Add(
                     searchObject.transform
@@ -1261,8 +1602,10 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
+
         ShuffleSearchPoints();
     }
+
 
     private void ShuffleSearchPoints()
     {
@@ -1276,16 +1619,20 @@ public class EnemyAI : MonoBehaviour
                     searchPoints.Count
                 );
 
+
             Transform temp =
                 searchPoints[i];
 
+
             searchPoints[i] =
                 searchPoints[randomIndex];
+
 
             searchPoints[randomIndex] =
                 temp;
         }
     }
+
 
     private void ClearSearchPoints()
     {
@@ -1300,8 +1647,10 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
+
         searchPoints.Clear();
     }
+
 
     // =========================================================
     // NOISE
@@ -1314,36 +1663,46 @@ public class EnemyAI : MonoBehaviour
         if (stealthControlled)
             return;
 
+
         if (currentState ==
             EnemyState.Chase)
         {
             return;
         }
 
+
         StopLookAround();
+
 
         followingLastKnownPlayer =
             false;
 
+
         knowledgeTimer =
             0f;
 
+
         searchingForPlayer =
             false;
+
 
         if (musicManager != null)
         {
             musicManager.StopEnemyMusic();
         }
 
+
         lastKnownPosition =
             noisePosition;
+
 
         currentState =
             EnemyState.Investigate;
 
+
         memoryTimer =
             memoryTime;
+
 
         if (agent != null &&
             agent.isOnNavMesh)
@@ -1351,14 +1710,21 @@ public class EnemyAI : MonoBehaviour
             agent.speed =
                 searchSpeed;
 
-            agent.isStopped = false;
-            agent.updateRotation = true;
+
+            agent.isStopped =
+                false;
+
+
+            agent.updateRotation =
+                true;
+
 
             agent.SetDestination(
                 noisePosition
             );
         }
     }
+
 
     // =========================================================
     // ANIMATION
@@ -1370,8 +1736,10 @@ public class EnemyAI : MonoBehaviour
             agent == null)
             return;
 
+
         float speed =
             agent.velocity.magnitude;
+
 
         animator.SetFloat(
             "Speed",
@@ -1380,6 +1748,7 @@ public class EnemyAI : MonoBehaviour
             Time.deltaTime
         );
     }
+
 
     // =========================================================
     // FOOTSTEPS
@@ -1391,19 +1760,23 @@ public class EnemyAI : MonoBehaviour
             agent == null)
             return;
 
+
         bool isMoving =
             agent.velocity.magnitude >
             0.1f;
 
+
         bool isChasing =
             currentState ==
             EnemyState.Chase;
+
 
         enemyAudio.UpdateFootsteps(
             isMoving,
             isChasing
         );
     }
+
 
     // =========================================================
     // GIZMOS
@@ -1414,15 +1787,18 @@ public class EnemyAI : MonoBehaviour
         Gizmos.color =
             Color.yellow;
 
+
         Gizmos.DrawWireSphere(
             transform.position,
             proximityDetectionRadius
         );
 
+
         if (player != null)
         {
             Gizmos.color =
                 Color.red;
+
 
             Gizmos.DrawLine(
                 transform.position +

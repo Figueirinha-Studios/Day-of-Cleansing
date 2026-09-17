@@ -22572,18 +22572,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StealthScare
   enemyAI: {fileID: 2106347682}
   enemyVision: {fileID: 2106347683}
+  enemyAudio: {fileID: 2106347689}
   generator: {fileID: 31245301}
   cameraController: {fileID: 1460273161}
   playerCamera: {fileID: 330585545}
   player: {fileID: 1460273160}
   chappie: {fileID: 2106347680}
   agent: {fileID: 2106347685}
-  timeWithoutSeeing: 60
-  stealthChance: 50
+  timeWithoutSeeing: 5
+  stealthChance: 100
   resetTimerAfterAttempt: 1
   stealthCooldown: 60
   minimumGeneratorItemsToDisable: 2
-  stopDistance: 6
+  stopDistance: 7
   stealthSpeed: 6
   cameraLookSpeed: 400
   audioSource: {fileID: 328093194}
@@ -22591,9 +22592,10 @@ MonoBehaviour:
   screamSound: {fileID: 8300000, guid: 9d85144ff42053c4ca37e43bee9014e8, type: 3}
   spottedVolume: 1
   screamVolume: 1
-  spottedPause: 0.5
+  stealthFootstepVolume: 0
+  spottedPause: 1.5
   screamDuration: 1
-  pauseAfterScream: 0.5
+  pauseAfterScream: 1
   encounterBlockDuration: 30
 --- !u!114 &2106347691
 MonoBehaviour:

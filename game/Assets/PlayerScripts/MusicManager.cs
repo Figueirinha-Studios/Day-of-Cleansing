@@ -13,7 +13,8 @@ public class MusicManager : MonoBehaviour
     [Header("Ambient Music")]
     public AudioClip[] ambientTracks;
 
-    private List<AudioClip> remainingTracks = new();
+    private List<AudioClip> remainingTracks =
+        new List<AudioClip>();
 
 
     [Header("Enemy Music")]
@@ -30,9 +31,9 @@ public class MusicManager : MonoBehaviour
     private bool ambientPaused = false;
 
 
-    // ---------------------------------------------------------
-    // Diz se uma música de inimigo deve estar ativa.
-    // ---------------------------------------------------------
+    // =========================================================
+    // CONTROLE DA MÚSICA DO INIMIGO
+    // =========================================================
 
     private bool enemyMusicActive = false;
 
@@ -60,6 +61,7 @@ public class MusicManager : MonoBehaviour
 
         PlayNextAmbient();
 
+
         currentEnemySource =
             enemySourceA;
 
@@ -68,19 +70,22 @@ public class MusicManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // Garante que os dois canais de inimigo começam parados.
+        // Garante que os dois canais começam parados.
         // -----------------------------------------------------
 
         if (enemySourceA != null)
         {
             enemySourceA.Stop();
             enemySourceA.volume = 0f;
+            enemySourceA.clip = null;
         }
+
 
         if (enemySourceB != null)
         {
             enemySourceB.Stop();
             enemySourceB.volume = 0f;
+            enemySourceB.clip = null;
         }
     }
 
@@ -119,6 +124,7 @@ public class MusicManager : MonoBehaviour
     {
         remainingTracks.Clear();
 
+
         foreach (AudioClip clip in ambientTracks)
         {
             if (clip != null)
@@ -126,6 +132,7 @@ public class MusicManager : MonoBehaviour
                 remainingTracks.Add(clip);
             }
         }
+
 
         Shuffle();
     }
@@ -170,11 +177,6 @@ public class MusicManager : MonoBehaviour
             return;
 
 
-        // -----------------------------------------------------
-        // Se acabaram as músicas,
-        // cria a playlist novamente.
-        // -----------------------------------------------------
-
         if (remainingTracks.Count == 0)
         {
             PreparePlaylist();
@@ -184,10 +186,6 @@ public class MusicManager : MonoBehaviour
         if (remainingTracks.Count == 0)
             return;
 
-
-        // -----------------------------------------------------
-        // Pega a primeira música da lista.
-        // -----------------------------------------------------
 
         AudioClip nextTrack =
             remainingTracks[0];
@@ -216,6 +214,7 @@ public class MusicManager : MonoBehaviour
         if (clip == null)
             return;
 
+
         if (currentEnemySource != null &&
             currentEnemySource.clip == clip &&
             currentEnemySource.isPlaying &&
@@ -226,11 +225,15 @@ public class MusicManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // Marca imediatamente como ativo.
+        // ATIVA IMEDIATAMENTE.
         // -----------------------------------------------------
 
         enemyMusicActive = true;
 
+
+        // -----------------------------------------------------
+        // CANCELA QUALQUER FADE ANTERIOR.
+        // -----------------------------------------------------
 
         if (musicCoroutine != null)
         {
@@ -242,9 +245,32 @@ public class MusicManager : MonoBehaviour
         }
 
 
+        // -----------------------------------------------------
+        // GARANTE QUE O AMBIENTE ESTÁ PARADO.
+        // -----------------------------------------------------
+
+        if (ambientSource != null)
+        {
+            ambientSource.volume = 0f;
+
+            if (ambientSource.isPlaying)
+            {
+                ambientSource.Pause();
+            }
+
+            ambientPaused = true;
+        }
+
+
+        // -----------------------------------------------------
+        // INICIA CROSSFADE.
+        // -----------------------------------------------------
+
         musicCoroutine =
             StartCoroutine(
-                CrossFadeEnemy(clip)
+                CrossFadeEnemy(
+                    clip
+                )
             );
     }
 
@@ -255,6 +281,10 @@ public class MusicManager : MonoBehaviour
 
     public void StartChaseMusic()
     {
+        Debug.Log(
+            "MUSIC MANAGER: Iniciando música de CHASE."
+        );
+
         StartEnemyMusic(
             chaseMusic
         );
@@ -281,10 +311,33 @@ public class MusicManager : MonoBehaviour
         AudioClip clip
     )
     {
-        yield return StartCoroutine(
-            FadeOutAmbient()
-        );
+        if (clip == null)
+        {
+            musicCoroutine = null;
+            yield break;
+        }
 
+
+        // -----------------------------------------------------
+        // Garante que o ambiente está parado.
+        // -----------------------------------------------------
+
+        if (ambientSource != null)
+        {
+            ambientSource.volume = 0f;
+
+            if (ambientSource.isPlaying)
+            {
+                ambientSource.Pause();
+            }
+
+            ambientPaused = true;
+        }
+
+
+        // -----------------------------------------------------
+        // VERIFICA CANAL.
+        // -----------------------------------------------------
 
         if (nextEnemySource == null)
         {
@@ -294,7 +347,7 @@ public class MusicManager : MonoBehaviour
 
 
         // -----------------------------------------------------
-        // Configura novo canal
+        // CONFIGURA NOVO CANAL.
         // -----------------------------------------------------
 
         nextEnemySource.Stop();
@@ -309,17 +362,26 @@ public class MusicManager : MonoBehaviour
             0f;
 
 
+        // -----------------------------------------------------
+        // COMEÇA MÚSICA.
+        // -----------------------------------------------------
+
         nextEnemySource.Play();
 
 
         // -----------------------------------------------------
-        // Fade in
+        // FADE IN.
         // -----------------------------------------------------
 
-        while (nextEnemySource.volume < 1f)
+        while (
+            nextEnemySource != null &&
+            nextEnemySource.volume < 1f
+        )
         {
-            // Se a música foi cancelada enquanto fazia fade,
-            // para imediatamente.
+            // -------------------------------------------------
+            // Se foi cancelado.
+            // -------------------------------------------------
+
             if (!enemyMusicActive)
             {
                 nextEnemySource.Stop();
@@ -336,11 +398,22 @@ public class MusicManager : MonoBehaviour
                 fadeSpeed;
 
 
-            if (currentEnemySource != null)
+            // -------------------------------------------------
+            // Diminui canal antigo.
+            // -------------------------------------------------
+
+            if (currentEnemySource != null &&
+                currentEnemySource != nextEnemySource)
             {
                 currentEnemySource.volume -=
                     Time.deltaTime *
                     fadeSpeed;
+
+                if (currentEnemySource.volume < 0f)
+                {
+                    currentEnemySource.volume =
+                        0f;
+                }
             }
 
 
@@ -348,20 +421,34 @@ public class MusicManager : MonoBehaviour
         }
 
 
-        nextEnemySource.volume = 1f;
+        // -----------------------------------------------------
+        // Garante volume inicial.
+        // -----------------------------------------------------
+
+        if (nextEnemySource != null)
+        {
+            nextEnemySource.volume =
+                1f;
+        }
 
 
         // -----------------------------------------------------
-        // Para canal antigo
+        // PARA CANAL ANTIGO.
         // -----------------------------------------------------
 
-        if (currentEnemySource != null)
+        if (currentEnemySource != null &&
+            currentEnemySource != nextEnemySource)
         {
             currentEnemySource.Stop();
 
-            currentEnemySource.volume = 0f;
+            currentEnemySource.volume =
+                0f;
         }
 
+
+        // -----------------------------------------------------
+        // TROCA OS CANAIS.
+        // -----------------------------------------------------
 
         AudioSource temp =
             currentEnemySource;
@@ -378,49 +465,27 @@ public class MusicManager : MonoBehaviour
 
 
     // =========================================================
-    // FADE OUT AMBIENTE
-    // =========================================================
-
-    private IEnumerator FadeOutAmbient()
-    {
-        if (ambientSource == null)
-            yield break;
-
-
-        if (ambientPaused)
-            yield break;
-
-
-        while (ambientSource.volume > 0f)
-        {
-            ambientSource.volume -=
-                Time.deltaTime *
-                fadeSpeed;
-
-            yield return null;
-        }
-
-
-        ambientSource.volume = 0f;
-
-        ambientSource.Pause();
-
-        ambientPaused = true;
-    }
-
-
-    // =========================================================
     // PARAR MÚSICA DO INIMIGO
     // =========================================================
 
     public void StopEnemyMusic()
     {
+        Debug.Log(
+            "MUSIC MANAGER: Parando música do inimigo."
+        );
+
+
         // -----------------------------------------------------
-        // Desliga primeiro o controle de volume por distância.
+        // DESATIVA PRIMEIRO.
         // -----------------------------------------------------
 
-        enemyMusicActive = false;
+        enemyMusicActive =
+            false;
 
+
+        // -----------------------------------------------------
+        // CANCELA QUALQUER CORROTINA ANTERIOR.
+        // -----------------------------------------------------
 
         if (musicCoroutine != null)
         {
@@ -431,6 +496,10 @@ public class MusicManager : MonoBehaviour
             musicCoroutine = null;
         }
 
+
+        // -----------------------------------------------------
+        // INICIA FADE OUT.
+        // -----------------------------------------------------
 
         musicCoroutine =
             StartCoroutine(
@@ -445,30 +514,46 @@ public class MusicManager : MonoBehaviour
 
     private IEnumerator FadeOutEnemy()
     {
+        // -----------------------------------------------------
+        // FADE DO CANAL ATUAL.
+        // -----------------------------------------------------
+
         if (currentEnemySource != null)
         {
-            while (currentEnemySource.volume > 0f)
+            while (
+                currentEnemySource != null &&
+                currentEnemySource.volume > 0f
+            )
             {
                 currentEnemySource.volume -=
                     Time.deltaTime *
                     fadeSpeed;
 
+                if (currentEnemySource.volume < 0f)
+                {
+                    currentEnemySource.volume =
+                        0f;
+                }
+
                 yield return null;
             }
 
 
-            currentEnemySource.volume =
-                0f;
+            if (currentEnemySource != null)
+            {
+                currentEnemySource.volume =
+                    0f;
 
-            currentEnemySource.Stop();
+                currentEnemySource.Stop();
 
-            currentEnemySource.clip =
-                null;
+                currentEnemySource.clip =
+                    null;
+            }
         }
 
 
         // -----------------------------------------------------
-        // Também garante que o outro canal não fique tocando.
+        // GARANTE QUE O OUTRO CANAL TAMBÉM PAROU.
         // -----------------------------------------------------
 
         if (nextEnemySource != null)
@@ -482,6 +567,10 @@ public class MusicManager : MonoBehaviour
                 null;
         }
 
+
+        // -----------------------------------------------------
+        // AMBIENTE.
+        // -----------------------------------------------------
 
         yield return StartCoroutine(
             FadeInAmbient()
@@ -505,11 +594,32 @@ public class MusicManager : MonoBehaviour
         ambientSource.UnPause();
 
 
-        while (ambientSource.volume < 1f)
+        while (
+            ambientSource.volume < 1f
+        )
         {
+            // -------------------------------------------------
+            // Se uma música de inimigo começou,
+            // cancela o fade do ambiente.
+            // -------------------------------------------------
+
+            if (enemyMusicActive)
+            {
+                yield break;
+            }
+
+
             ambientSource.volume +=
                 Time.deltaTime *
                 fadeSpeed;
+
+
+            if (ambientSource.volume > 1f)
+            {
+                ambientSource.volume =
+                    1f;
+            }
+
 
             yield return null;
         }
@@ -518,8 +628,8 @@ public class MusicManager : MonoBehaviour
         ambientSource.volume =
             1f;
 
-
-        ambientPaused = false;
+        ambientPaused =
+            false;
     }
 
 
@@ -529,10 +639,6 @@ public class MusicManager : MonoBehaviour
 
     private void UpdateChaseVolume()
     {
-        // -----------------------------------------------------
-        // NÃO mexe no volume durante FadeOutEnemy().
-        // -----------------------------------------------------
-
         if (!enemyMusicActive)
             return;
 
