@@ -23,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PanicScene.unity
     guid: 9ba0a82b1c0c9c244ba6f3571bee6ca4
+  - enabled: 1
+    path: Assets/Scenes/FinalScene.unity
+    guid: b2e8dc49c8f9ba241a79f3147b639b27
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
