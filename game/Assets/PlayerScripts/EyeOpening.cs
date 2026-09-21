@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EyeOpening : MonoBehaviour
@@ -18,6 +19,9 @@ public class EyeOpening : MonoBehaviour
     [Header("Abertura")]
     public float openSpeed = 1500f;
 
+    [Tooltip("Pequena espera após carregar a cena antes de abrir os olhos.")]
+    public float delayBeforeOpening = 0.1f;
+
 
     // =========================================================
     // POSIÇÕES
@@ -31,7 +35,7 @@ public class EyeOpening : MonoBehaviour
     // ESTADO
     // =========================================================
 
-    private bool opening = true;
+    private bool opening = false;
     private bool opened = false;
 
 
@@ -63,6 +67,45 @@ public class EyeOpening : MonoBehaviour
                 bottomEyelid.anchoredPosition +
                 Vector2.down * 600f;
         }
+
+
+        // =====================================================
+        // ESPERA A CENA CARREGAR
+        // =====================================================
+
+        StartCoroutine(
+            StartOpening()
+        );
+    }
+
+
+    // =========================================================
+    // INICIAR ABERTURA
+    // =========================================================
+
+    private IEnumerator StartOpening()
+    {
+        // Espera a SampleScene terminar
+        // de ser renderizada.
+
+        yield return null;
+
+        yield return new WaitForEndOfFrame();
+
+
+        // Pequena espera adicional.
+
+        if (delayBeforeOpening > 0f)
+        {
+            yield return new WaitForSeconds(
+                delayBeforeOpening
+            );
+        }
+
+
+        // Agora começa a abrir.
+
+        opening = true;
     }
 
 
@@ -133,7 +176,9 @@ public class EyeOpening : MonoBehaviour
             opened = true;
             opening = false;
 
-            Debug.Log("EYES: Olhos abertos!");
+            Debug.Log(
+                "EYES: Olhos abertos!"
+            );
         }
     }
 }
