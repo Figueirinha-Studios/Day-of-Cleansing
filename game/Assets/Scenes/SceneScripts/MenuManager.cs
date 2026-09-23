@@ -8,8 +8,8 @@ public class MenuManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        MQTTManager.Instance.Publish("game/controller", "RELEAoff");
-        MQTTManager.Instance.Publish("game/controller", "RELEBoff");
+        MQTTManager.Instance.Publish("dayofcleansing/controller", "RELEAoff");
+        MQTTManager.Instance.Publish("dayofcleansing/controller", "RELEBoff");
 
         SceneManager.LoadScene("GameIntroScene");
     }

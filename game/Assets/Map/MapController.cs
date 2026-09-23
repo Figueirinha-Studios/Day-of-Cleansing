@@ -175,7 +175,7 @@ public class MapController : MonoBehaviour
 
                 videoPlayer.url =
                     VideoManager.Instance.GetVideoUrl(
-                        "Map.mp4"
+                        "Map.webm"
                     );
 
                 videoPlayer.Play();

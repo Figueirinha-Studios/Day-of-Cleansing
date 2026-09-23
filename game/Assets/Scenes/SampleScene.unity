@@ -567,11 +567,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 458533527d184ea4c95ce0948fd40103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneratorUI
-  gasolineOneVideo: 1-2.mp4
-  gasolineTwoVideo: 2-2.mp4
-  fuseVideo: 1-1.mp4
-  generatorOnVideo: GeneratorON.mp4
-  generatorTutorialVideo: Objective.mp4
+  gasolineOneVideo: 1-2.webm
+  gasolineTwoVideo: 2-2.webm
+  fuseVideo: 1-1.webm
+  generatorOnVideo: GeneratorON.webm
+  generatorTutorialVideo: Objective.webm
   videoPlayer: {fileID: 813134382}
   videoImage: {fileID: 166381593}
   generatorOnVideoPlayer: {fileID: 1495926899}
@@ -4127,7 +4127,7 @@ Transform:
   m_GameObject: {fileID: 261304312}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710665, z: -0, w: 0.707107}
-  m_LocalPosition: {x: 40.7, y: 0.8001, z: 68.67}
+  m_LocalPosition: {x: 46.63, y: 0.8001, z: 68.67}
   m_LocalScale: {x: 2.3677669, y: 2.4990537, z: 6.404551}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14060,7 +14060,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 7.384427, y: 8.684757, z: 1.1328136}
+  m_Size: {x: 6.7, y: 8.684757, z: 1.1328136}
   m_Center: {x: 1.8238596, y: 3.3423789, z: 0.25001574}
 --- !u!1001 &970496019
 PrefabInstance:
@@ -19100,9 +19100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f8b4cd28491ca46a1db343f44fcfd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SerialManager
-  portName: COM6
-  baudRate: 115200
-  reconnectInterval: 2
 --- !u!1001 &1258195521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30609,9 +30606,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335e7db9a4e2b8640a2ba69e5323de00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MQTTManager
-  broker: doc--server.duckdns.org
+  broker: 191.36.8.41
   port: 1883
-  panicTopic: game/panic
+  panicTopic: dayofcleansing/panic
   panicScene: PanicScene
 --- !u!1001 &2097050519
 PrefabInstance:

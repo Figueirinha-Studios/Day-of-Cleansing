@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IntroVideoController
   videoPlayer: {fileID: 1942397101}
   videoImage: {fileID: 0}
-  videoName: Equipe.mp4
+  videoName: Equipe.webm
   menuSceneName: MainMenu
 --- !u!4 &141882256
 Transform:

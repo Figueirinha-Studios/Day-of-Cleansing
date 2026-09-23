@@ -285,9 +285,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f8b4cd28491ca46a1db343f44fcfd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SerialManager
-  portName: COM6
-  baudRate: 115200
-  reconnectInterval: 2
 --- !u!4 &155071315
 Transform:
   m_ObjectHideFlags: 0
@@ -564,7 +561,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ManagedVideo
   videoPlayer: {fileID: 294289602}
   videoImage: {fileID: 0}
-  videoName: MenuBackground.mp4
+  videoName: MenuBackground.webm
   playOnStart: 1
   loop: 1
 --- !u!4 &1095568711
@@ -1022,9 +1019,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335e7db9a4e2b8640a2ba69e5323de00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MQTTManager
-  broker: 192.168.1.69
+  broker: 191.36.8.41
   port: 1883
-  panicTopic: game/panic
+  panicTopic: dayofcleansing/panic
   panicScene: PanicScene
 --- !u!4 &1699378345
 Transform:

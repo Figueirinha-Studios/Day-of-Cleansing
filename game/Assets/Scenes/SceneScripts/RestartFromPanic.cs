@@ -6,6 +6,6 @@ public class RestartFromPanic : MonoBehaviour
     public void RestartFromPanicToMenu()
     {
         SceneManager.LoadScene("MainMenu");
-        MQTTManager.Instance.Publish("game/controller", "PANICoff");
+        MQTTManager.Instance.Publish("dayofcleansing/controller", "PANICoff");
     }
 }

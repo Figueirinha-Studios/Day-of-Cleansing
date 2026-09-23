@@ -683,7 +683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ManagedVideo
   videoPlayer: {fileID: 1421902028}
   videoImage: {fileID: 0}
-  videoName: Panic.mp4
+  videoName: Panic.webm
   playOnStart: 1
   loop: 1
 --- !u!4 &867344722

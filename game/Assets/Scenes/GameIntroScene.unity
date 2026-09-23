@@ -720,7 +720,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameIntroManager
   videoPlayer: {fileID: 1463856715}
   videoImage: {fileID: 254446119}
-  videoName: CutScene.mp4
+  videoName: CutScene.webm
   PlayOrNot: 0
   canSkipVideo: 1
   skipKey: 32
