@@ -11,6 +11,6 @@ public class MenuManager : MonoBehaviour
         MQTTManager.Instance.Publish("dayofcleansing/controller", "RELEAoff");
         MQTTManager.Instance.Publish("dayofcleansing/controller", "RELEBoff");
 
-        SceneManager.LoadScene("GameIntroScene");
+        SceneManager.LoadScene("CutScene");
     }
 }
