@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &273921615
+--- !u!1 &91567301
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,37 +127,38 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 273921617}
-  - component: {fileID: 273921616}
+  - component: {fileID: 91567303}
+  - component: {fileID: 91567302}
   m_Layer: 0
-  m_Name: MenuManager
+  m_Name: SceneChanger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &273921616
+--- !u!114 &91567302
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273921615}
+  m_GameObject: {fileID: 91567301}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 21d9e4ef23e12aa4eb04d6e9d40aa31f, type: 3}
+  m_Script: {fileID: 11500000, guid: ba0a8a194624fb645ba7f1eb271d2b63, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuManager
---- !u!4 &273921617
+  m_EditorClassIdentifier: Assembly-CSharp::GeneralSceneChange
+  SceneName: MainMenu
+--- !u!4 &91567303
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273921615}
+  m_GameObject: {fileID: 91567301}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -728.5832, y: 0, z: -3.69827}
+  m_LocalPosition: {x: -459.99033, y: -0, z: 3884.2163}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -453,7 +454,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 784451933}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 91567302}
+        m_TargetAssemblyTypeName: GeneralSceneChange, Assembly-CSharp
+        m_MethodName: SceneChanger
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &784451933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -715,4 +728,4 @@ SceneRoots:
   - {fileID: 1425654838}
   - {fileID: 949380695}
   - {fileID: 1492004013}
-  - {fileID: 273921617}
+  - {fileID: 91567303}
