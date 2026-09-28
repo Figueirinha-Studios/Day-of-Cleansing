@@ -151,7 +151,7 @@ MonoBehaviour:
   videoPlayer: {fileID: 1942397101}
   videoImage: {fileID: 0}
   videoName: Equipe.webm
-  menuSceneName: MainMenu
+  menuSceneName: Termos
 --- !u!4 &141882256
 Transform:
   m_ObjectHideFlags: 0
