@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba0a8a194624fb645ba7f1eb271d2b63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneralSceneChange
-  SceneName: MainMenu
+  SceneName: CutScene
 --- !u!4 &91567303
 Transform:
   m_ObjectHideFlags: 0

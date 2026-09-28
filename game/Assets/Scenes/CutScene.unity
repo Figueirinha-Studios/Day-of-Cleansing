@@ -721,7 +721,7 @@ MonoBehaviour:
   videoPlayer: {fileID: 1463856715}
   videoImage: {fileID: 254446119}
   videoName: CutScene.webm
-  PlayOrNot: 0
+  PlayOrNot: 1
   canSkipVideo: 1
   skipKey: 32
   fadeImage: {fileID: 242985584}
