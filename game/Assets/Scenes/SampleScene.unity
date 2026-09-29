@@ -268,6 +268,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1434,6 +1438,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -3393,6 +3401,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3531,6 +3543,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -4103,6 +4119,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4210,6 +4230,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: fa8afe82b3793634bb1c776dd1bf1741, type: 3}
       propertyPath: m_Name
       value: SandB10
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: fa8afe82b3793634bb1c776dd1bf1741, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4608,6 +4632,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
       propertyPath: m_Name
       value: TrainBridge
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11121,6 +11149,10 @@ PrefabInstance:
       value: ContainerPanel (12)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -12286,6 +12318,10 @@ PrefabInstance:
       value: ContainerPanel (2)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -13095,6 +13131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (12)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -13316,6 +13356,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
       propertyPath: m_Name
       value: TrainBridge (11)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -13797,6 +13841,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -14897,6 +14945,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (14)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -16816,6 +16868,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
       propertyPath: m_Name
       value: TrainBridge (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -20147,6 +20203,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (11)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -25905,6 +25965,10 @@ PrefabInstance:
       value: ContainerPanel (1)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -29970,6 +30034,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -32136,6 +32204,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -32613,6 +32685,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -40172,7 +40248,7 @@ MonoBehaviour:
   crouchKey: 306
   runKey: 304
   maxStamina: 100
-  staminaDrainRate: 10
+  staminaDrainRate: 7
   staminaRecoveryRate: 10
   acceleration: 15
   deceleration: 20
@@ -45701,6 +45777,10 @@ PrefabInstance:
       value: ContainerPanel (4)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -47097,6 +47177,10 @@ PrefabInstance:
       value: ContainerPanel
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -47615,6 +47699,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
       propertyPath: m_Name
       value: TrainBridge (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -56457,6 +56545,10 @@ PrefabInstance:
       value: ContainerPanel (13)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
@@ -57210,6 +57302,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -57413,6 +57509,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_Name
       value: ContainerPanel (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0d4e68dbd1e75cc4a9715ac5fb996ba3, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -57660,6 +57760,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
       propertyPath: m_Name
       value: TrainBridge (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -60256,6 +60360,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TrainBridge (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0bfadcb51b585b84884396ddbb766807, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -61025,10 +61133,10 @@ MonoBehaviour:
   player: {fileID: 1460273160}
   chappie: {fileID: 2106347680}
   agent: {fileID: 2106347685}
-  timeWithoutSeeing: 60
+  timeWithoutSeeing: 50
   stealthChance: 50
   resetTimerAfterAttempt: 1
-  stealthCooldown: 60
+  stealthCooldown: 30
   minimumGeneratorItemsToDisable: 2
   stopDistance: 7
   stealthSpeed: 6
@@ -61060,7 +61168,7 @@ MonoBehaviour:
   audioSource: {fileID: 1703739037}
   scareSound: {fileID: 8300000, guid: 9a4ba1a1731ca1941b7581236cd7df3c, type: 3}
   volume: 1
-  timeWithoutSeeing: 90
+  timeWithoutSeeing: 50
   maxDistance: 50
   requireLineOfSight: 1
   obstacleMask:
