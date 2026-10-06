@@ -1,352 +1,375 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class SecondEnemyIA : MonoBehaviour
 {
-    [Header("Referências")]
-    public Transform player;
-    public Transform patrolPointsParent;
-
-    private EnemyVision vision;
-    private NavMeshAgent agent;
-    private Animator animator;
-
-    // =========================================================
-    // VELOCIDADE
-    // =========================================================
-
-    [Header("Velocidade")]
-    public float patrolSpeed = 5f;
-    public float chaseSpeed = 8f;
-
-    // =========================================================
-    // CHASE
-    // =========================================================
-
-    [Header("Distância do Jogador")]
-    public float chaseStopDistance = 3f;
-
-    [Header("Memória de Chase")]
-    public float chaseMemoryTime = 3f;
-
-    private float chaseMemoryTimer = 0f;
-
-    // =========================================================
-    // CHAMAR CHAPPIE
-    // =========================================================
-
-    [Header("Chamar Chappie")]
-    public AudioClip callChappieSound;
-
-    [Range(0f, 10f)]
-    public float callChappieVolume = 5f;
-
-    [Tooltip("Quando o Segundo Inimigo estiver nessa distância ou menos do Player, começa a chamar o Chappie.")]
-    public float callChappieDistance = 8f;
-
-    [Tooltip("Raio usado pelo NoiseSystem para o Chappie detectar o chamado.")]
-    public float callNoiseRadius = 200f;
-
-    [Tooltip("Tempo entre cada sinal enviado ao NoiseSystem.")]
-    public float callNoiseInterval = 2f;
-
-    [Tooltip("Se ativado, o som pode ser ouvido pelo mapa inteiro.")]
-    public bool globalCallSound = true;
-
-    private AudioSource callChappieAudioSource;
-
-    private bool callingChappie = false;
-
-    private float callNoiseTimer = 0f;
-
-    // =========================================================
-    // MOVIMENTO
-    // =========================================================
-
-    [Header("Movimento Natural")]
-    public float movementAcceleration = 8f;
-    public float rotationSpeed = 180f;
-    public float stoppingDistance = 0.5f;
-
-    // =========================================================
-    // PATRULHA
-    // =========================================================
-
-    [Header("Patrulha")]
-    [Min(0)]
-    public int rememberedPatrolPoints = 3;
-
-    private Transform[] patrolPoints;
-
-    private List<int> recentlyVisitedPoints =
-        new List<int>();
-
-    private int currentPoint = -1;
-
-    // =========================================================
-    // ESTADOS
-    // =========================================================
-
     public enum EnemyState
     {
         Patrol,
         Chase
     }
 
-    [Header("Estado")]
-    [SerializeField]
+    [Header("Referências")]
+    public Transform player;
+    public Transform patrolPointsParent;
+
+    private NavMeshAgent agent;
+    private EnemyVision enemyVision;
+    private Animator animator;
+
+    [Header("Movimento")]
+    public float patrolSpeed = 5f;
+    public float chaseSpeed = 8f;
+
+    [Tooltip("Distância que o inimigo mantém do Player durante a perseguição.")]
+    public float chaseStopDistance = 3f;
+
+    [Tooltip("Tempo que o inimigo continua perseguindo depois de perder o Player.")]
+    public float chaseMemoryTime = 3f;
+
+    [Header("Chamar Chappie")]
+    public AudioClip callChappieSound;
+    public float callChappieVolume = 5f;
+
+    [Tooltip("O inimigo chama o Chappie quando estiver a esta distância ou menos do Player.")]
+    public float callChappieDistance = 8f;
+
+    [Tooltip("Raio utilizado pelo NoiseSystem para o Chappie detectar o chamado.")]
+    public float callNoiseRadius = 200f;
+
+    [Tooltip("Intervalo entre cada sinal de ruído enviado ao NoiseSystem.")]
+    public float callNoiseInterval = 2f;
+
+    [Tooltip("Se ativado, o som será ouvido pelo mapa inteiro.")]
+    public bool globalCallSound = true;
+
+    [Header("Movimento do NavMesh")]
+    public float movementAcceleration = 8f;
+    public float rotationSpeed = 180f;
+    public float stoppingDistance = 0.5f;
+
+    [Header("Patrulha")]
+    [Tooltip("Quantidade de pontos recentes que não serão escolhidos novamente.")]
+    public int rememberedPatrolPoints = 3;
+
+    [Header("Chute")]
+    public float kickForce = 8f;
+    public float kickUpForce = 3f;
+    public float kickRotationForce = 360f;
+    public float kickAirTime = 1.2f;
+
+    [Header("Fuga após o chute")]
+    public float fleeDistance = 15f;
+    public float fleeSpeed = 9f;
+    public float fleeDuration = 5f;
+
+    [Header("Som durante o voo")]
+    public AudioClip kickFlySound;
+
+    [Range(0f, 10f)]
+    public float kickFlyVolume = 1f;
+
+    private AudioSource callAudioSource;
+    private AudioSource kickFlyAudioSource;
+
+    private List<Transform> patrolPoints =
+        new List<Transform>();
+
+    private List<int> recentlyVisitedPatrolPoints =
+        new List<int>();
+
     private EnemyState currentState =
         EnemyState.Patrol;
 
-    // =========================================================
-    // START
-    // =========================================================
+    private int currentPatrolIndex = -1;
+
+    private float chaseMemoryTimer = 0f;
+    private float callNoiseTimer = 0f;
+
+    private bool isCallingChappie = false;
+
+    private bool isBeingKicked = false;
+    private bool isFleeing = false;
 
     private void Start()
     {
-        agent =
-            GetComponent<NavMeshAgent>();
-
-        vision =
-            GetComponent<EnemyVision>();
-
-        animator =
-            GetComponent<Animator>();
+        agent = GetComponent<NavMeshAgent>();
+        enemyVision = GetComponent<EnemyVision>();
+        animator = GetComponent<Animator>();
 
         SetupCallChappieAudio();
+        SetupKickFlyAudio();
 
-        ConfigureMovement();
+        SetupMovement();
 
         LoadPatrolPoints();
 
-        if (patrolPoints != null &&
-            patrolPoints.Length > 0)
-        {
-            ChooseNextPatrolPoint();
-        }
+        currentState = EnemyState.Patrol;
+
+        ChooseNextPatrolPoint();
     }
 
-    // =========================================================
-    // CONFIGURA ÁUDIO DO CHAMADO
-    // =========================================================
-
-    private void SetupCallChappieAudio()
-    {
-        callChappieAudioSource =
-            GetComponent<AudioSource>();
-
-        if (callChappieAudioSource == null)
-        {
-            callChappieAudioSource =
-                gameObject.AddComponent<AudioSource>();
-        }
-
-        callChappieAudioSource.clip =
-            callChappieSound;
-
-        callChappieAudioSource.volume =
-            callChappieVolume;
-
-        callChappieAudioSource.loop =
-            true;
-
-        callChappieAudioSource.playOnAwake =
-            false;
-
-        // =====================================================
-        // ÁUDIO GLOBAL / 3D
-        // =====================================================
-
-        if (globalCallSound)
-        {
-            // 0 = totalmente 2D.
-            // O jogador consegue ouvir independentemente
-            // da distância do objeto.
-            callChappieAudioSource.spatialBlend =
-                0f;
-        }
-        else
-        {
-            // 1 = totalmente 3D.
-            callChappieAudioSource.spatialBlend =
-                1f;
-
-            callChappieAudioSource.minDistance =
-                5f;
-
-            callChappieAudioSource.maxDistance =
-                200f;
-
-            callChappieAudioSource.rolloffMode =
-                AudioRolloffMode.Linear;
-        }
-
-        callChappieAudioSource.priority =
-            0;
-
-        callChappieAudioSource.Stop();
-    }
-
-    // =========================================================
-    // CONFIGURA MOVIMENTO
-    // =========================================================
-
-    private void ConfigureMovement()
+    private void Update()
     {
         if (agent == null)
             return;
 
-        agent.acceleration =
-            movementAcceleration;
+        if (!agent.isOnNavMesh)
+            return;
 
-        agent.angularSpeed =
-            rotationSpeed;
-
-        agent.stoppingDistance =
-            stoppingDistance;
-
-        agent.autoBraking =
-            false;
-
-        agent.updateRotation =
-            true;
-    }
-
-    // =========================================================
-    // UPDATE
-    // =========================================================
-
-    private void Update()
-    {
-        if (agent == null ||
-            !agent.isOnNavMesh)
+        if (isBeingKicked)
         {
-            StopCallingChappie();
+            UpdateAnimator();
             return;
         }
 
-        UpdateChaseState();
-
-        switch (currentState)
+        if (isFleeing)
         {
-            case EnemyState.Patrol:
-
-                Patrol();
-
-                break;
-
-            case EnemyState.Chase:
-
-                Chase();
-
-                break;
-        }
-
-        UpdateChappieCall();
-
-        UpdateAnimation();
-    }
-
-    // =========================================================
-    // VERIFICA CHASE
-    // =========================================================
-
-    private void UpdateChaseState()
-    {
-        bool canSeePlayer =
-            vision != null &&
-            vision.CanSeePlayer();
-
-        if (canSeePlayer)
-        {
-            currentState =
-                EnemyState.Chase;
-
-            chaseMemoryTimer =
-                chaseMemoryTime;
-
+            UpdateAnimator();
             return;
         }
 
-        if (currentState ==
-            EnemyState.Chase)
-        {
-            chaseMemoryTimer -=
-                Time.deltaTime;
+        UpdateState();
 
-            if (chaseMemoryTimer > 0f)
+        UpdateCallChappie();
+
+        UpdateAnimator();
+    }
+
+    // =========================================================
+    // SETUP
+    // =========================================================
+
+    private void SetupMovement()
+    {
+        if (agent == null)
+            return;
+
+        agent.acceleration = movementAcceleration;
+        agent.angularSpeed = rotationSpeed;
+        agent.stoppingDistance = stoppingDistance;
+        agent.autoBraking = false;
+        agent.updateRotation = true;
+    }
+
+    private void SetupCallChappieAudio()
+    {
+        callAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        callAudioSource.playOnAwake = false;
+        callAudioSource.loop = true;
+
+        if (globalCallSound)
+            callAudioSource.spatialBlend = 0f;
+        else
+            callAudioSource.spatialBlend = 1f;
+
+        callAudioSource.volume = callChappieVolume;
+    }
+
+    private void SetupKickFlyAudio()
+    {
+        kickFlyAudioSource =
+            gameObject.AddComponent<AudioSource>();
+
+        kickFlyAudioSource.playOnAwake = false;
+        kickFlyAudioSource.loop = true;
+
+        // Som 3D, acompanhando a posição do inimigo enquanto ele voa.
+        kickFlyAudioSource.spatialBlend = 1f;
+
+        kickFlyAudioSource.volume = kickFlyVolume;
+    }
+
+    private void LoadPatrolPoints()
+    {
+        patrolPoints.Clear();
+
+        if (patrolPointsParent == null)
+            return;
+
+        foreach (Transform child in patrolPointsParent)
+        {
+            patrolPoints.Add(child);
+        }
+    }
+
+    // =========================================================
+    // ESTADOS
+    // =========================================================
+
+    private void UpdateState()
+    {
+        bool seesPlayer = false;
+
+        if (enemyVision != null)
+            seesPlayer = enemyVision.CanSeePlayer();
+
+        if (currentState == EnemyState.Patrol)
+        {
+            if (seesPlayer)
+            {
+                EnterChase();
                 return;
+            }
 
-            currentState =
-                EnemyState.Patrol;
+            UpdatePatrol();
+        }
+        else if (currentState == EnemyState.Chase)
+        {
+            if (seesPlayer)
+            {
+                chaseMemoryTimer = chaseMemoryTime;
 
-            chaseMemoryTimer =
-                0f;
+                UpdateChase();
+            }
+            else
+            {
+                chaseMemoryTimer -= Time.deltaTime;
 
-            StopCallingChappie();
+                if (chaseMemoryTimer <= 0f)
+                {
+                    EnterPatrol();
+                }
+                else
+                {
+                    UpdateChase();
+                }
+            }
+        }
+    }
 
-            ChooseNextPatrolPoint();
+    private void EnterPatrol()
+    {
+        currentState = EnemyState.Patrol;
 
-            return;
+        StopCallingChappie();
+
+        if (agent != null)
+        {
+            agent.speed = patrolSpeed;
+            agent.stoppingDistance = stoppingDistance;
         }
 
-        currentState =
-            EnemyState.Patrol;
+        ChooseNextPatrolPoint();
+    }
+
+    private void EnterChase()
+    {
+        currentState = EnemyState.Chase;
+
+        chaseMemoryTimer = chaseMemoryTime;
+
+        if (agent != null)
+        {
+            agent.speed = chaseSpeed;
+            agent.stoppingDistance = chaseStopDistance;
+        }
     }
 
     // =========================================================
     // PATRULHA
     // =========================================================
 
-    private void Patrol()
+    private void UpdatePatrol()
     {
-        if (agent == null ||
-            !agent.isOnNavMesh)
+        if (patrolPoints.Count == 0)
             return;
 
-        agent.isStopped =
-            false;
+        if (agent.pathPending)
+            return;
 
-        agent.speed =
-            patrolSpeed;
-
-        agent.stoppingDistance =
-            stoppingDistance;
-
-        if (!agent.pathPending &&
-            agent.remainingDistance <=
-            agent.stoppingDistance)
+        if (agent.remainingDistance <=
+            agent.stoppingDistance + 0.2f)
         {
             ChooseNextPatrolPoint();
         }
+    }
+
+    private void ChooseNextPatrolPoint()
+    {
+        if (agent == null)
+            return;
+
+        if (!agent.isOnNavMesh)
+            return;
+
+        if (patrolPoints.Count == 0)
+            return;
+
+        int selectedIndex = -1;
+
+        List<int> availableIndices =
+            new List<int>();
+
+        for (int i = 0; i < patrolPoints.Count; i++)
+        {
+            if (!recentlyVisitedPatrolPoints.Contains(i))
+                availableIndices.Add(i);
+        }
+
+        if (availableIndices.Count > 0)
+        {
+            selectedIndex =
+                availableIndices[
+                    Random.Range(
+                        0,
+                        availableIndices.Count
+                    )
+                ];
+        }
+        else
+        {
+            selectedIndex =
+                Random.Range(
+                    0,
+                    patrolPoints.Count
+                );
+        }
+
+        currentPatrolIndex = selectedIndex;
+
+        Transform selectedPoint =
+            patrolPoints[selectedIndex];
+
+        if (selectedPoint == null)
+            return;
+
+        if (recentlyVisitedPatrolPoints.Contains(selectedIndex))
+            recentlyVisitedPatrolPoints.Remove(selectedIndex);
+
+        recentlyVisitedPatrolPoints.Add(selectedIndex);
+
+        while (recentlyVisitedPatrolPoints.Count >
+               rememberedPatrolPoints)
+        {
+            recentlyVisitedPatrolPoints.RemoveAt(0);
+        }
+
+        agent.speed = patrolSpeed;
+        agent.stoppingDistance = stoppingDistance;
+        agent.SetDestination(selectedPoint.position);
     }
 
     // =========================================================
     // CHASE
     // =========================================================
 
-    private void Chase()
+    private void UpdateChase()
     {
-        if (agent == null ||
-            !agent.isOnNavMesh)
-            return;
-
         if (player == null)
             return;
 
-        agent.isStopped =
-            false;
+        if (agent == null)
+            return;
 
-        agent.speed =
-            chaseSpeed;
+        agent.speed = chaseSpeed;
+        agent.stoppingDistance = chaseStopDistance;
 
-        agent.stoppingDistance =
-            chaseStopDistance;
-
-        agent.SetDestination(
-            player.position
-        );
+        agent.SetDestination(player.position);
 
         float distance =
             Vector3.Distance(
@@ -354,10 +377,27 @@ public class SecondEnemyIA : MonoBehaviour
                 player.position
             );
 
-        if (distance <=
-            chaseStopDistance + 0.5f)
+        if (distance <= chaseStopDistance)
         {
-            LookAtPlayer();
+            Vector3 direction =
+                player.position -
+                transform.position;
+
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation =
+                    Quaternion.LookRotation(direction);
+
+                transform.rotation =
+                    Quaternion.RotateTowards(
+                        transform.rotation,
+                        targetRotation,
+                        rotationSpeed *
+                        Time.deltaTime
+                    );
+            }
         }
     }
 
@@ -365,23 +405,15 @@ public class SecondEnemyIA : MonoBehaviour
     // CHAMAR CHAPPIE
     // =========================================================
 
-    private void UpdateChappieCall()
+    private void UpdateCallChappie()
     {
-        // Só chama durante o Chase.
-        if (currentState !=
-            EnemyState.Chase)
+        if (currentState != EnemyState.Chase)
         {
             StopCallingChappie();
             return;
         }
 
         if (player == null)
-        {
-            StopCallingChappie();
-            return;
-        }
-
-        if (callChappieSound == null)
         {
             StopCallingChappie();
             return;
@@ -393,372 +425,388 @@ public class SecondEnemyIA : MonoBehaviour
                 player.position
             );
 
-        // =====================================================
-        // DENTRO DA DISTÂNCIA
-        // =====================================================
-
-        if (distance <=
-            callChappieDistance)
+        if (distance <= callChappieDistance)
         {
-            StartCallingChappie();
+            if (!isCallingChappie)
+            {
+                StartCallingChappie();
+            }
+
+            callNoiseTimer -= Time.deltaTime;
+
+            if (callNoiseTimer <= 0f)
+            {
+                EmitChappieCallNoise();
+
+                callNoiseTimer =
+                    callNoiseInterval;
+            }
         }
-
-        // =====================================================
-        // FORA DA DISTÂNCIA
-        // =====================================================
-
         else
         {
             StopCallingChappie();
         }
     }
 
-    // =========================================================
-    // COMEÇA A CHAMAR
-    // =========================================================
-
     private void StartCallingChappie()
     {
-        // =====================================================
-        // ÁUDIO
-        // =====================================================
+        isCallingChappie = true;
 
-        if (callChappieAudioSource != null &&
+        callNoiseTimer = 0f;
+
+        if (callAudioSource != null &&
             callChappieSound != null)
         {
-            if (callChappieAudioSource.clip !=
-                callChappieSound)
-            {
-                callChappieAudioSource.clip =
-                    callChappieSound;
-            }
+            callAudioSource.clip =
+                callChappieSound;
 
-            callChappieAudioSource.volume =
+            callAudioSource.volume =
                 callChappieVolume;
 
-            callChappieAudioSource.loop =
-                true;
+            callAudioSource.loop = true;
 
-            if (!callChappieAudioSource.isPlaying)
-            {
-                callChappieAudioSource.Play();
-
-                Debug.Log(
-                    "SECOND ENEMY: Chamando Chappie!"
-                );
-            }
+            if (!callAudioSource.isPlaying)
+                callAudioSource.Play();
         }
 
-        // =====================================================
-        // PRIMEIRO CHAMADO
-        // =====================================================
+        EmitChappieCallNoise();
+    }
 
-        if (!callingChappie)
+    private void StopCallingChappie()
+    {
+        if (!isCallingChappie)
+            return;
+
+        isCallingChappie = false;
+
+        callNoiseTimer = 0f;
+
+        if (callAudioSource != null &&
+            callAudioSource.isPlaying)
         {
-            callingChappie =
-                true;
-
-            // Faz o primeiro ruído imediatamente.
-            EmitChappieNoise();
-
-            callNoiseTimer =
-                callNoiseInterval;
-        }
-
-        // =====================================================
-        // CHAMADOS SEGUINTES
-        // =====================================================
-
-        else
-        {
-            callNoiseTimer -=
-                Time.deltaTime;
-
-            if (callNoiseTimer <= 0f)
-            {
-                EmitChappieNoise();
-
-                callNoiseTimer =
-                    callNoiseInterval;
-            }
+            callAudioSource.Stop();
         }
     }
 
-    // =========================================================
-    // ENVIA RUÍDO PARA O NOISE SYSTEM
-    // =========================================================
-
-    private void EmitChappieNoise()
+    private void EmitChappieCallNoise()
     {
         NoiseSystem.EmitNoise(
             transform.position,
             callNoiseRadius
         );
-
-        Debug.Log(
-            "SECOND ENEMY: Chamado enviado ao NoiseSystem. " +
-            "Raio: " +
-            callNoiseRadius
-        );
     }
 
     // =========================================================
-    // PARA DE CHAMAR
+    // CHUTE
     // =========================================================
 
-    private void StopCallingChappie()
+    public void ReceiveKick(
+        Vector3 playerPosition,
+        float force,
+        float upForce,
+        float rotationForce,
+        float airTime)
     {
-        callingChappie =
-            false;
-
-        callNoiseTimer =
-            0f;
-
-        if (callChappieAudioSource != null)
-        {
-            if (callChappieAudioSource.isPlaying)
-            {
-                callChappieAudioSource.Stop();
-
-                Debug.Log(
-                    "SECOND ENEMY: Parou de chamar Chappie."
-                );
-            }
-        }
-    }
-
-    // =========================================================
-    // OLHAR PARA O PLAYER
-    // =========================================================
-
-    private void LookAtPlayer()
-    {
-        if (player == null)
+        if (isBeingKicked)
             return;
 
+        if (isFleeing)
+            return;
+
+        if (agent == null)
+            return;
+
+        if (!agent.isOnNavMesh)
+            return;
+
+        isBeingKicked = true;
+
+        StopCallingChappie();
+
+        chaseMemoryTimer = 0f;
+
+        agent.isStopped = true;
+
         Vector3 direction =
-            player.position -
-            transform.position;
+            transform.position -
+            playerPosition;
 
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <
-            0.001f)
-            return;
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            direction = -transform.forward;
+            direction.y = 0f;
+        }
 
-        Quaternion targetRotation =
-            Quaternion.LookRotation(
-                direction
+        direction.Normalize();
+
+        StartKickFlySound();
+
+        StartCoroutine(
+            KickMovement(
+                direction,
+                force,
+                upForce,
+                rotationForce,
+                airTime
+            )
+        );
+    }
+
+    private IEnumerator KickMovement(
+        Vector3 direction,
+        float force,
+        float upForce,
+        float rotationForce,
+        float airTime)
+    {
+        Vector3 startPosition =
+            transform.position;
+
+        Vector3 horizontalMovement =
+            direction * force;
+
+        Quaternion startRotation =
+            transform.rotation;
+
+        float timer = 0f;
+
+        while (timer < airTime)
+        {
+            timer += Time.deltaTime;
+
+            float normalizedTime =
+                Mathf.Clamp01(
+                    timer / airTime
+                );
+
+            float verticalOffset =
+                Mathf.Sin(
+                    normalizedTime *
+                    Mathf.PI
+                ) * upForce;
+
+            Vector3 nextPosition =
+                startPosition +
+                horizontalMovement *
+                normalizedTime;
+
+            nextPosition.y =
+                startPosition.y +
+                verticalOffset;
+
+            transform.position =
+                nextPosition;
+
+            float rotationAmount =
+                rotationForce *
+                Time.deltaTime;
+
+            transform.Rotate(
+                rotationAmount,
+                rotationAmount,
+                rotationAmount,
+                Space.Self
             );
+
+            yield return null;
+        }
+
+        StopKickFlySound();
+
+        Vector3 finalPosition =
+            transform.position;
+
+        NavMeshHit navHit;
+
+        if (NavMesh.SamplePosition(
+            finalPosition,
+            out navHit,
+            3f,
+            NavMesh.AllAreas))
+        {
+            transform.position =
+                navHit.position;
+        }
+
+        Vector3 currentEuler =
+            transform.eulerAngles;
 
         transform.rotation =
-            Quaternion.RotateTowards(
-                transform.rotation,
-                targetRotation,
-                rotationSpeed *
-                Time.deltaTime
-            );
-    }
-
-    // =========================================================
-    // CARREGA PATROL POINTS
-    // =========================================================
-
-    private void LoadPatrolPoints()
-    {
-        if (patrolPointsParent == null)
-        {
-            Debug.LogWarning(
-                "SecondEnemyIA: Patrol Points Parent não foi definido."
+            Quaternion.Euler(
+                0f,
+                currentEuler.y,
+                0f
             );
 
-            patrolPoints =
-                new Transform[0];
+        isBeingKicked = false;
 
-            return;
-        }
+        agent.isStopped = false;
 
-        List<Transform> points =
-            new List<Transform>();
-
-        foreach (Transform child
-                 in patrolPointsParent)
-        {
-            points.Add(child);
-        }
-
-        patrolPoints =
-            points.ToArray();
-
-        Debug.Log(
-            "SecondEnemyIA: " +
-            patrolPoints.Length +
-            " Patrol Points encontrados."
+        StartCoroutine(
+            FleeFromPlayer(
+                direction
+            )
         );
     }
 
     // =========================================================
-    // ESCOLHE PRÓXIMO PONTO
+    // SOM DO VOO
     // =========================================================
 
-    private void ChooseNextPatrolPoint()
+    private void StartKickFlySound()
     {
-        if (patrolPoints == null ||
-            patrolPoints.Length == 0)
+        if (kickFlyAudioSource == null)
             return;
 
-        if (agent == null ||
-            !agent.isOnNavMesh)
+        if (kickFlySound == null)
             return;
 
-        List<int> availablePoints =
-            new List<int>();
+        kickFlyAudioSource.clip =
+            kickFlySound;
 
-        for (int i = 0;
-             i < patrolPoints.Length;
-             i++)
+        kickFlyAudioSource.volume =
+            kickFlyVolume;
+
+        kickFlyAudioSource.loop = true;
+
+        if (!kickFlyAudioSource.isPlaying)
+            kickFlyAudioSource.Play();
+    }
+
+    private void StopKickFlySound()
+    {
+        if (kickFlyAudioSource != null &&
+            kickFlyAudioSource.isPlaying)
         {
-            if (i == currentPoint)
-                continue;
+            kickFlyAudioSource.Stop();
+        }
+    }
 
-            if (recentlyVisitedPoints.Contains(i))
-                continue;
+    // =========================================================
+    // FUGA
+    // =========================================================
 
-            availablePoints.Add(i);
+    private IEnumerator FleeFromPlayer(
+        Vector3 direction)
+    {
+        if (agent == null)
+            yield break;
+
+        if (!agent.isOnNavMesh)
+            yield break;
+
+        isFleeing = true;
+
+        StopCallingChappie();
+
+        agent.isStopped = false;
+        agent.speed = fleeSpeed;
+        agent.stoppingDistance = 0f;
+
+        Vector3 fleeTarget =
+            transform.position +
+            direction.normalized *
+            fleeDistance;
+
+        NavMeshHit hit;
+
+        if (NavMesh.SamplePosition(
+            fleeTarget,
+            out hit,
+            fleeDistance,
+            NavMesh.AllAreas))
+        {
+            fleeTarget = hit.position;
         }
 
-        // =====================================================
-        // SE NÃO HOUVER PONTOS DISPONÍVEIS
-        // =====================================================
+        agent.SetDestination(fleeTarget);
 
-        if (availablePoints.Count == 0)
+        float timer = 0f;
+
+        while (timer < fleeDuration)
         {
-            recentlyVisitedPoints.Clear();
+            if (agent == null)
+                break;
 
-            for (int i = 0;
-                 i < patrolPoints.Length;
-                 i++)
+            if (!agent.isOnNavMesh)
+                break;
+
+            timer += Time.deltaTime;
+
+            if (agent.remainingDistance <=
+                1f)
             {
-                if (i != currentPoint)
-                {
-                    availablePoints.Add(i);
-                }
+                break;
             }
+
+            yield return null;
         }
 
-        if (availablePoints.Count == 0)
-            return;
+        isFleeing = false;
 
-        // =====================================================
-        // ESCOLHE ALEATORIAMENTE
-        // =====================================================
-
-        int selectedPoint =
-            availablePoints[
-                Random.Range(
-                    0,
-                    availablePoints.Count
-                )
-            ];
-
-        currentPoint =
-            selectedPoint;
-
-        recentlyVisitedPoints.Add(
-            selectedPoint
-        );
-
-        while (
-            recentlyVisitedPoints.Count >
-            rememberedPatrolPoints
-        )
+        if (agent != null &&
+            agent.isOnNavMesh)
         {
-            recentlyVisitedPoints.RemoveAt(0);
+            agent.isStopped = false;
+            agent.speed = patrolSpeed;
+            agent.stoppingDistance =
+                stoppingDistance;
         }
 
-        // =====================================================
-        // MOVE
-        // =====================================================
+        currentState =
+            EnemyState.Patrol;
 
-        agent.isStopped =
-            false;
-
-        agent.speed =
-            patrolSpeed;
-
-        agent.stoppingDistance =
-            stoppingDistance;
-
-        agent.SetDestination(
-            patrolPoints[
-                selectedPoint
-            ].position
-        );
+        ChooseNextPatrolPoint();
     }
 
     // =========================================================
     // ANIMAÇÃO
     // =========================================================
 
-    private void UpdateAnimation()
+    private void UpdateAnimator()
     {
-        if (animator == null ||
-            agent == null)
+        if (animator == null)
             return;
 
-        float speed =
-            agent.velocity.magnitude;
+        if (agent == null)
+            return;
 
         animator.SetFloat(
             "Speed",
-            speed,
-            0.1f,
-            Time.deltaTime
+            agent.velocity.magnitude
         );
+    }
+
+    // =========================================================
+    // ACESSO PARA O SECOND ENEMY KICK
+    // =========================================================
+
+    public bool IsBeingKicked()
+    {
+        return isBeingKicked;
+    }
+
+    public bool IsFleeing()
+    {
+        return isFleeing;
     }
 
     // =========================================================
     // GIZMOS
     // =========================================================
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
-        // =====================================================
-        // LINHA ATÉ O PLAYER
-        // =====================================================
-
-        if (player != null)
-        {
-            Gizmos.color =
-                Color.red;
-
-            Gizmos.DrawLine(
-                transform.position +
-                Vector3.up * 0.5f,
-
-                player.position +
-                Vector3.up * 0.5f
-            );
-        }
-
-        // =====================================================
-        // DISTÂNCIA PARA COMEÇAR O CHAMADO
-        // =====================================================
-
-        Gizmos.color =
-            Color.yellow;
+        Gizmos.color = Color.red;
 
         Gizmos.DrawWireSphere(
             transform.position,
             callChappieDistance
         );
 
-        // =====================================================
-        // RAIO DO NOISE SYSTEM
-        // =====================================================
-
-        Gizmos.color =
-            Color.cyan;
+        Gizmos.color = Color.magenta;
 
         Gizmos.DrawWireSphere(
             transform.position,
