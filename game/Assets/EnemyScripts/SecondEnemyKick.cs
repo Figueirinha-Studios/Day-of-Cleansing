@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,7 +39,6 @@ public class SecondEnemyKick : MonoBehaviour
     public SecondEnemyIA secondEnemyIA;
 
     private AudioSource kickAudioSource;
-
     private bool isBeingKicked = false;
 
     private void Start()
@@ -47,34 +47,22 @@ public class SecondEnemyKick : MonoBehaviour
             secondEnemyIA = GetComponent<SecondEnemyIA>();
 
         SetupKickAudio();
-
         HideKickImage();
     }
 
     private void SetupKickAudio()
     {
-        kickAudioSource =
-            gameObject.AddComponent<AudioSource>();
+        kickAudioSource = gameObject.AddComponent<AudioSource>();
 
         kickAudioSource.playOnAwake = false;
         kickAudioSource.loop = false;
-
-        // O som vem do Player.
         kickAudioSource.spatialBlend = 0f;
-
-        kickAudioSource.volume =
-            kickSoundVolume;
+        kickAudioSource.volume = kickSoundVolume;
     }
 
     private void Update()
     {
-        if (player == null)
-        {
-            HideKickImage();
-            return;
-        }
-
-        if (playerCamera == null)
+        if (player == null || playerCamera == null)
         {
             HideKickImage();
             return;
@@ -86,13 +74,45 @@ public class SecondEnemyKick : MonoBehaviour
             return;
         }
 
+        // Este script não processa a tecla E.
+        // O PlayerPickup controla o chute e a prioridade dos HUDs.
         UpdateKickDetection();
+    }
 
-        if (CanKick() &&
-            Input.GetKeyDown(KeyCode.E))
+    public static bool TryKickForPlayer(
+        Camera camera,
+        Transform playerTransform,
+        bool executeKick = true)
+    {
+        if (camera == null || playerTransform == null)
+            return false;
+
+        SecondEnemyKick[] enemies =
+            FindObjectsByType<SecondEnemyKick>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (SecondEnemyKick enemy in enemies)
         {
-            KickEnemy();
+            if (enemy == null || !enemy.isActiveAndEnabled)
+                continue;
+
+            if (enemy.player != playerTransform)
+                continue;
+
+            if (enemy.playerCamera != camera)
+                continue;
+
+            if (!enemy.CanKick())
+                continue;
+
+            if (executeKick)
+                enemy.KickEnemy();
+
+            return true;
         }
+
+        return false;
     }
 
     private void UpdateKickDetection()
@@ -100,16 +120,18 @@ public class SecondEnemyKick : MonoBehaviour
         bool canKick = CanKick();
 
         if (kickImage != null)
-        {
-            kickImage.gameObject.SetActive(
-                canKick
-            );
-        }
+            kickImage.gameObject.SetActive(canKick);
     }
 
     private bool CanKick()
     {
+        if (player == null || playerCamera == null)
+            return false;
+
         if (secondEnemyIA == null)
+            return false;
+
+        if (isBeingKicked)
             return false;
 
         if (secondEnemyIA.IsBeingKicked())
@@ -118,11 +140,10 @@ public class SecondEnemyKick : MonoBehaviour
         if (secondEnemyIA.IsFleeing())
             return false;
 
-        float distance =
-            Vector3.Distance(
-                player.position,
-                transform.position
-            );
+        float distance = Vector3.Distance(
+            player.position,
+            transform.position
+        );
 
         if (distance > kickDistance)
             return false;
@@ -132,71 +153,61 @@ public class SecondEnemyKick : MonoBehaviour
             playerCamera.transform.forward
         );
 
-        RaycastHit[] hits =
-            Physics.SphereCastAll(
-                ray,
-                kickAimRadius,
-                kickDistance,
-                Physics.DefaultRaycastLayers,
-                QueryTriggerInteraction.Ignore
-            );
+        RaycastHit[] hits = Physics.SphereCastAll(
+            ray,
+            kickAimRadius,
+            kickDistance,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore
+        );
 
-        float closestDistance =
-            Mathf.Infinity;
-
-        bool foundEnemy = false;
+        float closestDistance = Mathf.Infinity;
+        RaycastHit closestHit = new RaycastHit();
+        bool foundHit = false;
 
         foreach (RaycastHit hit in hits)
         {
-            SecondEnemyIA enemy =
-                hit.collider
-                    .GetComponentInParent<SecondEnemyIA>();
-
-            if (enemy == null)
+            if (hit.collider == null)
                 continue;
 
-            if (enemy != secondEnemyIA)
+            // Ignora os colliders pertencentes ao jogador.
+            if (hit.collider.transform.IsChildOf(player))
                 continue;
 
             if (hit.distance < closestDistance)
             {
-                closestDistance =
-                    hit.distance;
-
-                foundEnemy = true;
+                closestDistance = hit.distance;
+                closestHit = hit;
+                foundHit = true;
             }
         }
 
-        return foundEnemy;
+        if (!foundHit)
+            return false;
+
+        SecondEnemyIA hitEnemy =
+            closestHit.collider.GetComponentInParent<SecondEnemyIA>();
+
+        return hitEnemy == secondEnemyIA;
     }
 
     private void KickEnemy()
     {
-        if (isBeingKicked)
-            return;
-
-        if (secondEnemyIA == null)
-            return;
-
-        if (!CanKick())
-            return;
-
-        isBeingKicked = true;
-
-        HideKickImage();
-
-        // SOM DO CHUTE
-        PlayKickSound();
-
-        // Movimento da cabeça
-        if (playerHead != null)
+        if (isBeingKicked ||
+            secondEnemyIA == null ||
+            !CanKick())
         {
-            StartCoroutine(
-                HeadKickMotion()
-            );
+            return;
         }
 
-        // Manda o inimigo voar
+        isBeingKicked = true;
+        HideKickImage();
+
+        PlayKickSound();
+
+        if (playerHead != null)
+            StartCoroutine(HeadKickMotion());
+
         secondEnemyIA.ReceiveKick(
             player.position,
             kickForce,
@@ -205,33 +216,21 @@ public class SecondEnemyKick : MonoBehaviour
             kickAirTime
         );
 
-        StartCoroutine(
-            ResetKickInput()
-        );
+        StartCoroutine(ResetKickInput());
     }
 
     private void PlayKickSound()
     {
-        if (kickAudioSource == null)
+        if (kickAudioSource == null || kickSound == null)
             return;
 
-        if (kickSound == null)
-            return;
-
-        kickAudioSource.volume =
-            kickSoundVolume;
-
-        kickAudioSource.PlayOneShot(
-            kickSound
-        );
+        kickAudioSource.volume = kickSoundVolume;
+        kickAudioSource.PlayOneShot(kickSound);
     }
 
     private IEnumerator ResetKickInput()
     {
-        yield return new WaitForSeconds(
-            0.15f
-        );
-
+        yield return new WaitForSeconds(0.15f);
         isBeingKicked = false;
     }
 
@@ -245,26 +244,19 @@ public class SecondEnemyKick : MonoBehaviour
 
         Quaternion kickRotation =
             originalRotation *
-            Quaternion.Euler(
-                -headKickAngle,
-                0f,
-                0f
-            );
+            Quaternion.Euler(-headKickAngle, 0f, 0f);
 
         float timer = 0f;
 
         while (timer < 1f)
         {
-            timer +=
-                Time.deltaTime *
-                headKickSpeed;
+            timer += Time.deltaTime * headKickSpeed;
 
-            playerHead.localRotation =
-                Quaternion.Slerp(
-                    originalRotation,
-                    kickRotation,
-                    timer
-                );
+            playerHead.localRotation = Quaternion.Slerp(
+                originalRotation,
+                kickRotation,
+                timer
+            );
 
             yield return null;
         }
@@ -273,38 +265,29 @@ public class SecondEnemyKick : MonoBehaviour
 
         while (timer < 1f)
         {
-            timer +=
-                Time.deltaTime *
-                headKickSpeed;
+            timer += Time.deltaTime * headKickSpeed;
 
-            playerHead.localRotation =
-                Quaternion.Slerp(
-                    kickRotation,
-                    originalRotation,
-                    timer
-                );
+            playerHead.localRotation = Quaternion.Slerp(
+                kickRotation,
+                originalRotation,
+                timer
+            );
 
             yield return null;
         }
 
-        playerHead.localRotation =
-            originalRotation;
+        playerHead.localRotation = originalRotation;
     }
 
     private void HideKickImage()
     {
         if (kickImage != null)
-        {
-            kickImage.gameObject.SetActive(
-                false
-            );
-        }
+            kickImage.gameObject.SetActive(false);
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-
         Gizmos.DrawWireSphere(
             transform.position,
             kickDistance
