@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -72,6 +73,28 @@ public class PlayerPickup : MonoBehaviour
     {
         if (!IsFirstPerson())
         {
+            HidePickupPrompt();
+            return;
+        }
+
+        // =====================================================
+        // PRIORIDADE DO CHUTE
+        // =====================================================
+
+        bool canKick =
+            SecondEnemyKick.TryKickForPlayer(
+                playerCamera,
+                transform,
+                false
+            );
+
+        if (Input.GetKeyDown(KeyCode.E) && canKick)
+        {
+            SecondEnemyKick.TryKickForPlayer(
+                playerCamera,
+                transform
+            );
+
             HidePickupPrompt();
             return;
         }
@@ -228,6 +251,19 @@ public class PlayerPickup : MonoBehaviour
 
         if (closestPickup != null)
         {
+            // Se o chute estiver disponível,
+            // esconde o HUD do item.
+
+            if (SecondEnemyKick.TryKickForPlayer(
+                playerCamera,
+                transform,
+                false))
+            {
+                HidePickupPrompt();
+                return;
+            }
+
+
             ShowPickupPrompt();
 
 
@@ -484,6 +520,19 @@ public class PlayerPickup : MonoBehaviour
 
 
         if (!currentObject.IsGeneratorItem())
+        {
+            HidePickupPrompt();
+            return;
+        }
+
+
+        // Se o chute estiver disponível,
+        // não mostra o HUD do gerador por cima dele.
+
+        if (SecondEnemyKick.TryKickForPlayer(
+            playerCamera,
+            transform,
+            false))
         {
             HidePickupPrompt();
             return;
