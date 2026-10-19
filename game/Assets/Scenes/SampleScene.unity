@@ -89867,6 +89867,7 @@ GameObject:
   - component: {fileID: 1693245539}
   - component: {fileID: 1693245541}
   - component: {fileID: 1693245540}
+  - component: {fileID: 1693245542}
   m_Layer: 0
   m_Name: ElevatorCode
   m_TagString: Untagged
@@ -89993,7 +89994,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1693245538}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43542441a7002034ea8876b70ff39cda, type: 3}
   m_Name: 
@@ -90012,6 +90013,20 @@ MonoBehaviour:
   - {fileID: 8300000, guid: bec9c6fc0418ceb41b557fecdff28bbf, type: 3}
   - {fileID: 8300000, guid: 73e07080d3ac70041a954e65f9a11c86, type: 3}
   codigo: 
+--- !u!114 &1693245542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1693245538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a791757a44399b5419b91d27c93d9ee2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistoryElevator
+  audioSource: {fileID: 1693245540}
+  intro: {fileID: 8300000, guid: 93471a98b9cb0e14fbcf4757502c08a4, type: 3}
 --- !u!1 &1693579085
 GameObject:
   m_ObjectHideFlags: 0
