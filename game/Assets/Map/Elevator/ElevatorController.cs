@@ -47,6 +47,8 @@ public class ElevatorController : MonoBehaviour
     private IEnumerator MoveElevator()
     {
 
+        yield return new WaitForSeconds(15f);
+
         float totalDistance = Vector3.Distance(startPosition, targetPosition);
 
         float accelerationDistance = (maxSpeed * accelerationTime) / 2f;
