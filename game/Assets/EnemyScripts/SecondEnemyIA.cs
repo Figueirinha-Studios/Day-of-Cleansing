@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -53,6 +54,19 @@ public class SecondEnemyIA : MonoBehaviour
     [Header("Patrulha")]
     [Tooltip("Quantidade de pontos recentes que não serão escolhidos novamente.")]
     public int rememberedPatrolPoints = 3;
+
+    [Header("Olhar ao redor")]
+    [Tooltip("Quantidade de pontos de patrulha concluídos antes de olhar ao redor.")]
+    public int patrolPointsBeforeLookAround = 3;
+
+    [Tooltip("Velocidade da rotação de 360 graus, em graus por segundo.")]
+    public float lookAroundRotationSpeed = 120f;
+
+    private int patrolPointsVisited = 0;
+    private bool isLookingAround = false;
+    private Coroutine lookAroundCoroutine;
+
+    private bool previousUpdateRotation = true;
 
     [Header("Chute")]
     public float kickForce = 8f;
@@ -244,6 +258,8 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void EnterPatrol()
     {
+        CancelLookAround();
+
         currentState = EnemyState.Patrol;
 
         StopCallingChappie();
@@ -259,6 +275,9 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void EnterChase()
     {
+        // Interromper a observação se enxergar o jogador.
+        CancelLookAround();
+
         currentState = EnemyState.Chase;
 
         chaseMemoryTimer = chaseMemoryTime;
@@ -276,6 +295,9 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void UpdatePatrol()
     {
+        if (isLookingAround)
+            return;
+
         if (patrolPoints.Count == 0)
             return;
 
@@ -285,6 +307,20 @@ public class SecondEnemyIA : MonoBehaviour
         if (agent.remainingDistance <=
             agent.stoppingDistance + 0.2f)
         {
+            // Um ponto foi concluído.
+            patrolPointsVisited++;
+
+            int pointsRequired =
+                Mathf.Max(1, patrolPointsBeforeLookAround);
+
+            if (patrolPointsVisited >= pointsRequired)
+            {
+                patrolPointsVisited = 0;
+
+                StartLookAround();
+                return;
+            }
+
             ChooseNextPatrolPoint();
         }
     }
@@ -351,7 +387,113 @@ public class SecondEnemyIA : MonoBehaviour
 
         agent.speed = patrolSpeed;
         agent.stoppingDistance = stoppingDistance;
+        agent.isStopped = false;
         agent.SetDestination(selectedPoint.position);
+    }
+
+    // =========================================================
+    // OLHAR AO REDOR
+    // =========================================================
+
+    private void StartLookAround()
+    {
+        if (isLookingAround)
+            return;
+
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
+        isLookingAround = true;
+
+        // Guardar a configuração original da rotação automática.
+        previousUpdateRotation = agent.updateRotation;
+
+        // Parar o movimento e permitir rotação manual.
+        agent.isStopped = true;
+        agent.updateRotation = false;
+
+        // Interromper o movimento restante.
+        agent.ResetPath();
+
+        lookAroundCoroutine =
+            StartCoroutine(LookAround360());
+    }
+
+    private IEnumerator LookAround360()
+    {
+        Quaternion startingRotation = transform.rotation;
+
+        float rotationAmount = 0f;
+
+        float speed = Mathf.Max(1f, lookAroundRotationSpeed);
+
+        while (rotationAmount < 360f)
+        {
+            // Se o jogador for detectado ou o estado mudar,
+            // a observação será cancelada.
+            if (currentState != EnemyState.Patrol ||
+                isBeingKicked ||
+                isFleeing)
+            {
+                yield break;
+            }
+
+            rotationAmount += speed * Time.deltaTime;
+
+            float currentAngle =
+                Mathf.Min(rotationAmount, 360f);
+
+            transform.rotation =
+                startingRotation *
+                Quaternion.Euler(0f, currentAngle, 0f);
+
+            yield return null;
+        }
+
+        // Garantir que a rotação termine exatamente no ponto inicial.
+        transform.rotation = startingRotation;
+
+        lookAroundCoroutine = null;
+        isLookingAround = false;
+
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.updateRotation = previousUpdateRotation;
+            agent.isStopped = false;
+
+            agent.speed = patrolSpeed;
+            agent.stoppingDistance = stoppingDistance;
+        }
+
+        // Continuar a patrulha após observar o ambiente.
+        if (currentState == EnemyState.Patrol &&
+            !isBeingKicked &&
+            !isFleeing)
+        {
+            ChooseNextPatrolPoint();
+        }
+    }
+
+    private void CancelLookAround()
+    {
+        if (!isLookingAround)
+            return;
+
+        if (lookAroundCoroutine != null)
+        {
+            StopCoroutine(lookAroundCoroutine);
+            lookAroundCoroutine = null;
+        }
+
+        isLookingAround = false;
+
+        if (agent != null)
+        {
+            agent.updateRotation = previousUpdateRotation;
+
+            if (agent.isOnNavMesh)
+                agent.isStopped = false;
+        }
     }
 
     // =========================================================
@@ -519,6 +661,9 @@ public class SecondEnemyIA : MonoBehaviour
         if (!agent.isOnNavMesh)
             return;
 
+        // Garantir que não fique preso na rotação de observação.
+        CancelLookAround();
+
         isBeingKicked = true;
 
         StopCallingChappie();
@@ -566,9 +711,6 @@ public class SecondEnemyIA : MonoBehaviour
 
         Vector3 horizontalMovement =
             direction * force;
-
-        Quaternion startRotation =
-            transform.rotation;
 
         float timer = 0f;
 
@@ -735,8 +877,7 @@ public class SecondEnemyIA : MonoBehaviour
 
             timer += Time.deltaTime;
 
-            if (agent.remainingDistance <=
-                1f)
+            if (agent.remainingDistance <= 1f)
             {
                 break;
             }
