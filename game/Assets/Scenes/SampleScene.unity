@@ -148637,9 +148637,9 @@ MonoBehaviour:
   lookAroundCenterPause: 0.25
   memoryTime: 2
   lastKnownPositionKnowledgeTime: 0.5
-  searchTime: 16
+  searchTime: 15
   searchRadius: 20
-  searchSpeed: 2.5
+  searchSpeed: 5
   musicManager: {fileID: 860290590}
   searchMusicDuration: 16
   runAroundActive: 0
