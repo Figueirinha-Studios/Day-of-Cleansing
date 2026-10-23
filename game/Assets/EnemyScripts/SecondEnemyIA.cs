@@ -65,7 +65,6 @@ public class SecondEnemyIA : MonoBehaviour
     private int patrolPointsVisited = 0;
     private bool isLookingAround = false;
     private Coroutine lookAroundCoroutine;
-
     private bool previousUpdateRotation = true;
 
     [Header("Chute")]
@@ -78,6 +77,16 @@ public class SecondEnemyIA : MonoBehaviour
     public float fleeDistance = 15f;
     public float fleeSpeed = 9f;
     public float fleeDuration = 5f;
+
+    [Header("Casinha")]
+    public float houseSearchRadius = 100f;
+    public float houseArrivalDistance = 1f;
+
+    private ChappieJrHouse currentHouse;
+    private Coroutine houseCoroutine;
+
+    private Renderer[] enemyRenderers;
+    private bool[] originalRendererStates;
 
     [Header("Som durante o voo")]
     public AudioClip kickFlySound;
@@ -103,7 +112,6 @@ public class SecondEnemyIA : MonoBehaviour
     private float callNoiseTimer = 0f;
 
     private bool isCallingChappie = false;
-
     private bool isBeingKicked = false;
     private bool isFleeing = false;
 
@@ -115,10 +123,20 @@ public class SecondEnemyIA : MonoBehaviour
 
         SetupCallChappieAudio();
         SetupKickFlyAudio();
-
         SetupMovement();
-
         LoadPatrolPoints();
+
+        enemyRenderers =
+            GetComponentsInChildren<Renderer>(true);
+
+        originalRendererStates =
+            new bool[enemyRenderers.Length];
+
+        for (int i = 0; i < enemyRenderers.Length; i++)
+        {
+            originalRendererStates[i] =
+                enemyRenderers[i].enabled;
+        }
 
         currentState = EnemyState.Patrol;
 
@@ -127,28 +145,26 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void Update()
     {
-        if (agent == null)
-            return;
-
-        if (!agent.isOnNavMesh)
-            return;
-
-        if (isBeingKicked)
+        if (agent == null || !agent.enabled)
         {
             UpdateAnimator();
             return;
         }
 
-        if (isFleeing)
+        if (!agent.isOnNavMesh)
+        {
+            UpdateAnimator();
+            return;
+        }
+
+        if (isBeingKicked || isFleeing)
         {
             UpdateAnimator();
             return;
         }
 
         UpdateState();
-
         UpdateCallChappie();
-
         UpdateAnimator();
     }
 
@@ -176,10 +192,8 @@ public class SecondEnemyIA : MonoBehaviour
         callAudioSource.playOnAwake = false;
         callAudioSource.loop = true;
 
-        if (globalCallSound)
-            callAudioSource.spatialBlend = 0f;
-        else
-            callAudioSource.spatialBlend = 1f;
+        callAudioSource.spatialBlend =
+            globalCallSound ? 0f : 1f;
 
         callAudioSource.volume = callChappieVolume;
     }
@@ -191,10 +205,7 @@ public class SecondEnemyIA : MonoBehaviour
 
         kickFlyAudioSource.playOnAwake = false;
         kickFlyAudioSource.loop = true;
-
-        // Som 3D, acompanhando a posição do inimigo enquanto ele voa.
         kickFlyAudioSource.spatialBlend = 1f;
-
         kickFlyAudioSource.volume = kickFlyVolume;
     }
 
@@ -206,9 +217,7 @@ public class SecondEnemyIA : MonoBehaviour
             return;
 
         foreach (Transform child in patrolPointsParent)
-        {
             patrolPoints.Add(child);
-        }
     }
 
     // =========================================================
@@ -237,7 +246,6 @@ public class SecondEnemyIA : MonoBehaviour
             if (seesPlayer)
             {
                 chaseMemoryTimer = chaseMemoryTime;
-
                 UpdateChase();
             }
             else
@@ -245,13 +253,9 @@ public class SecondEnemyIA : MonoBehaviour
                 chaseMemoryTimer -= Time.deltaTime;
 
                 if (chaseMemoryTimer <= 0f)
-                {
                     EnterPatrol();
-                }
                 else
-                {
                     UpdateChase();
-                }
             }
         }
     }
@@ -264,7 +268,7 @@ public class SecondEnemyIA : MonoBehaviour
 
         StopCallingChappie();
 
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.speed = patrolSpeed;
             agent.stoppingDistance = stoppingDistance;
@@ -275,14 +279,12 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void EnterChase()
     {
-        // Interromper a observação se enxergar o jogador.
         CancelLookAround();
 
         currentState = EnemyState.Chase;
-
         chaseMemoryTimer = chaseMemoryTime;
 
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.speed = chaseSpeed;
             agent.stoppingDistance = chaseStopDistance;
@@ -295,10 +297,7 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void UpdatePatrol()
     {
-        if (isLookingAround)
-            return;
-
-        if (patrolPoints.Count == 0)
+        if (isLookingAround || patrolPoints.Count == 0)
             return;
 
         if (agent.pathPending)
@@ -307,7 +306,6 @@ public class SecondEnemyIA : MonoBehaviour
         if (agent.remainingDistance <=
             agent.stoppingDistance + 0.2f)
         {
-            // Um ponto foi concluído.
             patrolPointsVisited++;
 
             int pointsRequired =
@@ -316,7 +314,6 @@ public class SecondEnemyIA : MonoBehaviour
             if (patrolPointsVisited >= pointsRequired)
             {
                 patrolPointsVisited = 0;
-
                 StartLookAround();
                 return;
             }
@@ -327,10 +324,7 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void ChooseNextPatrolPoint()
     {
-        if (agent == null)
-            return;
-
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
         if (patrolPoints.Count == 0)
@@ -338,8 +332,7 @@ public class SecondEnemyIA : MonoBehaviour
 
         int selectedIndex = -1;
 
-        List<int> availableIndices =
-            new List<int>();
+        List<int> availableIndices = new List<int>();
 
         for (int i = 0; i < patrolPoints.Count; i++)
         {
@@ -351,25 +344,18 @@ public class SecondEnemyIA : MonoBehaviour
         {
             selectedIndex =
                 availableIndices[
-                    Random.Range(
-                        0,
-                        availableIndices.Count
-                    )
+                    Random.Range(0, availableIndices.Count)
                 ];
         }
         else
         {
             selectedIndex =
-                Random.Range(
-                    0,
-                    patrolPoints.Count
-                );
+                Random.Range(0, patrolPoints.Count);
         }
 
         currentPatrolIndex = selectedIndex;
 
-        Transform selectedPoint =
-            patrolPoints[selectedIndex];
+        Transform selectedPoint = patrolPoints[selectedIndex];
 
         if (selectedPoint == null)
             return;
@@ -400,19 +386,15 @@ public class SecondEnemyIA : MonoBehaviour
         if (isLookingAround)
             return;
 
-        if (agent == null || !agent.isOnNavMesh)
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
         isLookingAround = true;
 
-        // Guardar a configuração original da rotação automática.
         previousUpdateRotation = agent.updateRotation;
 
-        // Parar o movimento e permitir rotação manual.
         agent.isStopped = true;
         agent.updateRotation = false;
-
-        // Interromper o movimento restante.
         agent.ResetPath();
 
         lookAroundCoroutine =
@@ -425,12 +407,11 @@ public class SecondEnemyIA : MonoBehaviour
 
         float rotationAmount = 0f;
 
-        float speed = Mathf.Max(1f, lookAroundRotationSpeed);
+        float speed =
+            Mathf.Max(1f, lookAroundRotationSpeed);
 
         while (rotationAmount < 360f)
         {
-            // Se o jogador for detectado ou o estado mudar,
-            // a observação será cancelada.
             if (currentState != EnemyState.Patrol ||
                 isBeingKicked ||
                 isFleeing)
@@ -450,22 +431,19 @@ public class SecondEnemyIA : MonoBehaviour
             yield return null;
         }
 
-        // Garantir que a rotação termine exatamente no ponto inicial.
         transform.rotation = startingRotation;
 
         lookAroundCoroutine = null;
         isLookingAround = false;
 
-        if (agent != null && agent.isOnNavMesh)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.updateRotation = previousUpdateRotation;
             agent.isStopped = false;
-
             agent.speed = patrolSpeed;
             agent.stoppingDistance = stoppingDistance;
         }
 
-        // Continuar a patrulha após observar o ambiente.
         if (currentState == EnemyState.Patrol &&
             !isBeingKicked &&
             !isFleeing)
@@ -487,7 +465,7 @@ public class SecondEnemyIA : MonoBehaviour
 
         isLookingAround = false;
 
-        if (agent != null)
+        if (agent != null && agent.enabled)
         {
             agent.updateRotation = previousUpdateRotation;
 
@@ -497,33 +475,25 @@ public class SecondEnemyIA : MonoBehaviour
     }
 
     // =========================================================
-    // CHASE
+    // PERSEGUIÇÃO
     // =========================================================
 
     private void UpdateChase()
     {
-        if (player == null)
-            return;
-
-        if (agent == null)
+        if (player == null || agent == null)
             return;
 
         agent.speed = chaseSpeed;
         agent.stoppingDistance = chaseStopDistance;
-
         agent.SetDestination(player.position);
 
         float distance =
-            Vector3.Distance(
-                transform.position,
-                player.position
-            );
+            Vector3.Distance(transform.position, player.position);
 
         if (distance <= chaseStopDistance)
         {
             Vector3 direction =
-                player.position -
-                transform.position;
+                player.position - transform.position;
 
             direction.y = 0f;
 
@@ -536,8 +506,7 @@ public class SecondEnemyIA : MonoBehaviour
                     Quaternion.RotateTowards(
                         transform.rotation,
                         targetRotation,
-                        rotationSpeed *
-                        Time.deltaTime
+                        rotationSpeed * Time.deltaTime
                     );
             }
         }
@@ -549,39 +518,26 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void UpdateCallChappie()
     {
-        if (currentState != EnemyState.Chase)
-        {
-            StopCallingChappie();
-            return;
-        }
-
-        if (player == null)
+        if (currentState != EnemyState.Chase || player == null)
         {
             StopCallingChappie();
             return;
         }
 
         float distance =
-            Vector3.Distance(
-                transform.position,
-                player.position
-            );
+            Vector3.Distance(transform.position, player.position);
 
         if (distance <= callChappieDistance)
         {
             if (!isCallingChappie)
-            {
                 StartCallingChappie();
-            }
 
             callNoiseTimer -= Time.deltaTime;
 
             if (callNoiseTimer <= 0f)
             {
                 EmitChappieCallNoise();
-
-                callNoiseTimer =
-                    callNoiseInterval;
+                callNoiseTimer = callNoiseInterval;
             }
         }
         else
@@ -593,18 +549,12 @@ public class SecondEnemyIA : MonoBehaviour
     private void StartCallingChappie()
     {
         isCallingChappie = true;
-
         callNoiseTimer = 0f;
 
-        if (callAudioSource != null &&
-            callChappieSound != null)
+        if (callAudioSource != null && callChappieSound != null)
         {
-            callAudioSource.clip =
-                callChappieSound;
-
-            callAudioSource.volume =
-                callChappieVolume;
-
+            callAudioSource.clip = callChappieSound;
+            callAudioSource.volume = callChappieVolume;
             callAudioSource.loop = true;
 
             if (!callAudioSource.isPlaying)
@@ -620,14 +570,10 @@ public class SecondEnemyIA : MonoBehaviour
             return;
 
         isCallingChappie = false;
-
         callNoiseTimer = 0f;
 
-        if (callAudioSource != null &&
-            callAudioSource.isPlaying)
-        {
+        if (callAudioSource != null && callAudioSource.isPlaying)
             callAudioSource.Stop();
-        }
     }
 
     private void EmitChappieCallNoise()
@@ -649,19 +595,12 @@ public class SecondEnemyIA : MonoBehaviour
         float rotationForce,
         float airTime)
     {
-        if (isBeingKicked)
+        if (isBeingKicked || isFleeing)
             return;
 
-        if (isFleeing)
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
-        if (agent == null)
-            return;
-
-        if (!agent.isOnNavMesh)
-            return;
-
-        // Garantir que não fique preso na rotação de observação.
         CancelLookAround();
 
         isBeingKicked = true;
@@ -673,8 +612,7 @@ public class SecondEnemyIA : MonoBehaviour
         agent.isStopped = true;
 
         Vector3 direction =
-            transform.position -
-            playerPosition;
+            transform.position - playerPosition;
 
         direction.y = 0f;
 
@@ -706,11 +644,9 @@ public class SecondEnemyIA : MonoBehaviour
         float rotationForce,
         float airTime)
     {
-        Vector3 startPosition =
-            transform.position;
+        Vector3 startPosition = transform.position;
 
-        Vector3 horizontalMovement =
-            direction * force;
+        Vector3 horizontalMovement = direction * force;
 
         float timer = 0f;
 
@@ -719,31 +655,21 @@ public class SecondEnemyIA : MonoBehaviour
             timer += Time.deltaTime;
 
             float normalizedTime =
-                Mathf.Clamp01(
-                    timer / airTime
-                );
+                Mathf.Clamp01(timer / airTime);
 
             float verticalOffset =
-                Mathf.Sin(
-                    normalizedTime *
-                    Mathf.PI
-                ) * upForce;
+                Mathf.Sin(normalizedTime * Mathf.PI) * upForce;
 
             Vector3 nextPosition =
-                startPosition +
-                horizontalMovement *
-                normalizedTime;
+                startPosition + horizontalMovement * normalizedTime;
 
             nextPosition.y =
-                startPosition.y +
-                verticalOffset;
+                startPosition.y + verticalOffset;
 
-            transform.position =
-                nextPosition;
+            transform.position = nextPosition;
 
             float rotationAmount =
-                rotationForce *
-                Time.deltaTime;
+                rotationForce * Time.deltaTime;
 
             transform.Rotate(
                 rotationAmount,
@@ -757,8 +683,7 @@ public class SecondEnemyIA : MonoBehaviour
 
         StopKickFlySound();
 
-        Vector3 finalPosition =
-            transform.position;
+        Vector3 finalPosition = transform.position;
 
         NavMeshHit navHit;
 
@@ -768,49 +693,33 @@ public class SecondEnemyIA : MonoBehaviour
             3f,
             NavMesh.AllAreas))
         {
-            transform.position =
-                navHit.position;
+            transform.position = navHit.position;
         }
 
-        Vector3 currentEuler =
-            transform.eulerAngles;
+        Vector3 currentEuler = transform.eulerAngles;
 
         transform.rotation =
-            Quaternion.Euler(
-                0f,
-                currentEuler.y,
-                0f
-            );
+            Quaternion.Euler(0f, currentEuler.y, 0f);
 
         isBeingKicked = false;
 
-        agent.isStopped = false;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+            agent.isStopped = false;
 
-        StartCoroutine(
-            FleeFromPlayer(
-                direction
-            )
-        );
+        houseCoroutine = StartCoroutine(GoToNearestHouse());
     }
 
     // =========================================================
-    // SOM DO VOO
+    // SOM DURANTE O VOO
     // =========================================================
 
     private void StartKickFlySound()
     {
-        if (kickFlyAudioSource == null)
+        if (kickFlyAudioSource == null || kickFlySound == null)
             return;
 
-        if (kickFlySound == null)
-            return;
-
-        kickFlyAudioSource.clip =
-            kickFlySound;
-
-        kickFlyAudioSource.volume =
-            kickFlyVolume;
-
+        kickFlyAudioSource.clip = kickFlySound;
+        kickFlyAudioSource.volume = kickFlyVolume;
         kickFlyAudioSource.loop = true;
 
         if (!kickFlyAudioSource.isPlaying)
@@ -827,16 +736,180 @@ public class SecondEnemyIA : MonoBehaviour
     }
 
     // =========================================================
-    // FUGA
+    // CASINHA
     // =========================================================
 
-    private IEnumerator FleeFromPlayer(
-        Vector3 direction)
+    private IEnumerator GoToNearestHouse()
     {
-        if (agent == null)
-            yield break;
+        isFleeing = true;
+        StopCallingChappie();
 
-        if (!agent.isOnNavMesh)
+        ChappieJrHouse[] houses =
+            FindObjectsByType<ChappieJrHouse>(
+                FindObjectsSortMode.None
+            );
+
+        ChappieJrHouse nearestHouse = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (ChappieJrHouse house in houses)
+        {
+            if (house == null || house.isOccupied)
+                continue;
+
+            float distance =
+                Vector3.Distance(
+                    transform.position,
+                    house.EntrancePosition
+                );
+
+            if (distance <= houseSearchRadius &&
+                distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestHouse = house;
+            }
+        }
+
+        // Sem casinhas disponíveis: volta à patrulha.
+        if (nearestHouse == null)
+        {
+            FinishHouseBehavior();
+            yield break;
+        }
+
+        currentHouse = nearestHouse;
+        currentHouse.isOccupied = true;
+
+        agent.isStopped = false;
+        agent.speed = fleeSpeed;
+        agent.stoppingDistance = houseArrivalDistance;
+
+        agent.SetDestination(currentHouse.EntrancePosition);
+
+        // Caminhar até o lado escolhido da casinha.
+        while (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            if (!agent.pathPending &&
+                agent.remainingDistance <= houseArrivalDistance + 0.1f)
+            {
+                break;
+            }
+
+            if (!agent.pathPending &&
+                (!agent.hasPath ||
+                 agent.pathStatus == NavMeshPathStatus.PathInvalid))
+            {
+                currentHouse.isOccupied = false;
+                currentHouse = null;
+
+                FinishHouseBehavior();
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+        {
+            if (currentHouse != null)
+                currentHouse.isOccupied = false;
+
+            currentHouse = null;
+            FinishHouseBehavior();
+            yield break;
+        }
+
+        // Parar na entrada.
+        agent.isStopped = true;
+        agent.ResetPath();
+
+        Vector3 entrancePosition = currentHouse.EntrancePosition;
+
+        // Virar para a entrada antes de desaparecer.
+        Vector3 direction =
+            entrancePosition - transform.position;
+
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(direction);
+
+        // Esconder o modelo.
+        SetHouseVisibility(false);
+
+        // Desativar o agente enquanto está escondido.
+        agent.enabled = false;
+
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, currentHouse.hideDuration)
+        );
+
+        // Reaparecer na entrada da casinha.
+        transform.position = entrancePosition;
+
+        agent.enabled = true;
+
+        NavMeshHit hit;
+
+        if (NavMesh.SamplePosition(
+            entrancePosition,
+            out hit,
+            3f,
+            NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+
+        // Restaurar o modelo.
+        SetHouseVisibility(true);
+
+        currentHouse.isOccupied = false;
+        currentHouse = null;
+
+        // Voltar à patrulha.
+        FinishHouseBehavior();
+        houseCoroutine = null;
+    }
+
+    private void SetHouseVisibility(bool visible)
+    {
+        if (enemyRenderers == null)
+            return;
+
+        for (int i = 0; i < enemyRenderers.Length; i++)
+        {
+            if (enemyRenderers[i] != null)
+            {
+                enemyRenderers[i].enabled =
+                    visible && originalRendererStates[i];
+            }
+        }
+    }
+
+    private void FinishHouseBehavior()
+    {
+        isFleeing = false;
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.speed = patrolSpeed;
+            agent.stoppingDistance = stoppingDistance;
+        }
+
+        currentState = EnemyState.Patrol;
+
+        ChooseNextPatrolPoint();
+    }
+
+    // =========================================================
+    // FUGA ORIGINAL
+    // =========================================================
+
+    private IEnumerator FleeFromPlayer(Vector3 direction)
+    {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             yield break;
 
         isFleeing = true;
@@ -848,9 +921,7 @@ public class SecondEnemyIA : MonoBehaviour
         agent.stoppingDistance = 0f;
 
         Vector3 fleeTarget =
-            transform.position +
-            direction.normalized *
-            fleeDistance;
+            transform.position + direction.normalized * fleeDistance;
 
         NavMeshHit hit;
 
@@ -869,15 +940,13 @@ public class SecondEnemyIA : MonoBehaviour
 
         while (timer < fleeDuration)
         {
-            if (agent == null)
-                break;
-
-            if (!agent.isOnNavMesh)
+            if (agent == null || !agent.enabled || !agent.isOnNavMesh)
                 break;
 
             timer += Time.deltaTime;
 
-            if (agent.remainingDistance <= 1f)
+            if (!agent.pathPending &&
+                agent.remainingDistance <= 1f)
             {
                 break;
             }
@@ -887,17 +956,14 @@ public class SecondEnemyIA : MonoBehaviour
 
         isFleeing = false;
 
-        if (agent != null &&
-            agent.isOnNavMesh)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.isStopped = false;
             agent.speed = patrolSpeed;
-            agent.stoppingDistance =
-                stoppingDistance;
+            agent.stoppingDistance = stoppingDistance;
         }
 
-        currentState =
-            EnemyState.Patrol;
+        currentState = EnemyState.Patrol;
 
         ChooseNextPatrolPoint();
     }
@@ -908,20 +974,19 @@ public class SecondEnemyIA : MonoBehaviour
 
     private void UpdateAnimator()
     {
-        if (animator == null)
+        if (animator == null || agent == null)
             return;
 
-        if (agent == null)
-            return;
+        float speed = 0f;
 
-        animator.SetFloat(
-            "Speed",
-            agent.velocity.magnitude
-        );
+        if (agent.enabled)
+            speed = agent.velocity.magnitude;
+
+        animator.SetFloat("Speed", speed);
     }
 
     // =========================================================
-    // ACESSO PARA O SECOND ENEMY KICK
+    // ACESSO PARA SECOND ENEMY KICK
     // =========================================================
 
     public bool IsBeingKicked()
@@ -953,5 +1018,22 @@ public class SecondEnemyIA : MonoBehaviour
             transform.position,
             callNoiseRadius
         );
+
+        Gizmos.color = Color.yellow;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            houseSearchRadius
+        );
+
+        if (currentHouse != null)
+        {
+            Gizmos.color = Color.green;
+
+            Gizmos.DrawLine(
+                transform.position,
+                currentHouse.EntrancePosition
+            );
+        }
     }
 }
