@@ -13,6 +13,10 @@ led_ALERTA = Pin(25, Pin.OUT)
 
 game_state = True
 
+topico_status = b"esp32/status"
+topico_controle = b"esp32/controller"
+topico_panico = b"esp32/panic"
+
 env = load_env()
 
 def conecta_wifi():
@@ -44,18 +48,19 @@ def callback(topic, msg):
 def main():
     conecta_wifi()
     
-    client = MQTTClient("esp32", env["BROKER"])
+    client = MQTTClient("esp32_1", env["BROKER"])
     client.set_callback(callback)
     client.connect()
-    client.subscribe(b"game/controller")
+    client.subscribe(topico_controle)
     print("Conectado ao Broker MQTT")
+    tempo = time()
 
     while True:
         global game_state
-        
+
         if panic_button.value() == True:
             game_state = False
-            client.publish(b"game/panic", "PANIC");
+            client.publish(topico_panico, "PANIC");
             releA.value(1)
             releB.value(1)
             print("modo de emergencia INICIADO")
@@ -70,6 +75,16 @@ def main():
 
         led_ALERTA.value(not game_state)
         led_NORMAL.value(game_state)
+
+        if (time() - tempo > 10):
+            tempo = time()
+            msg = ""
+            msg += "esp32 RELEA="
+            msg += str(releA.value())
+            msg += ",RELEB="
+            msg += str(releB.value())
+            client.publish(topico_status, msg)
+
         sleep(0.05)
 
 if __name__ == '__main__':
