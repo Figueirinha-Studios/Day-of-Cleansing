@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de relés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Painel de relés</h1>
+    <span class="conn" id="conn"><span class="dot"></span><span id="connText">Conectando…</span></span>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+  <div id="boards"></div>
+  <footer>O estado é confirmado quando a placa o publica, a cada 10 s. Até lá o botão fica tracejado.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
