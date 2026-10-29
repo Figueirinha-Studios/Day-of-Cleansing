@@ -93731,7 +93731,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1257484757
 Transform:
   m_ObjectHideFlags: 0
@@ -108382,7 +108382,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1455259503
 Transform:
   m_ObjectHideFlags: 0
@@ -159273,9 +159273,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335e7db9a4e2b8640a2ba69e5323de00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MQTTManager
-  broker: 191.36.8.41
+  broker: day-of-cleansing.feira-de-jogos.dev.br
   port: 1883
-  panicTopic: dayofcleansing/panic
+  panicTopic: esp32/panic
   panicScene: PanicScene
 --- !u!1001 &2088385873
 PrefabInstance:
