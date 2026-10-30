@@ -62829,6 +62829,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41a28a0cbdfaab445b352a5c0c270e3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
+  generator: {fileID: 0}
   durationMinutes: 10
   warningAudioSource: {fileID: 1479383012}
   warningSound: {fileID: 8300000, guid: a068ec730e6c7ce48a440a4f8df6b922, type: 3}
@@ -62846,6 +62847,7 @@ MonoBehaviour:
   blackScreenDelay: 0
   gameOverSceneName: GameOver
   remainingSeconds: 0
+  timerPaused: 0
 --- !u!1 &725746529
 GameObject:
   m_ObjectHideFlags: 0
@@ -67408,7 +67410,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.2502427, g: 1, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -107828,6 +107830,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41a28a0cbdfaab445b352a5c0c270e3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
+  generator: {fileID: 0}
   durationMinutes: 10
   warningAudioSource: {fileID: 1555085782}
   warningSound: {fileID: 8300000, guid: a068ec730e6c7ce48a440a4f8df6b922, type: 3}
@@ -107845,6 +107848,7 @@ MonoBehaviour:
   blackScreenDelay: 0
   gameOverSceneName: GameOver
   remainingSeconds: 0
+  timerPaused: 0
 --- !u!1 &1443325790
 GameObject:
   m_ObjectHideFlags: 0
@@ -155878,6 +155882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41a28a0cbdfaab445b352a5c0c270e3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
+  generator: {fileID: 0}
   durationMinutes: 10
   warningAudioSource: {fileID: 901688675}
   warningSound: {fileID: 8300000, guid: a068ec730e6c7ce48a440a4f8df6b922, type: 3}
@@ -155895,6 +155900,7 @@ MonoBehaviour:
   blackScreenDelay: 0
   gameOverSceneName: GameOver
   remainingSeconds: 0
+  timerPaused: 0
 --- !u!1001 &1984560600
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -160136,8 +160142,8 @@ MonoBehaviour:
   player: {fileID: 1460273160}
   chappie: {fileID: 2106347680}
   agent: {fileID: 2106347685}
-  timeWithoutSeeing: 50
-  stealthChance: 50
+  timeWithoutSeeing: 40
+  stealthChance: 100
   resetTimerAfterAttempt: 1
   stealthCooldown: 30
   minimumGeneratorItemsToDisable: 2

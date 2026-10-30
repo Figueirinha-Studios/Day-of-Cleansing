@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public class GameTimer : MonoBehaviour
 {
+    [Header("Gerador")]
+    public Generator generator;
+
     [Header("Configuração do cronômetro")]
     [Min(1)]
     public int durationMinutes = 10;
@@ -55,9 +58,14 @@ public class GameTimer : MonoBehaviour
     [SerializeField]
     private int remainingSeconds;
 
+    [SerializeField]
+    private bool timerPaused;
+
     public int RemainingSeconds => remainingSeconds;
 
     public bool TimerFinished { get; private set; }
+
+    public bool TimerPaused => timerPaused;
 
     private float countdown;
     private int previousDisplayedSecond;
@@ -82,12 +90,25 @@ public class GameTimer : MonoBehaviour
 
     private void Start()
     {
+        if (generator == null)
+        {
+            generator = FindFirstObjectByType<Generator>();
+        }
+
         UpdateRemainingSeconds();
     }
 
     private void Update()
     {
-        if (TimerFinished)
+        // Verifica se o gerador foi ligado.
+        if (!timerPaused &&
+            generator != null &&
+            generator.IsGeneratorOn())
+        {
+            PauseTimer();
+        }
+
+        if (TimerFinished || timerPaused)
             return;
 
         countdown -= Time.unscaledDeltaTime;
@@ -106,6 +127,30 @@ public class GameTimer : MonoBehaviour
                 StartCoroutine(FinalSequence());
             }
         }
+    }
+
+    // ============================================================
+    // PAUSAR CRONÔMETRO QUANDO O GERADOR LIGAR
+    // ============================================================
+
+    public void PauseTimer()
+    {
+        if (timerPaused)
+            return;
+
+        timerPaused = true;
+
+        // Interrompe os avisos e bipes do cronômetro.
+        if (warningAudioSource != null)
+            warningAudioSource.Stop();
+
+        if (finalBeepAudioSource != null)
+            finalBeepAudioSource.Stop();
+
+        Debug.Log(
+            "GameTimer: gerador ligado! Cronômetro pausado em " +
+            GetFormattedTime()
+        );
     }
 
     private void UpdateRemainingSeconds()
