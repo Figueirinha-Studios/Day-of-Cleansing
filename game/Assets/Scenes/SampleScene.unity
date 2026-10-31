@@ -24114,8 +24114,8 @@ MonoBehaviour:
   firstPersonDistance: 0.05
   tiltAmount: 4
   tiltSpeed: 4
-  mouseSwayAmount: 10
-  mouseSwaySpeed: 8
+  mouseSwayAmount: 0
+  mouseSwaySpeed: 0
   jumpPush: 0.5
   jumpSmooth: 8
   runSwayAmount: 4
