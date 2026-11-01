@@ -58,9 +58,8 @@ public class SecondEnemyIA : MonoBehaviour
     [Header("Olhar ao redor")]
     [Tooltip("Quantidade de pontos de patrulha concluídos antes de olhar ao redor.")]
     public int patrolPointsBeforeLookAround = 3;
-
-    [Tooltip("Velocidade da rotação de 360 graus, em graus por segundo.")]
-    public float lookAroundRotationSpeed = 120f;
+    public Transform rotatingPart;
+    public float lookAroundDuration = 1.1f;
 
     private int patrolPointsVisited = 0;
     private bool isLookingAround = false;
@@ -391,6 +390,9 @@ public class SecondEnemyIA : MonoBehaviour
 
         isLookingAround = true;
 
+        if (animator != null)
+            animator.SetBool("IsLookingAround", true);
+
         previousUpdateRotation = agent.updateRotation;
 
         agent.isStopped = true;
@@ -403,14 +405,20 @@ public class SecondEnemyIA : MonoBehaviour
 
     private IEnumerator LookAround360()
     {
-        Quaternion startingRotation = transform.rotation;
+        if (rotatingPart == null)
+        {
+            Debug.LogWarning("Rotating Part is not assigned!");
+            isLookingAround = false;
+            lookAroundCoroutine = null;
+            yield break;
+        }
 
-        float rotationAmount = 0f;
+        Quaternion startingRotation = rotatingPart.localRotation;
 
-        float speed =
-            Mathf.Max(1f, lookAroundRotationSpeed);
+        float timer = 0f;
+        float duration = Mathf.Max(0.01f, lookAroundDuration);
 
-        while (rotationAmount < 360f)
+        while (timer < duration)
         {
             if (currentState != EnemyState.Patrol ||
                 isBeingKicked ||
@@ -419,22 +427,26 @@ public class SecondEnemyIA : MonoBehaviour
                 yield break;
             }
 
-            rotationAmount += speed * Time.deltaTime;
+            timer += Time.deltaTime;
 
-            float currentAngle =
-                Mathf.Min(rotationAmount, 360f);
+            float progress = Mathf.Clamp01(timer / duration);
 
-            transform.rotation =
+            float currentAngle = -360f * progress;
+
+            rotatingPart.localRotation =
                 startingRotation *
                 Quaternion.Euler(0f, currentAngle, 0f);
 
             yield return null;
         }
 
-        transform.rotation = startingRotation;
+        rotatingPart.localRotation = startingRotation;
 
         lookAroundCoroutine = null;
         isLookingAround = false;
+
+        if (animator != null)
+            animator.SetBool("IsLookingAround", false);
 
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
@@ -464,6 +476,9 @@ public class SecondEnemyIA : MonoBehaviour
         }
 
         isLookingAround = false;
+
+        if (animator != null)
+            animator.SetBool("IsLookingAround", false);
 
         if (agent != null && agent.enabled)
         {
