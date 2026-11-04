@@ -16,6 +16,15 @@ public class FinalSequence : MonoBehaviour
 
 
     // =========================================================
+    // MÚSICA
+    // =========================================================
+
+    [Header("Música da Cena")]
+    public AudioSource musicAudioSource;
+    public AudioClip finalMusic;
+
+
+    // =========================================================
     // CONFIGURAÇÃO
     // =========================================================
 
@@ -105,6 +114,18 @@ public class FinalSequence : MonoBehaviour
 
     private void Start()
     {
+        // =====================================================
+        // INICIA A MÚSICA DA CENA
+        // =====================================================
+
+        if (musicAudioSource != null && finalMusic != null)
+        {
+            musicAudioSource.clip = finalMusic;
+            musicAudioSource.loop = true;
+            musicAudioSource.Play();
+        }
+
+
         StartCoroutine(
             FinalRoutine()
         );

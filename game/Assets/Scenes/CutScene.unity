@@ -773,7 +773,7 @@ MonoBehaviour:
   fadeToBlackSpeed: 2
   fadeFromBlackSpeed: 2
   finalImage: {fileID: 1734087007}
-  finalImageDuration: 4
+  finalImageDuration: 8
   finalFadeToBlackSpeed: 2
 --- !u!4 &1645984931
 Transform:
@@ -863,7 +863,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1930, y: 1060}
+  m_SizeDelta: {x: 1950, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1918999049
 GameObject:
