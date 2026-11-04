@@ -68161,7 +68161,7 @@ MonoBehaviour:
   chaseSpeed: 8
   chaseStopDistance: 1.7
   chaseMemoryTime: 3
-  callChappieSound: {fileID: 8300000, guid: d415fabf6f8739c47b918461e1c6197d, type: 3}
+  callChappieSound: {fileID: 8300000, guid: 6839c36b36ec8fc4da1bf02fc32f95e1, type: 3}
   callChappieVolume: 2
   callChappieDistance: 3
   callNoiseRadius: 500
