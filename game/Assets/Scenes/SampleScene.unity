@@ -47672,7 +47672,7 @@ MonoBehaviour:
   generator: {fileID: 31245301}
   audioSource: {fileID: 601865282}
   sirenSound: {fileID: 8300000, guid: 6587f0533f7053e46978f15e5dec7e69, type: 3}
-  sirenVolume: 2.5
+  sirenVolume: 2
   sirenMinDistance: 5
   sirenMaxDistance: 200
   noiseRadius: 500

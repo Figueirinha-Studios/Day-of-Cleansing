@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class Door : MonoBehaviour
@@ -153,6 +154,11 @@ public class Door : MonoBehaviour
                 doorNoise.CanDoorOpen())
             {
                 opening = true;
+
+
+                // Envia o ruído quando a porta começa a abrir.
+
+                doorNoise.EmitDoorOpeningNoise();
 
 
                 // Começa o som da porta.

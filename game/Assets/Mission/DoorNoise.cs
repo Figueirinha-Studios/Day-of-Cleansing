@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 
@@ -155,21 +156,6 @@ public class DoorNoise : MonoBehaviour
 
 
         // =====================================================
-        // RUÍDO PARA O INIMIGO
-        // =====================================================
-
-        NoiseSystem.EmitNoise(
-            transform.position,
-            noiseRadius
-        );
-
-
-        Debug.Log(
-            "DOORNOISE: Ruído enviado ao NoiseSystem."
-        );
-
-
-        // =====================================================
         // ESPERA A SIRENE
         // =====================================================
 
@@ -283,6 +269,24 @@ public class DoorNoise : MonoBehaviour
             "DOORNOISE: SIRENE TOCANDO! " +
             "Volume: " +
             audioSource.volume
+        );
+    }
+
+
+    // =========================================================
+    // RUÍDO QUANDO A PORTA COMEÇA A ABRIR
+    // =========================================================
+
+    public void EmitDoorOpeningNoise()
+    {
+        NoiseSystem.EmitNoise(
+            transform.position,
+            noiseRadius
+        );
+
+
+        Debug.Log(
+            "DOORNOISE: Ruído enviado ao NoiseSystem quando a porta começou a abrir."
         );
     }
 
