@@ -896,7 +896,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GeneralMQTTPublisher
   MQTTMessageA: RELEAoff
   MQTTMessageB: RELEBoff
-  Publish: 1
+  Publish: 0
 --- !u!4 &1918999051
 Transform:
   m_ObjectHideFlags: 0
