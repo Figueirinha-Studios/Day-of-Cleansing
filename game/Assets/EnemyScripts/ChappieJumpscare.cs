@@ -36,6 +36,8 @@ public class ChappieJumpscare : MonoBehaviour
     private NavMeshAgent agent;
     private EnemyAI enemyAI;
 
+    private MusicManager musicManager;
+
     private Vector3 fixedCameraPosition;
     private Quaternion fixedCameraRotation;
 
@@ -43,6 +45,8 @@ public class ChappieJumpscare : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         enemyAI = GetComponent<EnemyAI>();
+
+        musicManager = FindFirstObjectByType<MusicManager>();
 
         if (playerCamera == null && Camera.main != null)
         {
@@ -71,6 +75,36 @@ public class ChappieJumpscare : MonoBehaviour
         if (jumpscareStarted) return;
 
         jumpscareStarted = true;
+
+        // =====================================================
+        // PARA TODAS AS MÚSICAS DO MUSIC MANAGER
+        // =====================================================
+
+        if (musicManager != null)
+        {
+            // Interrompe possíveis corrotinas de música.
+            musicManager.StopAllCoroutines();
+
+            // Para a música ambiente.
+            if (musicManager.ambientSource != null)
+            {
+                musicManager.ambientSource.Stop();
+            }
+
+            // Para a música do inimigo.
+            if (musicManager.enemySourceA != null)
+            {
+                musicManager.enemySourceA.Stop();
+            }
+
+            if (musicManager.enemySourceB != null)
+            {
+                musicManager.enemySourceB.Stop();
+            }
+
+            // Desativa o MusicManager.
+            musicManager.enabled = false;
+        }
 
         // Desativa a inteligência artificial do Chappie
         if (enemyAI != null)
