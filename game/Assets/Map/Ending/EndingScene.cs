@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,6 +27,11 @@ public class EndingSequence : MonoBehaviour
 
     private Vector3[] initialPositions;
 
+    private MusicManager musicManager;
+
+    private PlayerMovement playerMovement;
+    private CameraEffects cameraEffects;
+
     private void Start()
     {
         initialPositions = new Vector3[weaponMains.Length];
@@ -43,6 +47,8 @@ public class EndingSequence : MonoBehaviour
                 weaponMains[i].localPosition = position;
             }
         }
+
+        musicManager = FindFirstObjectByType<MusicManager>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -51,6 +57,15 @@ public class EndingSequence : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
+            playerMovement =
+                other.GetComponentInParent<PlayerMovement>();
+
+            if (playerMovement != null)
+            {
+                cameraEffects =
+                    playerMovement.GetComponentInChildren<CameraEffects>(true);
+            }
+
             StartCoroutine(EndingSequenceRoutine());
         }
     }
@@ -59,20 +74,113 @@ public class EndingSequence : MonoBehaviour
     {
         sequenceStarted = true;
 
-        // Trava o movimento do jogador
+        // =====================================================
+        // PARA A MÚSICA DO MUSIC MANAGER
+        // =====================================================
+
+        if (musicManager != null)
+        {
+            musicManager.StopAllCoroutines();
+
+            if (musicManager.ambientSource != null)
+            {
+                musicManager.ambientSource.Stop();
+            }
+
+            if (musicManager.enemySourceA != null)
+            {
+                musicManager.enemySourceA.Stop();
+            }
+
+            if (musicManager.enemySourceB != null)
+            {
+                musicManager.enemySourceB.Stop();
+            }
+
+            musicManager.enabled = false;
+        }
+
+        // =====================================================
+        // PREPARA O JOGADOR PARA A FINALIZAÇÃO
+        // =====================================================
+
+        if (playerMovement != null)
+        {
+            playerMovement.BeginEndingSequence();
+        }
+
+        // Desativa os controles, mantendo a gravidade
+        // e os efeitos da câmera funcionando temporariamente.
+
+        foreach (Behaviour script in playerMovementScripts)
+        {
+            if (script != null &&
+                script != playerMovement &&
+                script != cameraEffects)
+            {
+                script.enabled = false;
+            }
+        }
+
+        // =====================================================
+        // ESPERA O JOGADOR TOCAR O CHÃO
+        // =====================================================
+
+        if (playerMovement != null)
+        {
+            while (!playerMovement.IsGroundedForEnding)
+            {
+                yield return null;
+            }
+        }
+
+        // =====================================================
+        // ESPERA A CÂMERA VOLTAR À POSIÇÃO NORMAL
+        // =====================================================
+
+        if (cameraEffects != null && cameraEffects.enabled)
+        {
+            while (
+                cameraEffects.transform.localPosition.sqrMagnitude >
+                0.0001f
+            )
+            {
+                yield return null;
+            }
+
+            cameraEffects.enabled = false;
+        }
+
+        // =====================================================
+        // DESATIVA DEFINITIVAMENTE OS CONTROLES
+        // =====================================================
+
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = false;
+        }
+
         foreach (Behaviour script in playerMovementScripts)
         {
             if (script != null)
+            {
                 script.enabled = false;
+            }
         }
 
-        // Reproduz o som no início da animação
+        // =====================================================
+        // REPRODUZ O SOM NO INÍCIO DA ANIMAÇÃO
+        // =====================================================
+
         if (animationAudioSource != null && animationSound != null)
         {
             animationAudioSource.PlayOneShot(animationSound);
         }
 
-        // Anima as três metralhadoras simultaneamente
+        // =====================================================
+        // ANIMA AS TRÊS METRALHADORAS SIMULTANEAMENTE
+        // =====================================================
+
         float elapsedTime = 0f;
 
         while (elapsedTime < animationDuration)
@@ -102,7 +210,10 @@ public class EndingSequence : MonoBehaviour
             yield return null;
         }
 
-        // Garante que todas terminem exatamente na posição final
+        // =====================================================
+        // GARANTE QUE TODAS TERMINEM EXATAMENTE NA POSIÇÃO FINAL
+        // =====================================================
+
         for (int i = 0; i < weaponMains.Length; i++)
         {
             if (weaponMains[i] == null) continue;
@@ -112,7 +223,10 @@ public class EndingSequence : MonoBehaviour
             weaponMains[i].localPosition = position;
         }
 
-        // Aguarda antes de carregar a cena final
+        // =====================================================
+        // AGUARDA ANTES DE CARREGAR A CENA FINAL
+        // =====================================================
+
         yield return new WaitForSeconds(sceneChangeDelay);
 
         SceneManager.LoadScene(finalScene);

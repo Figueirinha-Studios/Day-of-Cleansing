@@ -61,6 +61,78 @@ public class PlayerMovement : MonoBehaviour
 
     private Coroutine breathingFadeCoroutine;
 
+    // =========================================================
+    // ADIÇÕES PARA A SEQUÊNCIA FINAL
+    // =========================================================
+
+    private bool endingSequenceMode = false;
+    private bool endingSequenceGrounded = false;
+
+    public bool IsGroundedForEnding
+    {
+        get { return endingSequenceGrounded; }
+    }
+
+    public void BeginEndingSequence()
+    {
+        if (endingSequenceMode)
+            return;
+
+        endingSequenceMode = true;
+
+        // Interrompe imediatamente o movimento horizontal.
+        currentMoveVelocity = Vector3.zero;
+
+        isRunning = false;
+        isCrouching = false;
+
+        // Se estiver subindo, interrompe a subida para começar a cair.
+        if (velocity.y > 0f)
+        {
+            velocity.y = 0f;
+        }
+
+        // Se já estiver no chão, não precisa esperar pela queda.
+        if (controller != null && controller.isGrounded)
+        {
+            velocity.y = -2f;
+            endingSequenceGrounded = true;
+        }
+        else
+        {
+            endingSequenceGrounded = false;
+        }
+    }
+
+    private void UpdateEndingSequenceMovement()
+    {
+        // Garante que nenhum movimento horizontal continue.
+        currentMoveVelocity = Vector3.zero;
+
+        isRunning = false;
+        isCrouching = false;
+
+        if (controller.isGrounded && velocity.y <= 0f)
+        {
+            velocity.y = -2f;
+            endingSequenceGrounded = true;
+            return;
+        }
+
+        // Mantém somente a gravidade enquanto o jogador está no ar.
+        velocity.y += gravity * Time.deltaTime;
+
+        controller.Move(
+            Vector3.up * velocity.y * Time.deltaTime
+        );
+
+        if (controller.isGrounded && velocity.y <= 0f)
+        {
+            velocity.y = -2f;
+            endingSequenceGrounded = true;
+        }
+    }
+
 
     // =========================================================
     // START
@@ -93,6 +165,13 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // Durante a sequência final, mantém apenas a gravidade.
+        if (endingSequenceMode)
+        {
+            UpdateEndingSequenceMovement();
+            return;
+        }
+
         bool isGrounded =
             controller.isGrounded;
 
