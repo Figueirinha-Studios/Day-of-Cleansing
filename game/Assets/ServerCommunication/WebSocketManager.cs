@@ -199,6 +199,25 @@ public class WebSocketManager : MonoBehaviour
             await websocket.Close();
         }
     }
+    async void OnDestroy()
+    {
+        if (websocket == null)
+            return;
+
+        Debug.Log("Encerrando WebSocket ao sair da cena...");
+
+        try
+        {
+            await websocket.Close();
+            Debug.Log("WebSocket encerrado corretamente.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Erro ao encerrar WebSocket: " + e.Message);
+        }
+
+        websocket = null;
+    }
     async void IdentifyClient()
     {
         if (websocket == null ||

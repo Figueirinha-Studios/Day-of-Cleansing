@@ -97,24 +97,16 @@ wss.on('connection', (ws, req) => {
                 if (tipo === 'unity') {
 
                     // Já existe uma Unity
-                    if (
-                        unity !== null &&
-                        unity.readyState === WebSocket.OPEN
-                    ) {
+		if (unity !== null && unity !== ws) {
 
-                        log(
-                            'Tentativa de conexão de uma segunda Unity. Nova conexão rejeitada.'
-                        );
+                        log('Unity anterior ainda registrada. Encerrando conex  o anterior.');
 
-                        ws.send(JSON.stringify({
-                            type: 'identify_rejected',
-                            reason: 'unity_already_connected'
-                        }));
+                        if (unity.readyState === WebSocket.OPEN) {
+                                unity.close(4001, 'Nova conex  o Unity');
+                        }
 
-                        ws.close();
-
-                        return;
-                    }
+                        unity = null;
+                }
 
 
                     // Registra a Unity

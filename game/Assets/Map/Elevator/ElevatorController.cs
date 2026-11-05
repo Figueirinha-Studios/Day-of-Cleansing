@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Collections;
 
@@ -36,17 +37,20 @@ public class ElevatorController : MonoBehaviour
 
     public void StartElevator()
     {
-        if (!isMoving)
-        {
-            isMoving = true;
+        if (isMoving)
+            return;
+
+        isMoving = true;
+
+        if (movementAudio != null)
             movementAudio.Play();
-            StartCoroutine(MoveElevator());
-        }
+
+        StartCoroutine(MoveElevator());
     }
 
     private IEnumerator MoveElevator()
     {
-
+        // Tempo de espera antes de iniciar o movimento
         yield return new WaitForSeconds(15f);
 
         float totalDistance = Vector3.Distance(startPosition, targetPosition);
@@ -54,10 +58,11 @@ public class ElevatorController : MonoBehaviour
         float accelerationDistance = (maxSpeed * accelerationTime) / 2f;
         float decelerationDistance = (maxSpeed * decelerationTime) / 2f;
 
-        // Caso a distância seja pequena demais para atingir a velocidade máxima
+        // Ajusta a velocidade caso a distância seja pequena
         if (accelerationDistance + decelerationDistance > totalDistance)
         {
-            float factor = totalDistance / (accelerationDistance + decelerationDistance);
+            float factor = totalDistance /
+                (accelerationDistance + decelerationDistance);
 
             accelerationDistance *= factor;
             decelerationDistance *= factor;
@@ -82,7 +87,6 @@ public class ElevatorController : MonoBehaviour
                     maxSpeed / accelerationTime * deltaTime
                 );
             }
-
             // DESACELERAÇÃO
             else if (traveledDistance > accelerationDistance + constantDistance)
             {
@@ -92,7 +96,6 @@ public class ElevatorController : MonoBehaviour
                     maxSpeed / decelerationTime * deltaTime
                 );
             }
-
             // VELOCIDADE CONSTANTE
             else
             {
@@ -112,33 +115,75 @@ public class ElevatorController : MonoBehaviour
             yield return null;
         }
 
-        // Força a posição final
+        // Garante a posição final
         transform.position = targetPosition;
-        transform.position = targetPosition;
+
         isMoving = false;
 
-        movementAudio.Stop();
-        arrivalAudio.Play();
+        // Áudio de movimento
+        if (movementAudio != null)
+            movementAudio.Stop();
 
-        SerialManager.Instance.Enviar("Portas abertas. Boa Sorte.");
+        // Áudio de chegada
+        if (arrivalAudio != null)
+            arrivalAudio.Play();
 
         Debug.Log("ELEVADOR CHEGOU!");
-        Debug.Log("doorController = " + doorController);
+
+        // Verifica o controlador das portas
+        if (doorController == null)
+        {
+            Debug.LogError(
+                "ElevatorController: doorController não foi atribuído no Inspector!"
+            );
+
+            yield break;
+        }
+
+        // Abre as portas
+        Debug.Log("Solicitando abertura das portas...");
 
         doorController.OpenDoors();
-        StartCoroutine(CheckIfDoorsOpened());
 
-        Debug.Log("OpenDoors() FOI CHAMADO!");
+        Debug.Log("OpenDoors() foi chamado!");
+
+        // Verifica se as portas realmente abriram
+        StartCoroutine(CheckIfDoorsOpened());
     }
+
     private IEnumerator CheckIfDoorsOpened()
     {
         yield return new WaitForSeconds(forceOpenDelay);
 
+        if (doorController == null)
+        {
+            Debug.LogError(
+                "ElevatorController: doorController ficou nulo durante a verificação!"
+            );
+
+            yield break;
+        }
+
         if (!doorController.AreDoorsOpen())
         {
-            Debug.Log("ELEVADOR EMPERROU! Ativando ForceOpen.");
+            Debug.LogWarning(
+                "ELEVADOR EMPERROU! Ativando abertura emergencial."
+            );
 
-            forceOpen.SetActive(true);
+            if (forceOpen != null)
+            {
+                forceOpen.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError(
+                    "ElevatorController: forceOpen não foi atribuído no Inspector!"
+                );
+            }
+        }
+        else
+        {
+            Debug.Log("Portas abertas com sucesso!");
         }
     }
 }
