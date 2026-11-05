@@ -10153,7 +10153,7 @@ MonoBehaviour:
   movementAudio: {fileID: 455966400}
   arrivalAudio: {fileID: 1170372928}
   doorAudio: {fileID: 684989018}
-  forceOpen: {fileID: 0}
+  forceOpen: {fileID: 1430776989}
   forceOpenDelay: 2
 --- !u!114 &128252831
 MonoBehaviour:
