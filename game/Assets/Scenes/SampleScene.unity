@@ -48022,7 +48022,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
   generator: {fileID: 31245301}
-  durationMinutes: 10
+  durationMinutes: 13
   warningAudioSource: {fileID: 1132237982}
   warningSound: {fileID: 8300000, guid: a068ec730e6c7ce48a440a4f8df6b922, type: 3}
   finalBeepAudioSource: {fileID: 1132237982}
@@ -111410,8 +111410,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abfd9373944c67843b59dcafb43eaf4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AreaTextTrigger
-  textObject: {fileID: 0}
-  playerTag: Player
 --- !u!114 &1430776994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117945,10 +117943,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45fcd2855214fbf4b8315bd18ec89655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  walkSpeed: 2.5
-  runSpeed: 5.5
-  joggingSpeed: 3
-  crouchSpeed: 1
+  walkSpeed: 3
+  runSpeed: 6.5
+  joggingSpeed: 4
+  crouchSpeed: 1.5
   crouchKey: 306
   runKey: 304
   maxStamina: 100
@@ -161856,7 +161854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
   generator: {fileID: 31245301}
-  durationMinutes: 10
+  durationMinutes: 13
   warningAudioSource: {fileID: 184849090}
   warningSound: {fileID: 8300000, guid: a068ec730e6c7ce48a440a4f8df6b922, type: 3}
   finalBeepAudioSource: {fileID: 901688675}
