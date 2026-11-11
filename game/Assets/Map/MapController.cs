@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -593,4 +594,67 @@ public class MapController : MonoBehaviour
         if (playerPickup != null)
             playerPickup.enabled = enabled;
     }
-}   
+
+
+    // =========================================================
+    // FECHAR MAPA FORCADAMENTE DURANTE O JUMPSCARE
+    // =========================================================
+
+    public void CloseMapForJumpscare()
+    {
+        // Interrompe possíveis corrotinas do mapa.
+        StopAllCoroutines();
+
+        // Para o vídeo.
+        if (videoPlayer != null)
+        {
+            videoPlayer.Stop();
+            videoPlayer.url = "";
+        }
+
+        // Para o áudio do vídeo.
+        if (mapVideoAudio != null)
+            mapVideoAudio.Stop();
+
+        // Para os sons de transição.
+        if (openStartSound != null)
+            openStartSound.Stop();
+
+        if (openEndSound != null)
+            openEndSound.Stop();
+
+        if (closeStartSound != null)
+            closeStartSound.Stop();
+
+        if (closeEndSound != null)
+            closeEndSound.Stop();
+
+        // Esconde os elementos do mapa.
+        if (mapVideo != null)
+            mapVideo.SetActive(false);
+
+        if (mapImage != null)
+            mapImage.SetActive(false);
+
+        if (mapCanvas != null)
+            mapCanvas.SetActive(false);
+
+        // Remove a tela preta.
+        SetBlackScreen(false);
+
+        // Restaura o volume original dos áudios.
+        SetGameAudioNormal();
+
+        // Remove o jogador do elevador somente
+        // se o mapa estava aberto ou em transição.
+        if (mapOpen || transitionRunning)
+            DetachPlayerFromElevator();
+
+        // Atualiza o estado interno.
+        mapOpen = false;
+        transitionRunning = false;
+
+        // Não libera os controles do jogador.
+        // O jumpscare continuará responsável por isso.
+    }
+}

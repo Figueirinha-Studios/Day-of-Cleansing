@@ -31,6 +31,9 @@ public class ChappieJumpscare : MonoBehaviour
     public string gameOverScene = "GameOver";
     public float sceneChangeDelay = 2f;
 
+    [Header("Mapa")]
+    public MapController mapController;
+
     private bool jumpscareStarted = false;
 
     private NavMeshAgent agent;
@@ -47,6 +50,9 @@ public class ChappieJumpscare : MonoBehaviour
         enemyAI = GetComponent<EnemyAI>();
 
         musicManager = FindFirstObjectByType<MusicManager>();
+
+        if (mapController == null)
+            mapController = FindFirstObjectByType<MapController>();
 
         if (playerCamera == null && Camera.main != null)
         {
@@ -75,6 +81,15 @@ public class ChappieJumpscare : MonoBehaviour
         if (jumpscareStarted) return;
 
         jumpscareStarted = true;
+
+        // =====================================================
+        // FECHA O MAPA, CASO ESTEJA ABERTO
+        // =====================================================
+
+        if (mapController != null)
+        {
+            mapController.CloseMapForJumpscare();
+        }
 
         // =====================================================
         // PARA TODAS AS MÚSICAS DO MUSIC MANAGER
