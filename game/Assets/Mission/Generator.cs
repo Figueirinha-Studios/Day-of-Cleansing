@@ -217,6 +217,13 @@ public class Generator : MonoBehaviour
             gasolineRequired
         );
 
+        Debug.Log(gasolineInserted);
+
+        if (gasolineInserted == 1) {
+            MQTTManager.Instance.Publish("game/controller", "OBJETIVO2");
+        } else if (gasolineInserted == 2) {
+            MQTTManager.Instance.Publish("game/controller", "OBJETIVO3");
+        }
 
         CheckGeneratorReady();
     }
@@ -260,6 +267,7 @@ public class Generator : MonoBehaviour
             "Fusível colocado."
         );
 
+        MQTTManager.Instance.Publish("game/controller", "OBJETIVO4");
 
         CheckGeneratorReady();
     }
