@@ -1,6 +1,8 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class EndingSequence : MonoBehaviour
 {
@@ -23,6 +25,9 @@ public class EndingSequence : MonoBehaviour
     public float sceneChangeDelay = 2f;
     public string finalScene = "FinalScene";
 
+    [Header("Tela Preta")]
+    public RawImage blackScreen;
+
     private bool sequenceStarted = false;
 
     public AudioSource endingAudioSource;
@@ -37,6 +42,14 @@ public class EndingSequence : MonoBehaviour
 
     private void Start()
     {
+        // Tela preta começa invisível
+        if (blackScreen != null)
+        {
+            Color color = blackScreen.color;
+            color.a = 0f;
+            blackScreen.color = color;
+        }
+
         initialPositions = new Vector3[weaponMains.Length];
 
         for (int i = 0; i < weaponMains.Length; i++)
@@ -248,6 +261,17 @@ public class EndingSequence : MonoBehaviour
         if (endingAudioSource != null && endingSound != null)
         {
             endingAudioSource.PlayOneShot(endingSound);
+
+            // =====================================================
+            // DEIXA A TELA PRETA QUANDO O ENDING SOUND COMEÇAR
+            // =====================================================
+
+            if (blackScreen != null)
+            {
+                Color color = blackScreen.color;
+                color.a = 1f;
+                blackScreen.color = color;
+            }
         }
 
         // =====================================================
