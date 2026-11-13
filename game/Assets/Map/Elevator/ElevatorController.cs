@@ -42,8 +42,7 @@ public class ElevatorController : MonoBehaviour
 
         isMoving = true;
 
-        if (movementAudio != null)
-            movementAudio.Play();
+ 
 
         StartCoroutine(MoveElevator());
     }
@@ -51,7 +50,10 @@ public class ElevatorController : MonoBehaviour
     private IEnumerator MoveElevator()
     {
         // Tempo de espera antes de iniciar o movimento
-        yield return new WaitForSeconds(15f);
+        yield return new WaitForSeconds(25f);
+
+        if (movementAudio != null)
+            movementAudio.Play();
 
         float totalDistance = Vector3.Distance(startPosition, targetPosition);
 
