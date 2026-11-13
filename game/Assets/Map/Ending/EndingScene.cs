@@ -25,6 +25,9 @@ public class EndingSequence : MonoBehaviour
 
     private bool sequenceStarted = false;
 
+    public AudioSource endingAudioSource;
+    public AudioClip endingSound;
+
     private Vector3[] initialPositions;
 
     private MusicManager musicManager;
@@ -224,10 +227,34 @@ public class EndingSequence : MonoBehaviour
         }
 
         // =====================================================
-        // AGUARDA ANTES DE CARREGAR A CENA FINAL
+        // ESPERA O SOM DAS METRALHADORAS TERMINAR
         // =====================================================
 
-        yield return new WaitForSeconds(sceneChangeDelay);
+        if (animationAudioSource != null && animationAudioSource.isPlaying)
+        {
+            yield return new WaitWhile(() => animationAudioSource.isPlaying);
+        }
+
+        // =====================================================
+        // ESPERA 1 SEGUNDO DE SILÊNCIO
+        // =====================================================
+
+        yield return new WaitForSeconds(1f);
+
+        // =====================================================
+        // REPRODUZ O SOM FINAL
+        // =====================================================
+
+        if (endingAudioSource != null && endingSound != null)
+        {
+            endingAudioSource.PlayOneShot(endingSound);
+        }
+
+        // =====================================================
+        // AGUARDA 1 SEGUNDO ANTES DE CARREGAR A CENA FINAL
+        // =====================================================
+
+        yield return new WaitForSeconds(1f);
 
         SceneManager.LoadScene(finalScene);
     }
