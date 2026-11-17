@@ -178,6 +178,7 @@ public class ChappieJumpscare : MonoBehaviour
         }
 
         // Envia os comandos MQTT
+        /*
         if (MQTTManager.Instance != null)
         {
             MQTTManager.Instance.Publish(
@@ -190,6 +191,7 @@ public class ChappieJumpscare : MonoBehaviour
                 "RELEBon"
             );
         }
+        */
 
         // Aguarda e carrega a tela de Game Over
         StartCoroutine(GameOverRoutine());
