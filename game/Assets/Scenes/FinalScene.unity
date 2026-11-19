@@ -674,7 +674,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GeneralMQTTPublisherV2
   MQTTMessage: on
   Topic: arduino/controller
-  Publish: 1
+  Publish: 0
 --- !u!114 &1603197170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -687,7 +687,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a421a5852202545448cae748671fd6e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneralMQTTPublisherV2
-  MQTTMessage: RELEAon
+  MQTTMessage: RELEBon
   Topic: esp32/controller
   Publish: 1
 --- !u!4 &1603197171
